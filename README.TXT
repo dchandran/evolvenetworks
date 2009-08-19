@@ -1,3 +1,7 @@
+Network Evolution Library (2009)
+author: Deepak Chandran (dchandran1@gmail.com)
+LICENSE: open source BSD
+
 --------------------------------------------------------
 --------------------------------------------------------
 How to Build the project
