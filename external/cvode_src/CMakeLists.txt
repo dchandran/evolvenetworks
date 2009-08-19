@@ -1,0 +1,14 @@
+SUBDIRS( 
+  cvode
+  nvec_ser
+  sundials
+)
+
+ADD_LIBRARY( cvode
+ STATIC
+ ${CVODE_SRC}
+ ${SUNDIALS_SRC}
+ ${NVECSER_SRC}
+)
+
+SET_TARGET_PROPERTIES(cvode PROPERTIES LINKER_LANGUAGE C)
