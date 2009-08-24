@@ -1,5 +1,6 @@
-PROJECT( NETWORKEVOLUTION )
+cmake_minimum_required(VERSION 2.0)
 
+PROJECT( NETWORKEVOLUTION )
 
 #---------------------------------------------------------------------------
 # Doxygen documentation
