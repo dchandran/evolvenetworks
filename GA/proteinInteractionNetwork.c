@@ -36,7 +36,9 @@ void setSizeForProteinInteractionNetwork(int s, int r)
 
 void setMutationAndCrossoverRatesForProteinInteractionNetwork(double a, double b, double c, double d, double e)
 {
-	double total = a+b+c+d;
+	double total;
+
+	total = a+b+c+d;
 	MUTATE_REWIRE = a/total;
 	MUTATE_CHANGE_PARAM = b/total;
 	MUTATE_TOTAL_CONC = c/total;
@@ -51,10 +53,12 @@ void setMutationAndCrossoverRatesForProteinInteractionNetwork(double a, double b
 
 void deleteProteinInteractionNetwork(void * individual)
 {
-	if (!individual) return;
-	ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)(individual);
-	
 	int i;
+	ProteinInteractionNetwork * net;
+	
+	if (!individual) return;
+	net = (ProteinInteractionNetwork*)(individual);
+	
 	if ((*net).regulators)
 	{
 		for (i=0; i < (*net).species; ++i)
@@ -72,12 +76,13 @@ void deleteProteinInteractionNetwork(void * individual)
 
 void* cloneProteinInteractionNetwork(void * individual)
 {
+	int i,j,m,n;
+	ProteinInteractionNetwork * net, * net2;
+	
 	if (!individual) return 0;
 	
-	int i,j,m,n;
-	
-	ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)(individual);   //original
-	ProteinInteractionNetwork * net2 = malloc(sizeof(ProteinInteractionNetwork)); //soon to be clone
+	net = (ProteinInteractionNetwork*)(individual);   //original
+	net2 = malloc(sizeof(ProteinInteractionNetwork)); //soon to be clone
 	
 	n = (*net).species;    //number of species
 	(*net2).species = n;
@@ -106,15 +111,16 @@ void* cloneProteinInteractionNetwork(void * individual)
 
 void* crossoverProteinInteractionNetwork(void * individualA, void * individualB)
 {
-	int i, j, k, i1, i2, n = 0, m = 0;
+	int i, j, k, i1, i2, n, m;
+	ProteinInteractionNetwork * net1, * net2;
 	
 	if (mtrand() > CROSSOVER_PROB) return mutateProteinInteractionNetwork(cloneProteinInteractionNetwork(individualA)); 
 	
 	if (!individualA) return mutateProteinInteractionNetwork(cloneProteinInteractionNetwork(individualB));
 	if (!individualB) return mutateProteinInteractionNetwork(cloneProteinInteractionNetwork(individualA));
 	
-	ProteinInteractionNetwork * net1 = (ProteinInteractionNetwork*)(individualA);  //parents
-	ProteinInteractionNetwork * net2 = (ProteinInteractionNetwork*)(individualB);
+	net1 = (ProteinInteractionNetwork*)(individualA);  //parents
+	net2 = (ProteinInteractionNetwork*)(individualB);
 	
 	if ((*net1).species < 3) return mutateProteinInteractionNetwork(cloneProteinInteractionNetwork(net2));  //if parents are too small
 	if ((*net2).species < 3) return mutateProteinInteractionNetwork(cloneProteinInteractionNetwork(net1));
@@ -172,16 +178,15 @@ void* crossoverProteinInteractionNetwork(void * individualA, void * individualB)
 void* mutateProteinInteractionNetwork(void * individual)
 {
 	int i,j,j2,k,m,n;
-	
-	double r = mtrand();
-	
-	ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)individual;
+	double r;
+	ProteinInteractionNetwork * net, * net2;
+
+	net = (ProteinInteractionNetwork*)individual;
 
 	n = (*net).species;
 
 	i = (int)(mtrand() * n);  //pick random protein
-
-	
+	r = mtrand();
 
 	if (r < MUTATE_REWIRE)   //mutate one of the regulators
 	{
@@ -209,10 +214,9 @@ void* mutateProteinInteractionNetwork(void * individual)
 	}
 	else              //add or remove a new protein to the network
 	{
-		j = mtrand();
-		if (j < 0.5 && n > 2)     //remove a protein
+		if (mtrand() < 0.5 && n > 2)     //remove a protein
 		{
-			ProteinInteractionNetwork * net2 = malloc(sizeof(ProteinInteractionNetwork));
+			net2 = malloc(sizeof(ProteinInteractionNetwork));
 			(*net2).species = n-1;
 			(*net2).regulators = malloc( (n-1) * sizeof(Regulators) );
 			(*net2).totals = malloc( (n-1) * sizeof(double) );
@@ -236,13 +240,13 @@ void* mutateProteinInteractionNetwork(void * individual)
 					++j2;
 				}
 			}
-			deleteNetwork(net);
+			deleteProteinInteractionNetwork(net);
 			
 			return (void*)(net2);
 		}
 		else	//add a protein
 		{
-			ProteinInteractionNetwork * net2 = malloc(sizeof(ProteinInteractionNetwork));
+			net2 = malloc(sizeof(ProteinInteractionNetwork));
 			(*net2).species = n+1;
 			(*net2).regulators = malloc( (n+1) * sizeof(Regulators) );
 			(*net2).totals = malloc( (n+1) * sizeof(double) );
@@ -279,7 +283,7 @@ void* mutateProteinInteractionNetwork(void * individual)
 					(*net2).regulators[n].Vmax[j] *= -1.0;  //negative regulator
 			}
 			
-			deleteNetwork(net);
+			deleteProteinInteractionNetwork(net);
 			return (void*)(net2);
 		}
 	}
@@ -293,11 +297,13 @@ void* mutateProteinInteractionNetwork(void * individual)
 
 void ratesForProteinInteractionNetwork(double time,double* u,double* rate,void * individual)
 {
-	int i,j,n,p;
+	int i,j,n,p,forward, backward;
 	double km,vmax,tot,f;
-	ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)(individual);
+	ProteinInteractionNetwork * net;
+	
+	net = (ProteinInteractionNetwork*)(individual);
 	n = (*net).species;
-	int forward = 0, backward = 0;
+	
 	for (i=0; i < n; ++i)
 	{
 		tot = (*net).totals[i]; //total concentration of u[i]
@@ -332,9 +338,12 @@ void ratesForProteinInteractionNetwork(double time,double* u,double* rate,void *
 double * stoichiometryForProteinInteractionNetwork(void * p)
 {
 	int i,j,n;
-	ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)(p);
+	double * N;
+	ProteinInteractionNetwork * net;
+	
+	net = (ProteinInteractionNetwork*)(p);
 	n = (*net).species;
-	double * N = malloc(n * 2 * n * sizeof(double));
+	N = malloc(n * 2 * n * sizeof(double));
 	for (i=0; i < (2*n*n); ++i)
 	{
 		N[i] = 0.0;
@@ -351,7 +360,9 @@ void printProteinInteractionNetwork(void * individual)
 {
 	int i,j,n,p;
 	double km,vmax,tot,f;
-	ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)(individual);
+	ProteinInteractionNetwork * net;
+	
+	net = (ProteinInteractionNetwork*)(individual);
 	n = (*net).species;
 	
 	for (i=0; i < n; ++i)
@@ -402,12 +413,16 @@ GApopulation randomProteinInteractionNetworks(int num)
 {
 	int s = AVG_NUM_SPECIES;
 	int i,j,k,n,m;
+	ProteinInteractionNetwork * net;
+	ProteinInteractionNetwork ** array;
+	
 	initMTrand(); /*initialize seeds for MT random number generator*/
-	ProteinInteractionNetwork ** array = malloc(num * sizeof(ProteinInteractionNetwork*));
+	
+	array = malloc(num * sizeof(ProteinInteractionNetwork*));
 	for (i=0; i < num; ++i)
 	{
 		n = (int)(1 + s * 2.0 * mtrand());
-		ProteinInteractionNetwork * net = malloc(sizeof(ProteinInteractionNetwork)); //new network
+		net = malloc(sizeof(ProteinInteractionNetwork)); //new network
 	
 		(*net).species = n;    //number of proteins
 		
@@ -432,8 +447,6 @@ GApopulation randomProteinInteractionNetworks(int num)
 					(*net).regulators[j].Vmax[k] *= -1.0;  //negative regulator
 			}
 		}
-		
-		//printNetwork(net);
 		
 		array[i] = net;
 	}
@@ -464,7 +477,7 @@ int main()  //just for testing
 		printNetwork(net);
 		net = mutateProteinInteractionNetwork(net);
 		printf("\n");
-		deleteNetwork(net);
+		deleteProteinInteractionNetwork(net);
 	}
 	
 	for (i=0; i < n; ++i)

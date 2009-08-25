@@ -66,9 +66,9 @@ static int isBad(Parameters * p)
 
 static void setBad(Parameters * p)
 {
+   int i=0, k = 0;
    if (BAD_PARAMS)
-   {
-      int i=0, k = 0;
+   {  
       while (BAD_PARAMS[k]) ++k;
       Parameters ** temp = BAD_PARAMS;
       BAD_PARAMS = malloc( (k+1) * sizeof(Parameters*) );
@@ -100,11 +100,13 @@ static void deleteBadParams()
 
 static double FMIN(int n, double x[])
 {
+   int i;
+   double sumsq = 0;
+   
    if (_U0 && distance(x,_U0,n) < MIN_ERROR) return 1.0;
 
    ODE_FNC(1.0,x,_DU,(void*)_PARAM);
-   double sumsq = 0;
-   int i;
+   
    for (i=0; i < n; ++i)
        sumsq += (_DU[i]*_DU[i]);
    return (sumsq);
@@ -123,14 +125,15 @@ void deleteGAindividual(void * individual)
 
 void * clone(void * x)
 {
+   int i;
    Parameters * p = malloc(sizeof(Parameters));
    Parameters * net = (Parameters*)x;
+   
    (*p).numVars = (*net).numVars;
    (*p).numParams = (*net).numParams;
    (*p).params  = malloc(  (*p).numParams * sizeof(double) );
    (*p).alphas  = malloc(  (*p).numVars * sizeof(double) );
 
-   int i;
    for (i = 0; i < (*p).numVars; ++i)
    {
       (*p).alphas[i]  = (*net).alphas[i];
@@ -144,13 +147,14 @@ void * clone(void * x)
 
 Parameters * randomNetwork(int numVars, int numParams)
 {
+   int i;
+   
    Parameters * p = malloc(sizeof(Parameters));
    (*p).numParams = numParams;
    (*p).numVars = numVars;
    (*p).params  = malloc( numParams * sizeof(double) );
    (*p).alphas  = malloc( numVars * sizeof(double) );
 
-   int i;
    for (i = 0; i < numParams; ++i) (*p).params[i] = 10.0*randnum;
    for (i = 0; i < numVars; ++i) (*p).alphas[i] = 2.0*randnum - 1.0;
    normalize ((*p).alphas , (*p).numVars);
@@ -161,7 +165,7 @@ static double * regularSteadyState(Parameters * p, double * iv)
 {
    int i;
    int N = (*p).numVars;
-   double * alphas = malloc(N*sizeof(double));
+   double * ss, * alphas = malloc(N*sizeof(double));
 
    for (i=0; i < N; ++i)
    {
@@ -169,7 +173,7 @@ static double * regularSteadyState(Parameters * p, double * iv)
        (*p).alphas[i] = 1.0;
    }
 
-   double * ss = steadyState(N,iv,ODE_FNC,(void*)p,SS_MIN_ERROR,SS_MAX_TIME,SS_MIN_DT);
+   ss = steadyState(N,iv,ODE_FNC,(void*)p,SS_MIN_ERROR,SS_MAX_TIME,SS_MIN_DT);
    
    for (i=0; i < N; ++i)
        (*p).alphas[i] = alphas[i];
@@ -186,12 +190,12 @@ static double * unstableSteadyState(Parameters * p, double * iv)
 
 static double * findZeros(Parameters * p, double * x, double * fopt)
 {
-   //double fopt;
+   int i;
    double * ss = 0;
+   
    _DU = malloc((*p).numVars*sizeof(double));
    _PARAM = p;
-
-   int i;
+   
    for (i=0; i < (*p).numVars; ++i)
    {
        _U[i] = x[i];
@@ -212,13 +216,12 @@ static double * findZeros(Parameters * p, double * x, double * fopt)
 
 double fitness(void * individual)
 {
-   int i,j;
+   int i,j, allPos, N;
+   double * ss0, * ss1, * ss2, fmin, score;
    Parameters * p = (Parameters*)individual;
-
-   //if (isBad(p)) return 0.0;
-
-   int allPos = 1.0;
-   int N = (*p).numVars;
+   
+   allPos = 1.0;
+   N = (*p).numVars;
 
    for (i=0; i < (*p).numVars; ++i)
    {
@@ -230,7 +233,7 @@ double fitness(void * individual)
    }
    if (allPos) return (0.0);
 
-   double * ss0 = regularSteadyState(p,INIT_VALUE);
+   ss0 = regularSteadyState(p,INIT_VALUE);
 
    if (ss0 == 0) { return (0.0); }
    /*for (i=0; i < N; ++i)
@@ -247,12 +250,11 @@ double fitness(void * individual)
        _U0[i] = ss0[i];
    }
 
-   double fmin;
-   double * ss1 = findZeros(p,ss0,&fmin);
+   ss1 = findZeros(p,ss0,&fmin);
 
    if (ss1 != 0)   //ok, we have a zero
    {
-       double * ss2 = unstableSteadyState(p,ss1);   //is it really a stable state
+       ss2 = unstableSteadyState(p,ss1);   //is it really a stable state
        if (ss2 == 0)   //(simu != findZero) so this is a stable state
        {
            free(ss1);
@@ -331,7 +333,7 @@ double fitness(void * individual)
        //free(yend);
        free (ss0);
        //free (y);
-       double score = 1.0e-5/(1.0e-5 + fmin);
+       score = 1.0e-5/(1.0e-5 + fmin);
        return score;
     }
 
@@ -367,11 +369,11 @@ double fitness(void * individual)
 /*randomly change the values of a parameter array*/
 void * mutate(void * individual)
 {
-   int i,j;
+   int i,j,n,m;
    Parameters * p = (Parameters*)individual;
 
-   int n = (*p).numParams;
-   int m = (*p).numVars;
+   n = (*p).numParams;
+   m = (*p).numVars;
 
    if (mtrand() < 0.5)
    {
@@ -390,13 +392,11 @@ void * mutate(void * individual)
 /*Mix two parameter arrays*/
 void * crossover(void * individual1, void * individual2)
 {
-   //if (mtrand() < 0.4) return ((void*)clone(individual1));
-   Parameters * net1 = (Parameters*)individual1;
-   Parameters * net2 = (Parameters*)individual2;
-
-   Parameters * net3 = (Parameters*)clone(individual1);
-
    int i;
+   Parameters 	* net1 = (Parameters*)individual1,
+				* net2 = (Parameters*)individual2,
+				* net3 = (Parameters*)clone(individual1);
+   
    if (mtrand() < 0.5)
    {
       for (i = 0; i < (*net3).numParams; ++i)
@@ -426,8 +426,9 @@ void * crossover(void * individual1, void * individual2)
 /*Allocate memory for a given number of parameter arrays*/
 Parameters ** initGApopulation(int sz, int n, int p)
 {
-   Parameters ** pop = malloc(sz * sizeof(void*));
    int i;
+   Parameters ** pop = malloc(sz * sizeof(void*));
+   
    for (i=0; i < sz; ++i)
    {
       pop[i] = randomNetwork(n,p);
@@ -438,8 +439,12 @@ Parameters ** initGApopulation(int sz, int n, int p)
 /*Callback function that is called during each GA run*/
 int callbackf(int gen, void ** pop, int popsz)
 {
+   int i,j;
    double x;
-   void * y = pop[0];
+   void * y;
+   Parameters * p;
+   
+   y = pop[0];
    x = fitness(y);
 
    if (PRINT_STEPS)
@@ -454,8 +459,7 @@ int callbackf(int gen, void ** pop, int popsz)
 
    if (gen > 0 && (gen % 20) == 0)
    {
-       int i,j;
-       Parameters * p = 0;
+       p = 0;
        for (i=0; i < popsz/2; ++i)
        {
            p = (Parameters*)pop[i];
@@ -471,18 +475,19 @@ int callbackf(int gen, void ** pop, int popsz)
 
 static double** findTwoSteadyStates(Parameters * p0)
 {
-   double * iv = unstableSteadyState(p0,INIT_VALUE);
+   double * iv = unstableSteadyState(p0,INIT_VALUE), * iv2, * y, * y0, fopt, diff, ** ys;
+   int i,j;
+   Parameters * p;
 
    if (!iv) return 0;
 
-   Parameters * p = clone((void*)p0);
-   int i,j;
+   p = clone((void*)p0);
    for (i=0; i < (*p).numVars; ++i) (*p).alphas[i] = 1.0;
 
-   double * iv2 = malloc( (*p).numVars * sizeof(double) ); //unstable point
+   iv2 = malloc( (*p).numVars * sizeof(double) ); //unstable point
    for (i=0; i < (*p).numVars; ++i) iv2[i] = iv[i];
 
-   double * y = 0, * y0 = 0; //y0 and y are the two steady states (if they exist)
+   y = y0 = 0; //y0 and y are the two steady states (if they exist)
 
    for (i=0; i < 100; ++i)
    {
@@ -490,7 +495,6 @@ static double** findTwoSteadyStates(Parameters * p0)
            iv2[j] = iv[j] + 10.0*randnum - 5.0;  //random perturbation
 
       //y = steadyState((*p).numVars,iv2, ODE_FNC, p,SS_MIN_ERROR,SS_MAX_TIME,SS_MIN_DT); //steady state
-      double fopt;
       y = 0;
       _DU = malloc( ((*p).numVars) * sizeof(double));
       _PARAM = p;
@@ -515,14 +519,14 @@ static double** findTwoSteadyStates(Parameters * p0)
                    y[j] = 0.0;
           if (y0)  //first steady state exists
           {
-             double diff = 0;  //difference between second steady state
+             diff = 0;  //difference between second steady state
              for (j=0; j < (*p).numVars; ++j)
                   diff += (y[j] - y0[j])*(y[j] - y0[j]);
 
              if (diff > MIN_ERROR) //significantly different
              {
                  deleteGAindividual((void*)p);
-                 double ** ys = malloc(3 * sizeof(double*));
+                 ys = malloc(3 * sizeof(double*));
                  ys[0] = iv;
                  ys[1] = y0;
                  ys[2] = y;
@@ -548,21 +552,24 @@ static double** findTwoSteadyStates(Parameters * p0)
 BistablePoint makeBistable(int n, int p,double* iv, int maxIter, int popSz, void (*odefnc)(double,double*,double*,void*))
 {
    //ODEflags(1);
+   int popsz1, i;
+   BistablePoint ans;
+   Parameters * param;
+   
    _U0 = malloc( n * sizeof(double));
    _U = malloc( n * sizeof(double));
    ODE_FNC = odefnc;
-   int popsz1 = popSz/5;
+   popsz1 = popSz/5;
    INIT_VALUE = iv;
 
    GAinit(&deleteGAindividual,&clone,&fitness,&crossover,&mutate,0);
-   GApopulation pop = 
-      GArun((void**)initGApopulation(popSz,n,p),popSz,popsz1,maxIter,&callbackf);
-   Parameters * param = pop[0];
-   int i;
+   GApopulation pop = GArun((void**)initGApopulation(popSz,n,p),popSz,popsz1,maxIter,&callbackf);
+   
+   param = pop[0];
+ 
    for (i=1; i < popsz1; ++i) deleteGAindividual(pop[i]);
    free(pop);
-
-   BistablePoint ans;
+   
    ans.param = 0;
    ans.unstable = ans.stable1 = ans.stable2 = 0;
 

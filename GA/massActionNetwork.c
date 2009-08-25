@@ -46,8 +46,10 @@ void setMutationAndCrossoverRatesForMassActionNetwork(double a, double b)
 
 void deleteMassActionNetwork(void * individual)
 {
+	MassActionNetwork * net;
+	
 	if (!individual) return;
-	MassActionNetwork * net = (MassActionNetwork*)(individual);
+	net = (MassActionNetwork*)(individual);
 	
 	if ((*net).r1) free((*net).r1);  //free each array
 	if ((*net).r2) free((*net).r2);
@@ -58,15 +60,16 @@ void deleteMassActionNetwork(void * individual)
 
 void* cloneMassActionNetwork(void * individual)
 {
+	int i,m,n;
+	MassActionNetwork * net, * net2;
+	
 	if (!individual) return 0;
 	
-	int i;
+	net = (MassActionNetwork*)(individual);   //original
+	net2 = malloc(sizeof(MassActionNetwork)); //soon to be clone
 	
-	MassActionNetwork * net = (MassActionNetwork*)(individual);   //original
-	MassActionNetwork * net2 = malloc(sizeof(MassActionNetwork)); //soon to be clone
-	
-	int m = (*net).reactions;    //number of reactions
-	int n = (*net).species;    //number of species
+	m = (*net).reactions;    //number of reactions
+	n = (*net).species;    //number of species
 	(*net2).reactions = m;
 	(*net2).species = n;
 	
@@ -91,14 +94,15 @@ void* cloneMassActionNetwork(void * individual)
 void* crossoverMassActionNetwork(void * individualA, void * individualB)
 {
 	int i, j, i1, i2, n = 0, m = 0; 
+	MassActionNetwork * net1, * net2, * net3;
 	
-	if (mtrand() > CROSSOVER_PROB) return mutateMassActionNetwork(cloneMassActionNetwork(individualA)); 
+	if (mtrand() > CROSSOVER_PROB) return mutateMassActionNetwork(cloneMassActionNetwork(individualA));  //do crossover?
 	
 	if (!individualA) return mutateMassActionNetwork(cloneMassActionNetwork(individualB));
 	if (!individualB) return mutateMassActionNetwork(cloneMassActionNetwork(individualA));
 	
-	MassActionNetwork * net1 = (MassActionNetwork*)(individualA);  //parents
-	MassActionNetwork * net2 = (MassActionNetwork*)(individualB);
+	net1 = (MassActionNetwork*)(individualA);  //parents
+	net2 = (MassActionNetwork*)(individualB);
 	
 	if ((*net1).reactions < 3) return mutateMassActionNetwork(cloneMassActionNetwork(net2));  //if parents are too small
 	if ((*net2).reactions < 3) return mutateMassActionNetwork(cloneMassActionNetwork(net1));
@@ -108,7 +112,7 @@ void* crossoverMassActionNetwork(void * individualA, void * individualB)
 	
 	n = i1 + (*net2).reactions - i2;
 	
-	MassActionNetwork * net3 = newMassActionNetwork(m,n);  //child network
+	net3 = newMassActionNetwork(m,n);  //child network
 	
 	for (i=0; i < i1; ++i)
 	{
@@ -145,7 +149,9 @@ void* crossoverMassActionNetwork(void * individualA, void * individualB)
 void* mutateMassActionNetwork(void * individual)
 {
 	int i,j,j2,k,m,n;
-	MassActionNetwork * net = (MassActionNetwork*)individual;
+	MassActionNetwork * net, * net2;
+	
+	net = (MassActionNetwork*)individual;
 
 	m = (*net).reactions;
 	n = (*net).species;
@@ -159,10 +165,9 @@ void* mutateMassActionNetwork(void * individual)
 	}
 	else              //add or remove a new reaction and/or species to the network
 	{
-		j = mtrand();
-		if (j < 0.5 && m > 2)     //remove a reaction
+		if (mtrand() < 0.5 && m > 2)     //remove a reaction
 		{
-			MassActionNetwork * net2 = newMassActionNetwork( n, (m - 1) );
+			net2 = newMassActionNetwork( n, (m - 1) );
 			for (j=0,j2=0; j < m; ++j)
 			{
 				if (j != i)
@@ -175,12 +180,12 @@ void* mutateMassActionNetwork(void * individual)
 					++j2;
 				}
 			}
-			deleteNetwork(net);
+			deleteMassActionNetwork(net);
 			return (void*)(net2);
 		}
 		else
 		{
-			MassActionNetwork * net2 = newMassActionNetwork( n, (m + 1) );
+			net2 = newMassActionNetwork( n, (m + 1) );
 			for (j=0; j < m; ++j)
 			{
 				(*net2).k[j] = (*net).k[j];
@@ -235,7 +240,7 @@ void* mutateMassActionNetwork(void * individual)
 					(*net2).species = (*net2).p2[j] + 1;
 			}
 			
-			deleteNetwork(net);
+			deleteMassActionNetwork(net);
 			return (void*)(net2);
 		}
 	}
@@ -250,7 +255,9 @@ void* mutateMassActionNetwork(void * individual)
 void ratesForMassActionNetwork(double time,double* u,double* rate,void * p)
 {
 	int i;
-	MassActionNetwork * net = (MassActionNetwork*)(p);
+	MassActionNetwork * net;
+	
+	net = (MassActionNetwork*)(p);
 	
 	for (i=0; i < (*net).reactions; ++i)
 	{
@@ -264,9 +271,12 @@ void ratesForMassActionNetwork(double time,double* u,double* rate,void * p)
 double * stoichiometryForMassActionNetwork(void * p)
 {
 	int i,j,n;
-	MassActionNetwork * net = (MassActionNetwork*)(p);
+	double * N;
+	MassActionNetwork * net;
+	
+	net = (MassActionNetwork*)(p);
 	n = (*net).reactions;
-	double * N = malloc((*net).species * n * sizeof(double));
+	N = malloc((*net).species * n * sizeof(double));
 	for (i=0; i < n; ++i)
 	{
 		for (j=0; j < (*net).species; ++j)
@@ -283,9 +293,10 @@ double * stoichiometryForMassActionNetwork(void * p)
 void printMassActionNetwork(void * individual)
 {
 	int i,j,k;
+	MassActionNetwork * net;
 	
 	if (!individual) return;
-	MassActionNetwork * net = (MassActionNetwork*)individual;
+	net = (MassActionNetwork*)individual;
 	
 	for (i=0; i < (*net).reactions; ++i)
 	{
@@ -302,12 +313,15 @@ GApopulation randomMassActionNetworks(int num)
 	int s = AVG_NUM_SPECIES;
 	int r = AVG_NUM_REACTIONS;
 	int i,j,n;
+	MassActionNetwork * net;
+	MassActionNetwork ** array;
+	
 	initMTrand(); /*initialize seeds for MT random number generator*/
-	MassActionNetwork ** array = malloc(num * sizeof(MassActionNetwork*));
+	array = malloc(num * sizeof(MassActionNetwork*));
 	for (i=0; i < num; ++i)
 	{
 		n = (int)(1 + s * 2.0 * mtrand());
-		MassActionNetwork * net = newMassActionNetwork(n,(int)(2 + r * 2.0 * mtrand()));
+		net = newMassActionNetwork(n,(int)(2 + r * 2.0 * mtrand()));
 		
 		for (j=0; j < (*net).reactions; ++j)
 		{
@@ -332,7 +346,9 @@ GApopulation randomMassActionNetworks(int num)
 
 MassActionNetwork * newMassActionNetwork(int s,int r)
 {
-	MassActionNetwork * net = malloc(sizeof(MassActionNetwork));
+	MassActionNetwork * net;
+
+	net = malloc(sizeof(MassActionNetwork));
 	(*net).species = s;
 	(*net).reactions = r;
 		
@@ -349,26 +365,26 @@ MassActionNetwork * newMassActionNetwork(int s,int r)
 int main()  //just for testing
 {
 	int i;
-	GApopulation pop = randomNetworks(5,2);
+	GApopulation pop = randomMassActionNetworks(5,2);
 	
 	for (i=0; i < 2; ++i)
 	{
-		printNetwork(pop[i]);
+		printMassActionNetwork(pop[i]);
 		printf("\n");
 	}
 	
 	for (i=0; i < 100; ++i)
 	{
-		void * net = crossover(pop[0],pop[1]);
-		printNetwork(net);
-		net = mutate(net);
+		void * net = crossoverMassActionNetwork(pop[0],pop[1]);
+		printMassActionNetwork(net);
+		net = mutateMassActionNetwork(net);
 		printf("\n");
-		deleteNetwork(net);
+		deleteMassActionNetwork(net);
 	}
 	
 	for (i=0; i < 2; ++i)
 	{
-		deleteNetwork(pop[i]);
+		deleteMassActionNetwork(pop[i]);
 	}
 }
 */

@@ -39,9 +39,11 @@ double gaussian(double x0, double y0, double x, double y)
 void chemotaxisODE(double time,double* u,double* du,void * p)
 {
 	int i,j,h;
-	double angle;
+	double angle, * rates, * N;
+	int numReactions, numVars;
+	chemotaxis_network * net;
 	
-	chemotaxis_network * net = (chemotaxis_network*)p;
+	net = (chemotaxis_network*)p;
 	u[FOOD] = MAX*gaussian(X0,Y0,(*net).x,(*net).y);  //update food
 	
 	(*net).angle += /*(mtrand()-0.5) */ SPEED * u[ANGLE]; //update angle
@@ -92,11 +94,11 @@ void chemotaxisODE(double time,double* u,double* du,void * p)
 	
 	ReactionNetwork * rnet = (*net).network;
 	
-	int numReactions = getNumReactions(rnet);
-	int numVars = getNumSpecies(rnet);
+	numReactions = getNumReactions(rnet);
+	numVars = getNumSpecies(rnet);
 	
-	double * rates = getReactionRates(rnet, u);
-	double * N = getStoichiometryMatrix(rnet);
+	rates = getReactionRates(rnet, u);
+	N = getStoichiometryMatrix(rnet);
 	
 	for (i=0; i < numVars; ++i)
 	{
@@ -119,7 +121,12 @@ void chemotaxisPropensity(double time,double* u,double* v,void * p)
 {
 	int i;
 	double angle;
-	chemotaxis_network * net = (chemotaxis_network*)p;
+	int numReactions;
+	double * rates;
+	chemotaxis_network * net;
+	ReactionNetwork * rnet;
+
+	net = (chemotaxis_network*)p;
 	
 	u[FOOD] = MAX*gaussian(X0,Y0,(*net).x,(*net).y);  //update food
 	
@@ -163,11 +170,11 @@ void chemotaxisPropensity(double time,double* u,double* v,void * p)
 		fprintf(FOUT, "%lf\t%lf\t%lf\t%lf\n",u[0],(*net).x,(*net).y,(*net).angle);
 	
 	//call propensity function from the network evolution library
-	ReactionNetwork * rnet = (*net).network;
+	rnet = (*net).network;
 	
-	int numReactions = getNumReactions(rnet);
+	numReactions = getNumReactions(rnet);
 	
-	double * rates = getReactionRates(rnet, u);
+	rates = getReactionRates(rnet, u);
 	
 	for (i=0; i < numReactions; ++i) v[i] = rates[i];
 }
@@ -175,10 +182,11 @@ void chemotaxisPropensity(double time,double* u,double* v,void * p)
 //compute fitness of a network
 double fitness(void * p)
 {
-	int i,j,n,r;
-	
+	int i,j,n,r,invalid, sz;
+	double * N, * init, total, score, xinit, yinit, * y;
 	chemotaxis_network cnet;
 	ReactionNetwork * rnet = (ReactionNetwork*)p;  //make chemotaxis network
+	
 	n = getNumSpecies(rnet);
 	r = getNumReactions(rnet);
 	cnet.network = rnet;
@@ -187,12 +195,10 @@ double fitness(void * p)
 	{
 		return 0.0; //minimum size: 1 species for input, 1 for turning
 	}
-	double * N = getStoichiometryMatrix(rnet);
 	
-	double * init = malloc(n * sizeof(double));
-	double score = 0.0, total = 0.0;
-	double xinit,yinit;
-	int invalid;
+	N = getStoichiometryMatrix(rnet);	
+	init = malloc(n * sizeof(double));
+	score = total = 0.0;
 	
 	for (j=0; j < 10; ++j)  //take average fitness from 10 different initial positions
 	{
@@ -208,9 +214,9 @@ double fitness(void * p)
 		for (i=0; i < n; ++i)
 			init[i] = 0.0;
 		
-		int sz = TIME * 10;
+		sz = TIME * 10;
 		
-		double * y = 0;
+		y = 0;
 		//if (STOCHASTIC)
 			//y = SSA( n, r, N, &(chemotaxisPropensity), init, 0, TIME, 100000, &sz, &cnet); //simulate stochastically
 		//else
@@ -253,12 +259,19 @@ double fitness(void * p)
 int callback(int iter,GApopulation pop,int popSz)
 {
 	ReactionNetwork * net = (ReactionNetwork*)pop[0];
+	
 	printf("%i\t%i\t%lf\n",iter,getNumSpecies(net),fitness(pop[0]));
 	return 0;
 }
 
 int main(int args, char ** argv)
 {
+	char * outfile = "out.tab";
+	double * N = 0, * J = 0, * init, *y, * p;
+	int sz, initsz = 1000, iter = 30, i,j,n,r;
+	ReactionNetwork * rnet;
+	LoopsInformation info;
+	
 	//parameters used in simulating chemotaxis
 	TIME = 500;
 	FOUT = 0;
@@ -273,13 +286,6 @@ int main(int args, char ** argv)
 	FOOD = 0;
 	ANGLE = 1;
 	THRUST = 2;
-	
-	char * outfile = "out.tab";
-	double * N = 0;
-	double * J = 0;
-	int initsz = 1000;
-	
-	int iter = 30;
 	
 	/**** get parameters from command line arguments, if they exist ****/
 	if (args > 1)
@@ -312,9 +318,6 @@ int main(int args, char ** argv)
 		outfile = argv[8];
 	
 	//GApopulation pop = randomNetworks(initsz,numspecs,numreacs);
-	
-	int i,j,n,r;
-	ReactionNetwork * rnet;
 	
 	/**** print the parameters being used ****/
 	
@@ -359,10 +362,9 @@ int main(int args, char ** argv)
 	
 	printNetwork(rnet);
 	
-	cnet.network = rnet;
+	cnet.network = rnet;	
 	
-	
-	double * init = malloc(n * sizeof(double));
+	init = malloc(n * sizeof(double));
 	
 	cnet.angle = 0.0;
 	cnet.x = GRIDSZ;
@@ -370,8 +372,8 @@ int main(int args, char ** argv)
 	for (i=0; i < n; ++i)
 		init[i] = 0.0;
 	
-	int sz = TIME * 10;
-	double * y = 0;
+	sz = TIME * 10;
+	y = 0;
 	
 	if (STOCHASTIC)	
 	{
@@ -394,14 +396,14 @@ int main(int args, char ** argv)
 	
 	/*********   find feedback loops   ***********/
 	
-	double * p = malloc( n * sizeof(double) );
+	p = malloc( n * sizeof(double) );
 	
 	for (i=0; i < n; ++i)
 		p[i] = getValue(y,(1+n),sz-1,i+1);
 		
 	J = jacobian(n, p, &(chemotaxisODE), &cnet);
 	
-	LoopsInformation info = getLoops(J,n);
+	info = getLoops(J,n);
 	
 	for (i=0; i < info.numLoops; ++i)
 	{

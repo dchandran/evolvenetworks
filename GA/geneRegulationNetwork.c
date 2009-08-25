@@ -41,7 +41,9 @@ void setSizeForGeneRegulationNetwork(int n1, int n2)
 
 void setMutationAndCrossoverRatesForGeneRegulationNetwork(double ka, double degrade, double complex, double add, double remove, double crossover)
 {
-	double total = ka + degrade + complex + add + remove;
+	double total;
+
+	total = ka + degrade + complex + add + remove;
 	
 	if (crossover > 1.0) crossover /= 100.0;
 	CROSSOVER_PROB = crossover;
@@ -58,8 +60,11 @@ void setMutationAndCrossoverRatesForGeneRegulationNetwork(double ka, double degr
 void deleteGeneRegulationNetwork(void * individual)
 {
 	int i;
+	GeneRegulationNetwork * net;
+	
 	if (!individual) return;
-	GeneRegulationNetwork * net = (GeneRegulationNetwork*)(individual);
+	
+	net = (GeneRegulationNetwork*)(individual);
 	
 	if ((*net).complexes)
 	{	
@@ -76,15 +81,16 @@ void deleteGeneRegulationNetwork(void * individual)
 
 void* cloneGeneRegulationNetwork(void * individual)
 {
+	int i,j,m,n;
+	GeneRegulationNetwork * net, * net2;
+	
 	if (!individual) return 0;
 	
-	int i,j;
+	net = (GeneRegulationNetwork*)(individual);   //original
+	net2 = malloc(sizeof(GeneRegulationNetwork)); //soon to be clone
 	
-	GeneRegulationNetwork * net = (GeneRegulationNetwork*)(individual);   //original
-	GeneRegulationNetwork * net2 = malloc(sizeof(GeneRegulationNetwork)); //soon to be clone
-	
-	int m = (*net).species;    //number of genes
-	int n = (*net).numComplexes;    //number of complexes
+	m = (*net).species;    //number of genes
+	n = (*net).numComplexes;    //number of complexes
 	(*net2).species = m;
 	(*net2).numComplexes = n;
 	
@@ -116,15 +122,16 @@ void* cloneGeneRegulationNetwork(void * individual)
 
 void* crossoverGeneRegulationNetwork(void * individualA, void * individualB)  //crossover between complexes in two networks
 {
-	int i, j, k, i1, i2, n = 0, m = 0; 
+	int i, j, k, i1, i2, n , m; 
+	GeneRegulationNetwork * net1, * net2, * net3;
 	
 	if (mtrand() > CROSSOVER_PROB) return mutateGeneRegulationNetwork(cloneGeneRegulationNetwork(individualA));
 	
 	if (!individualA) return mutateGeneRegulationNetwork(cloneGeneRegulationNetwork(individualB));
 	if (!individualB) return mutateGeneRegulationNetwork(cloneGeneRegulationNetwork(individualA));
 	
-	GeneRegulationNetwork * net1 = (GeneRegulationNetwork*)(individualA);  //parents
-	GeneRegulationNetwork * net2 = (GeneRegulationNetwork*)(individualB);
+	net1 = (GeneRegulationNetwork*)(individualA);  //parents
+	net2 = (GeneRegulationNetwork*)(individualB);
 	
 	if ((*net1).numComplexes < 3) return mutateGeneRegulationNetwork(cloneGeneRegulationNetwork(net2));  //if parents are too small
 	if ((*net2).numComplexes < 3) return mutateGeneRegulationNetwork(cloneGeneRegulationNetwork(net1));
@@ -134,7 +141,7 @@ void* crossoverGeneRegulationNetwork(void * individualA, void * individualB)  //
 	
 	n = i1 + (*net2).numComplexes - i2;
 	
-	GeneRegulationNetwork * net3 = newGeneRegulationNetwork(m,n);  //child network
+	net3 = newGeneRegulationNetwork(m,n);  //child network
 	
 	for (i=0; i < i1; ++i)
 	{
@@ -203,8 +210,12 @@ void* crossoverGeneRegulationNetwork(void * individualA, void * individualB)  //
 void* mutateGeneRegulationNetwork(void * individual)
 {
 	int i,j,k,l,m,n;
-	double r;
-	GeneRegulationNetwork * net = (GeneRegulationNetwork*)individual;
+	double r, * Ka, * degradation, * Vmax;
+	int * targetGene;
+	complex * complexes;
+	GeneRegulationNetwork * net;
+	
+	net = (GeneRegulationNetwork*)individual;
 	
 	m = (*net).species;
 	n = (*net).numComplexes;
@@ -243,11 +254,11 @@ void* mutateGeneRegulationNetwork(void * individual)
 		++m;
 		(*net).species = m;
 		(*net).numComplexes = n+1;
-		complex * complexes = (*net).complexes;
-		int * targetGene = (*net).targetGene;
-		double * Ka = (*net).Ka;
-		double * Vmax = (*net).Vmax;
-		double * degradation = (*net).degradation;
+		complexes = (*net).complexes;
+		targetGene = (*net).targetGene;
+		Ka = (*net).Ka;
+		Vmax = (*net).Vmax;
+		degradation = (*net).degradation;
 		
 		(*net).complexes = malloc( (1+n) * sizeof (complex) );
 		(*net).targetGene = malloc( (1+n) * sizeof(int) );
@@ -311,11 +322,11 @@ void* mutateGeneRegulationNetwork(void * individual)
 		
 		if (n < (t+2)) return (void*)net;
 		
-		complex * complexes = (*net).complexes;
-		int * targetGene = (*net).targetGene;
-		double * Ka = (*net).Ka;
-		double * degradation = (*net).degradation;
-		double * Vmax = (*net).Vmax;
+		complexes = (*net).complexes;
+		targetGene = (*net).targetGene;
+		Ka = (*net).Ka;
+		degradation = (*net).degradation;
+		Vmax = (*net).Vmax;
 		
 		(*net).numComplexes = n-t;
 		(*net).complexes = malloc( (n-t) * sizeof (complex) );
@@ -377,8 +388,9 @@ void ratesForGeneRegulationNetwork(double time,double* u,double* rate,void * p)
 {
 	int i,j,k;
 	double prod, num, denom;
+	GeneRegulationNetwork * net;
 	
-	GeneRegulationNetwork * net = (GeneRegulationNetwork*)(p);
+	net = (GeneRegulationNetwork*)(p);
 	
 	for (i=0; i < (*net).species; ++i)
 	{
@@ -412,13 +424,14 @@ void ratesForGeneRegulationNetwork(double time,double* u,double* rate,void * p)
 double * stoichiometryForGeneRegulationNetwork(void * p)
 {
 	int i,j,m,n;
-	double prod, num, denom;
+	double prod, num, denom, *N;
+	GeneRegulationNetwork * net;
 	
-	GeneRegulationNetwork * net = (GeneRegulationNetwork*)(p);
+	net = (GeneRegulationNetwork*)(p);
 	
 	m = (*net).species;
 	n = 2 * m;
-	double * N = malloc(m * n * sizeof(double));
+	N = malloc(m * n * sizeof(double));
 	
 	for (i=0; i < m; ++i)
 		for (j=0; j < n; ++j)
@@ -434,12 +447,13 @@ double * stoichiometryForGeneRegulationNetwork(void * p)
 
 void printGeneRegulationNetwork(void * individual)
 {
-	if (!individual) return;
-	
 	int i,j,k,p;
 	double prod, num, denom;
+	GeneRegulationNetwork * net;
 	
-	GeneRegulationNetwork * net = (GeneRegulationNetwork*)(individual);
+	if (!individual) return;
+	
+	net = (GeneRegulationNetwork*)(individual);
 	
 	for (i=0; i < (*net).species; ++i)
 	{
@@ -494,12 +508,16 @@ void printGeneRegulationNetwork(void * individual)
 
 GApopulation randomGeneRegulationNetworks(int num)
 {
-	int g = AVG_NUM_GENES, r = AVG_NUM_REGULATIONS;
-	int i,j,k,n,m;
-	initMTrand(); /*initialize seeds for MT random number generator*/
-	GeneRegulationNetwork * net;
+	int g,i,j,k,n,m;
+	double r;
+	GeneRegulationNetwork * net, **array;
 	
-	GeneRegulationNetwork ** array = malloc( num * sizeof(GeneRegulationNetwork*) );
+	g = AVG_NUM_GENES;
+	r = AVG_NUM_REGULATIONS;
+	
+	initMTrand(); /*initialize seeds for MT random number generator*/
+	
+	array = malloc( num * sizeof(GeneRegulationNetwork*) );
 	
 	for (k=0; k < num; ++k)
 	{
@@ -532,7 +550,9 @@ GApopulation randomGeneRegulationNetworks(int num)
 GeneRegulationNetwork * newGeneRegulationNetwork(int m,int n)
 {
 	int i;
-	GeneRegulationNetwork * net = malloc(sizeof(GeneRegulationNetwork));
+	GeneRegulationNetwork * net;
+	
+	net = malloc(sizeof(GeneRegulationNetwork));
 	(*net).species = m;    //number of genes
 	(*net).numComplexes = n;    //number of complexes
 	
@@ -562,17 +582,17 @@ GeneRegulationNetwork * newGeneRegulationNetwork(int m,int n)
 int main()  //just for testing
 {
 	int i,j,n = 10;
-	GApopulation pop = randomNetworks(n,4,4);
+	GApopulation pop = randomGeneRegulationNetworks(n,4,4);
 	
 	printf("generated networks\n");
 	
 	for (j=0; j < 50; ++j)
 		for (i=0; i < n; ++i)
 		{
-			printNetwork(pop[i]);
-			pop[i] = mutate(pop[i]);
+			printGeneRegulationNetwork(pop[i]);
+			pop[i] = mutateGeneRegulationNetwork(pop[i]);
 			printf("\n");
-			printNetwork(pop[i]);
+			printGeneRegulationNetwork(pop[i]);
 			printf("\n\n");
 		}
 	
@@ -580,10 +600,10 @@ int main()  //just for testing
 	
 	for (i=0; i < 50; ++i)
 	{
-		void * net = crossover(pop[ (int)(mtrand()*n) ],pop[ (int)(mtrand()*n) ]);
-		printNetwork(net);
-		net = mutate(net);
-		deleteNetwork(net);
+		void * net = crossoverGeneRegulationNetworks(pop[ (int)(mtrand()*n) ],pop[ (int)(mtrand()*n) ]);
+		printGeneRegulationNetwork(net);
+		net = mutateGeneRegulationNetwork(net);
+		deleteGeneRegulationNetwork(net);
 	}
 	
 	printf("crossover() test = ok\n\n");
@@ -592,7 +612,7 @@ int main()  //just for testing
 	
 	for (i=0; i < n; ++i)
 	{
-		deleteNetwork(pop[i]);
+		deleteGeneRegulationNetwork(pop[i]);
 	}
 	
 	//testing simulation functions using ring oscillator
@@ -622,7 +642,7 @@ int main()  //just for testing
 	
 	double x0[] = { 1.0, 1.0, 10.0 };
 	
-	double * N = getStoichiometry((void*)net);
+	double * N = stoichiometryForGeneRegulationNetwork((void*)net);
 	int sz;
 	
 	double * y = SSA(3, 6, N, &(SSAfunction), x0, 0,500,100000,&sz,net); //simulate
@@ -635,7 +655,7 @@ int main()  //just for testing
 		free(y);
 	}
 	
-	deleteNetwork((void*)net);
+	deleteGeneRegulationNetwork((void*)net);
 	
 }
 */

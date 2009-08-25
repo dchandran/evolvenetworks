@@ -40,10 +40,13 @@ int main()
 {
    int i;
    double iv[] = { 1.8, 2.3 };
-   BistablePoint bis = makeBistable(2,6,iv,30,2000,&(ode1));
-   
-   Parameters * p = bis.param;
+   Parameters * p;
+   BistablePoint bis;
 
+
+   bis = makeBistable(2,6,iv,30,2000,&(ode1));
+
+   p = bis.param;
    if (!p) return 0;
    if (bis.unstable)
    {

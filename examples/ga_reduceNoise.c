@@ -29,6 +29,9 @@ int callback(int iter,GApopulation pop,int popSz);
 /*Main*/
 int main()
 {	
+	int i, r, n, sz;
+	double * iv, * y;
+	
 	setFitnessFunction( &fitness );  //set the fitness function	
 	setNetworkType( GENE_REGULATION_NETWORK );  //use this network type 
 	setInitialNetworkSize(4,3);  //network size
@@ -42,14 +45,12 @@ int main()
 	
 	/******simulate the best network and write the result to a file************/
 	
-	int i;
-	int r = getNumReactions(net);
-	int n = getNumSpecies(net);
-	double * iv = malloc( n * sizeof(double));
+	r = getNumReactions(net);
+	n = getNumSpecies(net);
+	iv = malloc( n * sizeof(double));
 	for (i = 0; i < n; ++i) iv[i] = 0.0;
 
-	int sz;
-	double * y = simulateNetworkStochastically(net,iv,500,&sz);  //stochastic simulation
+	y = simulateNetworkStochastically(net,iv,500,&sz);  //stochastic simulation
 	free(iv);
 	
 	writeToFile("dat.txt",y,sz,n+1);  //write table to file
@@ -67,25 +68,25 @@ int main()
 /* fitness that calculates the coefficient of variation (CV) */
 double fitness(void * p)
 {
-	int i;
+	int i,r,n,sz;
+	double f, sd, dt, time, * iv, * y, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0;
 	ReactionNetwork * net = (ReactionNetwork*)p;  //the network to test
 	
-	int n = getNumSpecies(net);
-	int r = getNumReactions(net);
+	n = getNumSpecies(net);
+	r = getNumReactions(net);
 	
-	double * iv = malloc( n * sizeof(double));  //initial concentrations
+	iv = malloc( n * sizeof(double));  //initial concentrations
 	for (i = 0; i < n; ++i) iv[i] = 0.0;
 
-	double time = 500.0;
+	time = 500.0;
 	
-	int sz;
-	double * y = simulateNetworkStochastically(net,iv,time,&sz);  //stochastic simulation
+	y = simulateNetworkStochastically(net,iv,time,&sz);  //stochastic simulation
 	free(iv);
 
-	double f = 0, sd, dt;
+	f = 0;
 	if (y != 0)         //compute the variance
 	{
-		double mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0;
+		mXY = mX = mY = mX2 = mY2 = 0;
 		for (i = 0; i < (sz-1); ++i)
 		{
 			dt = getValue(y,n+1,i+1,0) - getValue(y,n+1,i,0);

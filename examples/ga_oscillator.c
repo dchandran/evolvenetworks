@@ -28,6 +28,9 @@ int callback(int iter,GApopulation pop,int popSz);
 /*main*/
 int main()
 {	
+	int i, N;
+	double * iv, * y;
+	
 	setFitnessFunction( &fitness );  //set the fitness function	
 	setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
 	setInitialNetworkSize(4,3);  //network size
@@ -41,12 +44,12 @@ int main()
 	
 	/******simulate the best network and write the result to a file************/
 	
-	int i;
-	int N = getNumSpecies(net);    //number of variables in the network
-	double * iv = malloc( N * sizeof(double));  
+	
+	N = getNumSpecies(net);    //number of variables in the network
+	iv = malloc( N * sizeof(double));  
 	for (i = 0; i < N; ++i) iv[i] = 0.0; //initial values
 	
-	double * y = simulateNetworkODE(net, iv, 500, 1); //simulate
+	y = simulateNetworkODE(net, iv, 500, 1); //simulate
 	free(iv);
 	
 	writeToFile("dat.txt",y,500,N+1);  //print to file
@@ -65,23 +68,25 @@ int main()
 /* fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(void * p)
 {
-	int i;
+	int i, N;
+	double * y, * iv, time, f, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0;
 	ReactionNetwork * net = (ReactionNetwork*)p;  //get the network
 	
-	int N = getNumSpecies(net);
+	N = getNumSpecies(net);
 	
-	double * iv = malloc( N * sizeof(double));  //initial concentrations
+	iv = malloc( N * sizeof(double));  //initial concentrations
 	for (i = 0; i < N; ++i) iv[i] = 0.0;
 
-	double time = 500.0;
+	time = 500.0;
 
-	double * y = simulateNetworkODE(net,iv,time,1);  //simulate
+	y = simulateNetworkODE(net,iv,time,1);  //simulate
 	free(iv);
 
-	double f = 0;   //calculate correlation to sine wave
+	f = 0;   //calculate correlation to sine wave
 	if (y != 0)
 	{
-		double mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0;
+		mXY = mX = mY = mX2 = mY2 = 0;
+		
 		for (i = 0; i < time; ++i)
 		{
 			mX += getValue(y,N+1,i,1);
