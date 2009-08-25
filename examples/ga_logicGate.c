@@ -47,18 +47,7 @@ int main()
 	
 	printNetwork(net); //print the best network
 	
-	/******simulate the best network and write the result to a file************/
-		
-	N = getNumSpecies(net);    //number of variables in the network
-	iv = malloc( N * sizeof(double));  
-	for (i = 0; i < N; ++i) iv[i] = 0.0; //initial values
-	
-	y = simulateNetworkODE(net, iv, 500, 1); //simulate
-	free(iv);
-	
-	writeToFile("dat.txt",y,500,N+1);  //print to file
-	
-	free(y);
+	printNetworkToFile(net,"network.txt"); //print the best network
 	
 	/****** free all the networks returned by the genetic algorithm ************/
 	for (i=0; i < 50; ++i)
@@ -70,7 +59,10 @@ int main()
 
 
 
-/* fitness function that tests for oscillations by using correlation to a sine wave */
+/* 
+fitness function that tests how well the steady state outputs match the
+given input/output table
+*/
 double fitness(GAindividual p)
 {
 	int i,j, num_rows, num_inputs, num_outputs;
