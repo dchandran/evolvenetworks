@@ -49,6 +49,23 @@ int main()
 	
 	printNetworkToFile(net,"network.txt"); //print the best network
 	
+	N = getNumSpecies(net);
+	iv = malloc( N * sizeof(double) );
+	for (i=0; i < N; ++i)
+		iv[i] = 0.0;
+	iv[0] = 0.1;
+	iv[1] = 10.0;
+	
+	y = networkSteadyState((ReactionNetwork*)(net),iv);
+	
+	if (y)
+	{
+		for (i=0; i < N; ++i)
+			printf("%lf\t",y[i]);
+		free(y);
+	}
+	else
+		printf("no ss\n");
 	
 	/****** free all the networks returned by the genetic algorithm ************/
 	for (i=0; i < 50; ++i)

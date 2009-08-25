@@ -2,7 +2,7 @@
 
 /********************************************************
 
-Pointers to the existing function pointers
+		Pointers to the existing functions
 
 *********************************************************/
 
@@ -385,7 +385,7 @@ void printNetworkToFile(ReactionNetwork * r, char * filename)
 
 	printNetwork(r);
 	
-	fclose(stream);
+	stream = freopen("CON", "w", stdout);
 }
 
 int getNumSpecies(ReactionNetwork * r)
