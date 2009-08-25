@@ -201,13 +201,13 @@ void setNetworkTypeProbability(int i, double p)
 {
 	double total;
 
-	if (i | MASS_ACTION_NETWORK)
+	if (i & MASS_ACTION_NETWORK)
 		networkProbs[ MASS_ACTION_NETWORK_INDEX ] = p;
 
-	if (i | PROTEIN_INTERACTION_NETWORK)
+	if (i & PROTEIN_INTERACTION_NETWORK)
 		networkProbs[ PROTEIN_INTERACTION_NETWORK_INDEX ] = p;
 
-	if (i | GENE_REGULATION_NETWORK)
+	if (i & GENE_REGULATION_NETWORK)
 		networkProbs[ GENE_REGULATION_NETWORK_INDEX ] = p;
 
 	total = 0.0;
