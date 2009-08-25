@@ -30,7 +30,7 @@ int callback(int iter,GApopulation pop,int popSz);
 int main()
 {	
 	int i, N;
-	double * iv, * y;
+	double *iv, * y;
 	GApopulation pop;
 	ReactionNetwork * net;
 	
@@ -49,6 +49,7 @@ int main()
 	
 	printNetworkToFile(net,"network.txt"); //print the best network
 	
+	
 	/****** free all the networks returned by the genetic algorithm ************/
 	for (i=0; i < 50; ++i)
 		deleteNetwork(pop[i]);
@@ -56,7 +57,6 @@ int main()
 	
 	return 0; //done
 }
-
 
 
 /* 

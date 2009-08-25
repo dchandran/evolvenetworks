@@ -190,10 +190,11 @@ void setStoichiometryFunction( int i, double* (*f)(GAindividual) )
 			}
 }
 
-void setNetworkType(int i)
+void setNetworkType(int p)
 {
+	int i;
 	for (i=0; i < NUMBER_OF_NETWORK_TYPES; ++i) networkProbs[i] = 0.0;
-	setNetworkTypeProbability(i, 1.0 );
+	setNetworkTypeProbability(p, 1.0 );
 }
 
 void setNetworkTypeProbability(int i, double p)
@@ -631,6 +632,7 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 		else
 		{
 			sumOfSq = -1.0;
+			break;
 		}
 	}
 	
