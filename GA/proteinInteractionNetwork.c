@@ -59,21 +59,21 @@ void deleteProteinInteractionNetwork(void * individual)
 	if (!individual) return;
 	net = (ProteinInteractionNetwork*)(individual);
 	
-	if ((*net).regulators)
+	if (net->regulators)
 	{
-		for (i=0; i < (*net).species; ++i)
+		for (i=0; i < net->species; ++i)
 		{
-			if ((*net).regulators[i].proteins) free ((*net).regulators[i].proteins);
-			if ((*net).regulators[i].Km) free ((*net).regulators[i].Km);
-			if ((*net).regulators[i].Vmax) free ((*net).regulators[i].Vmax);
+			if (net->regulators[i].proteins) free (net->regulators[i].proteins);
+			if (net->regulators[i].Km) free (net->regulators[i].Km);
+			if (net->regulators[i].Vmax) free (net->regulators[i].Vmax);
 		}
-		free ((*net).regulators);
+		free (net->regulators);
 	
-	if ((*net).totals)
-		free ((*net).totals);
+	if (net->totals)
+		free (net->totals);
 	
-	if ((*net).fixed)
-		free ((*net).fixed);
+	if (net->fixed)
+		free (net->fixed);
 		
 	}
 }
@@ -88,27 +88,27 @@ void* cloneProteinInteractionNetwork(void * individual)
 	net = (ProteinInteractionNetwork*)(individual);   //original
 	net2 = malloc(sizeof(ProteinInteractionNetwork)); //soon to be clone
 	
-	n = (*net).species;    //number of species
-	(*net2).species = n;
+	n = net->species;    //number of species
+	net2->species = n;
 	
-	(*net2).regulators = malloc(n * sizeof(Regulators));   //allocate space
-	(*net2).totals = malloc(n * sizeof(double));
-	(*net2).fixed = malloc(n * sizeof(int));
+	net2->regulators = malloc(n * sizeof(Regulators));   //allocate space
+	net2->totals = malloc(n * sizeof(double));
+	net2->fixed = malloc(n * sizeof(int));
 	
 	for (i=0; i < n; ++i)   //copy regulators
 	{
-		(*net2).fixed[i] = (*net).fixed[i];
-		(*net2).totals[i] = (*net).totals[i];
-		m = (*net).regulators[i].size;
-		(*net2).regulators[i].size = m;
-		(*net2).regulators[i].proteins = malloc(m * sizeof(int));
-		(*net2).regulators[i].Km = malloc(m * sizeof(double));
-		(*net2).regulators[i].Vmax = malloc(m * sizeof(double));
+		net2->fixed[i] = net->fixed[i];
+		net2->totals[i] = net->totals[i];
+		m = net->regulators[i].size;
+		net2->regulators[i].size = m;
+		net2->regulators[i].proteins = malloc(m * sizeof(int));
+		net2->regulators[i].Km = malloc(m * sizeof(double));
+		net2->regulators[i].Vmax = malloc(m * sizeof(double));
 		for (j=0; j < m; ++j)  //copy values for each regulator
 		{
-			(*net2).regulators[i].proteins[j] = (*net).regulators[i].proteins[j];
-			(*net2).regulators[i].Km[j] = (*net).regulators[i].Km[j];
-			(*net2).regulators[i].Vmax[j] = (*net).regulators[i].Vmax[j];
+			net2->regulators[i].proteins[j] = net->regulators[i].proteins[j];
+			net2->regulators[i].Km[j] = net->regulators[i].Km[j];
+			net2->regulators[i].Vmax[j] = net->regulators[i].Vmax[j];
 		}
 	}
 	
@@ -128,56 +128,56 @@ void* crossoverProteinInteractionNetwork(void * individualA, void * individualB)
 	net1 = (ProteinInteractionNetwork*)(individualA);  //parents
 	net2 = (ProteinInteractionNetwork*)(individualB);
 	
-	if ((*net1).species < 3) return mutateProteinInteractionNetwork(cloneProteinInteractionNetwork(net2));  //if parents are too small
-	if ((*net2).species < 3) return mutateProteinInteractionNetwork(cloneProteinInteractionNetwork(net1));
+	if (net1->species < 3) return mutateProteinInteractionNetwork(cloneProteinInteractionNetwork(net2));  //if parents are too small
+	if (net2->species < 3) return mutateProteinInteractionNetwork(cloneProteinInteractionNetwork(net1));
 	
-	i1 = (int)(mtrand() * ((*net1).species - 1) + 1.0);	//crossover point in net1
-	i2 = (int)(mtrand() * ((*net2).species - 2) + 1.0);	//crossover point in net2
+	i1 = (int)(mtrand() * (net1->species - 1) + 1.0);	//crossover point in net1
+	i2 = (int)(mtrand() * (net2->species - 2) + 1.0);	//crossover point in net2
 	
-	n = i1 + (*net2).species - i2;
+	n = i1 + net2->species - i2;
 	
 	net3 = malloc(sizeof(ProteinInteractionNetwork));  //child network
-	(*net3).species = n;
-	(*net3).regulators = malloc(n * sizeof(Regulators));
-	(*net3).totals = malloc(n * sizeof(double));
-	(*net3).fixed = malloc(n * sizeof(int));
+	net3->species = n;
+	net3->regulators = malloc(n * sizeof(Regulators));
+	net3->totals = malloc(n * sizeof(double));
+	net3->fixed = malloc(n * sizeof(int));
 	
 	for (i=0; i < i1; ++i) //copy all regulators from net1
 	{
-		n = (*net1).regulators[i].size;
-		(*net3).regulators[i].size = n;
-		(*net3).totals[i] = (*net1).totals[i];
-		(*net3).fixed[i] = (*net1).fixed[i];
-		(*net3).regulators[i].proteins = malloc(n * sizeof(int));
-		(*net3).regulators[i].Km = malloc(n * sizeof(double));
-		(*net3).regulators[i].Vmax = malloc(n * sizeof(double));
+		n = net1->regulators[i].size;
+		net3->regulators[i].size = n;
+		net3->totals[i] = net1->totals[i];
+		net3->fixed[i] = net1->fixed[i];
+		net3->regulators[i].proteins = malloc(n * sizeof(int));
+		net3->regulators[i].Km = malloc(n * sizeof(double));
+		net3->regulators[i].Vmax = malloc(n * sizeof(double));
 		for (j=0; j < n; ++j)
 		{
-			(*net3).regulators[i].proteins[j] = (*net1).regulators[i].proteins[j];
-			if ((*net3).regulators[i].proteins[j] >= (*net3).species)
-				(*net3).regulators[i].proteins[j] = (int)(mtrand() * (*net3).species);
-			(*net3).regulators[i].Km[j] = (*net1).regulators[i].Km[j];
-			(*net3).regulators[i].Vmax[j] = (*net1).regulators[i].Vmax[j];
+			net3->regulators[i].proteins[j] = net1->regulators[i].proteins[j];
+			if (net3->regulators[i].proteins[j] >= net3->species)
+				net3->regulators[i].proteins[j] = (int)(mtrand() * net3->species);
+			net3->regulators[i].Km[j] = net1->regulators[i].Km[j];
+			net3->regulators[i].Vmax[j] = net1->regulators[i].Vmax[j];
 		}
 	}
 	
-	for (i=i2; i < (*net2).species; ++i)
+	for (i=i2; i < net2->species; ++i)
 	{
 		k = i+i1-i2;
-		n = (*net2).regulators[i].size;
-		(*net3).regulators[k].size = n;
-		(*net3).totals[k] = (*net2).totals[i];
-		(*net3).fixed[k] = (*net2).fixed[i];
-		(*net3).regulators[k].proteins = malloc(n * sizeof(int));
-		(*net3).regulators[k].Km = malloc(n * sizeof(double));
-		(*net3).regulators[k].Vmax = malloc(n * sizeof(double));
+		n = net2->regulators[i].size;
+		net3->regulators[k].size = n;
+		net3->totals[k] = net2->totals[i];
+		net3->fixed[k] = net2->fixed[i];
+		net3->regulators[k].proteins = malloc(n * sizeof(int));
+		net3->regulators[k].Km = malloc(n * sizeof(double));
+		net3->regulators[k].Vmax = malloc(n * sizeof(double));
 		for (j=0; j < n; ++j)
 		{
-			(*net3).regulators[k].proteins[j] = (*net2).regulators[i].proteins[j];
-			if ((*net3).regulators[k].proteins[j] >= (*net3).species)
-				(*net3).regulators[k].proteins[j] = (int)(mtrand() * (*net3).species);
-			(*net3).regulators[k].Km[j] = (*net2).regulators[i].Km[j];
-			(*net3).regulators[k].Vmax[j] = (*net2).regulators[i].Vmax[j];
+			net3->regulators[k].proteins[j] = net2->regulators[i].proteins[j];
+			if (net3->regulators[k].proteins[j] >= net3->species)
+				net3->regulators[k].proteins[j] = (int)(mtrand() * net3->species);
+			net3->regulators[k].Km[j] = net2->regulators[i].Km[j];
+			net3->regulators[k].Vmax[j] = net2->regulators[i].Vmax[j];
 		}
 	}
 	
@@ -192,33 +192,33 @@ void* mutateProteinInteractionNetwork(void * individual)
 
 	net = (ProteinInteractionNetwork*)individual;
 
-	n = (*net).species;
+	n = net->species;
 
 	i = (int)(mtrand() * n);  //pick random protein
 	r = mtrand();
 
 	if (r < MUTATE_REWIRE)   //mutate one of the regulators
 	{
-		j = (int)(mtrand() * (*net).regulators[i].size);
+		j = (int)(mtrand() * net->regulators[i].size);
 		if (mtrand() < MUTATE_REWIRE) //rewire
-			(*net).regulators[i].proteins[j] = (int)(mtrand() * (*net).species);
+			net->regulators[i].proteins[j] = (int)(mtrand() * net->species);
 	}
 	else
 	if (r < (MUTATE_REWIRE+MUTATE_CHANGE_PARAM)) //change parameter
 	{
-		j = (int)(mtrand() * (*net).regulators[i].size);
+		j = (int)(mtrand() * net->regulators[i].size);
 		
 		if (mtrand() < 0.5)
-			(*net).regulators[i].Km[j]  *= (mtrand() * 2.0);
+			net->regulators[i].Km[j]  *= (mtrand() * 2.0);
 		else
-			(*net).regulators[i].Vmax[j]  *= (mtrand() * 2.0);
+			net->regulators[i].Vmax[j]  *= (mtrand() * 2.0);
 		
 		return (void*)(net);
 	}
 	else
 	if (r < (MUTATE_REWIRE+MUTATE_CHANGE_PARAM+MUTATE_TOTAL_CONC))  //change total concentrations (conservation rule)
 	{
-		(*net).totals[i] *= (2.0 * mtrand());
+		net->totals[i] *= (2.0 * mtrand());
 		return (void*)(net);
 	}
 	else              //add or remove a new protein to the network
@@ -226,27 +226,27 @@ void* mutateProteinInteractionNetwork(void * individual)
 		if (mtrand() < 0.5 && n > 2)     //remove a protein
 		{
 			net2 = malloc(sizeof(ProteinInteractionNetwork));
-			(*net2).species = n-1;
-			(*net2).regulators = malloc( (n-1) * sizeof(Regulators) );
-			(*net2).totals = malloc( (n-1) * sizeof(double) );
-			(*net2).fixed = malloc( (n-1) * sizeof(int) );
+			net2->species = n-1;
+			net2->regulators = malloc( (n-1) * sizeof(Regulators) );
+			net2->totals = malloc( (n-1) * sizeof(double) );
+			net2->fixed = malloc( (n-1) * sizeof(int) );
 			
 			for (j=0,j2=0; j < n; ++j) //copy all proteins
 			{
 				if (j != i) //except protein i
 				{
-					(*net2).totals[j2] = (*net).totals[j];
-					(*net2).fixed[j2] = (*net).fixed[j];
-					m = (*net).regulators[j].size;
-					(*net2).regulators[j2].size = m;
-					(*net2).regulators[j2].proteins = malloc(m * sizeof(int));
-					(*net2).regulators[j2].Km = malloc(m * sizeof(double));
-					(*net2).regulators[j2].Vmax = malloc(m * sizeof(double));
+					net2->totals[j2] = net->totals[j];
+					net2->fixed[j2] = net->fixed[j];
+					m = net->regulators[j].size;
+					net2->regulators[j2].size = m;
+					net2->regulators[j2].proteins = malloc(m * sizeof(int));
+					net2->regulators[j2].Km = malloc(m * sizeof(double));
+					net2->regulators[j2].Vmax = malloc(m * sizeof(double));
 					for (k=0; k < m; ++k)  //copy values for each regulator
 					{
-						(*net2).regulators[j2].proteins[k] = (*net).regulators[j].proteins[k];
-						(*net2).regulators[j2].Km[k] = (*net).regulators[j].Km[k];
-						(*net2).regulators[j2].Vmax[k] = (*net).regulators[j].Vmax[k];
+						net2->regulators[j2].proteins[k] = net->regulators[j].proteins[k];
+						net2->regulators[j2].Km[k] = net->regulators[j].Km[k];
+						net2->regulators[j2].Vmax[k] = net->regulators[j].Vmax[k];
 					}
 					++j2;
 				}
@@ -258,42 +258,42 @@ void* mutateProteinInteractionNetwork(void * individual)
 		else	//add a protein
 		{
 			net2 = malloc(sizeof(ProteinInteractionNetwork));
-			(*net2).species = n+1;
-			(*net2).regulators = malloc( (n+1) * sizeof(Regulators) );
-			(*net2).totals = malloc( (n+1) * sizeof(double) );
-			(*net2).fixed = malloc( (n+1) * sizeof(int) );
+			net2->species = n+1;
+			net2->regulators = malloc( (n+1) * sizeof(Regulators) );
+			net2->totals = malloc( (n+1) * sizeof(double) );
+			net2->fixed = malloc( (n+1) * sizeof(int) );
 			
 			for (j=0; j < n; ++j) //copy all proteins
 			{
-				(*net2).totals[j] = (*net).totals[j];
-				(*net2).fixed[j] = (*net).fixed[j];
-				m = (*net).regulators[j].size;
-				(*net2).regulators[j].size = m;
-				(*net2).regulators[j].proteins = malloc(m * sizeof(int));
-				(*net2).regulators[j].Km = malloc(m * sizeof(double));
-				(*net2).regulators[j].Vmax = malloc(m * sizeof(double));
+				net2->totals[j] = net->totals[j];
+				net2->fixed[j] = net->fixed[j];
+				m = net->regulators[j].size;
+				net2->regulators[j].size = m;
+				net2->regulators[j].proteins = malloc(m * sizeof(int));
+				net2->regulators[j].Km = malloc(m * sizeof(double));
+				net2->regulators[j].Vmax = malloc(m * sizeof(double));
 				for (k=0; k < m; ++k)  //copy values for each regulator
 				{
-					(*net2).regulators[j].proteins[k] = (*net).regulators[j].proteins[k];
-					(*net2).regulators[j].Km[k] = (*net).regulators[j].Km[k];
-					(*net2).regulators[j].Vmax[k] = (*net).regulators[j].Vmax[k];
+					net2->regulators[j].proteins[k] = net->regulators[j].proteins[k];
+					net2->regulators[j].Km[k] = net->regulators[j].Km[k];
+					net2->regulators[j].Vmax[k] = net->regulators[j].Vmax[k];
 				}
 			}
 			
 			//the new protein
-			(*net2).totals[n] = (2.0 * mtrand()) * AVG_TOTAL;
-			m = (*net2).regulators[n].size = (int)(mtrand() * n * AVG_NUM_REGULATIONS);
-			(*net2).regulators[n].proteins = malloc(m * sizeof(int));
-			(*net2).regulators[n].Km = malloc(m * sizeof(double));
-			(*net2).regulators[n].Vmax = malloc(m * sizeof(double));
+			net2->totals[n] = (2.0 * mtrand()) * AVG_TOTAL;
+			m = net2->regulators[n].size = (int)(mtrand() * n * AVG_NUM_REGULATIONS);
+			net2->regulators[n].proteins = malloc(m * sizeof(int));
+			net2->regulators[n].Km = malloc(m * sizeof(double));
+			net2->regulators[n].Vmax = malloc(m * sizeof(double));
 			for (j=0; j < m; ++j)  //random values for the new protein
 			{
-				(*net2).regulators[n].proteins[j] = (int)(mtrand() * (*net2).species);
-				(*net2).regulators[n].Km[j] = mtrand() * KM_RANGE;
-				(*net2).regulators[n].Vmax[j] = mtrand() * VMAX_RANGE;
+				net2->regulators[n].proteins[j] = (int)(mtrand() * net2->species);
+				net2->regulators[n].Km[j] = mtrand() * KM_RANGE;
+				net2->regulators[n].Vmax[j] = mtrand() * VMAX_RANGE;
 				
 				if (mtrand() < 0.5)
-					(*net2).regulators[n].Vmax[j] *= -1.0;  //negative regulator
+					net2->regulators[n].Vmax[j] *= -1.0;  //negative regulator
 			}
 			
 			deleteProteinInteractionNetwork(net);
@@ -315,19 +315,19 @@ void ratesForProteinInteractionNetwork(double time,double* u,double* rate,void *
 	ProteinInteractionNetwork * net;
 	
 	net = (ProteinInteractionNetwork*)(individual);
-	n = (*net).species;
+	n = net->species;
 	
 	for (i=0; i < n; ++i)
 	{
-		tot = (*net).totals[i]; //total concentration of u[i]
+		tot = net->totals[i]; //total concentration of u[i]
 		forward = backward = 0;
 		rate[2*i] = 0;
 		rate[2*i+1] = 0;
-		for (j=0; j < (*net).regulators[i].size; ++j)
+		for (j=0; j < net->regulators[i].size; ++j)
 		{
-			vmax = (*net).regulators[i].Vmax[j]; //vmax for this regulation
-			km = (*net).regulators[i].Km[j];  //km for this regulation
-			p = (*net).regulators[i].proteins[j]; //index of regulating protein
+			vmax = net->regulators[i].Vmax[j]; //vmax for this regulation
+			km = net->regulators[i].Km[j];  //km for this regulation
+			p = net->regulators[i].proteins[j]; //index of regulating protein
 			if (vmax < 0) 
 			{
 				forward = 1;
@@ -355,14 +355,14 @@ double * stoichiometryForProteinInteractionNetwork(void * p)
 	ProteinInteractionNetwork * net;
 	
 	net = (ProteinInteractionNetwork*)(p);
-	n = (*net).species;
+	n = net->species;
 	N = malloc(n * 2 * n * sizeof(double));
 	for (i=0; i < (2*n*n); ++i)
 	{
 		N[i] = 0.0;
 	}
 	for (i=0; i < n; ++i)
-		if ((*net).fixed[i] == 0)
+		if (net->fixed[i] == 0)
 		{
 			getValue(N,(2*n),i,i*2) = -1.0;
 			getValue(N,(2*n),i,i*2+1) = 1.0;
@@ -377,12 +377,12 @@ void printProteinInteractionNetwork(void * individual)
 	ProteinInteractionNetwork * net;
 	
 	net = (ProteinInteractionNetwork*)(individual);
-	n = (*net).species;
+	n = net->species;
 	
 	fix = 0;
-	for (i=0; i < (*net).species; ++i)
+	for (i=0; i < net->species; ++i)
 	{
-		if ((*net).fixed[i])
+		if (net->fixed[i])
 		{
 			fix = i+1;
 			break;
@@ -392,9 +392,9 @@ void printProteinInteractionNetwork(void * individual)
 	if (fix)
 	{
 		printf("const s%i",fix);
-		for (i=0; i < (*net).species; ++i)
+		for (i=0; i < net->species; ++i)
 		{
-			if ((*net).fixed[i])			
+			if (net->fixed[i])			
 				printf(", s%i",i+1);			
 		}
 		printf("\n");
@@ -404,9 +404,9 @@ void printProteinInteractionNetwork(void * individual)
 	{
 		printf("$X -> s%i; ", i+1);
 		f = 0;
-		for (j=0; j < (*net).regulators[i].size; ++j)
+		for (j=0; j < net->regulators[i].size; ++j)
 		{
-			p = (*net).regulators[i].proteins[j]; //index of regulating protein
+			p = net->regulators[i].proteins[j]; //index of regulating protein
 			if (vmax > 0)
 				if (!f)
 				{
@@ -417,9 +417,9 @@ void printProteinInteractionNetwork(void * individual)
 					printf(" + %lf * s%i * (tot%i - s%i) / (km%i%i + (tot%i - s%i)) ",i+1,j+1,i+1,i+1,p+1,i+1,j+1,i+1,i+1);
 		}
 		
-		for (j=0; j < (*net).regulators[i].size; ++j)
+		for (j=0; j < net->regulators[i].size; ++j)
 		{
-			p = (*net).regulators[i].proteins[j]; //index of regulating protein
+			p = net->regulators[i].proteins[j]; //index of regulating protein
 			if (vmax < 0) 
 			{
 				printf(" - vmax%i%i * s%i * s%i / (km%i%i + s%i)",i+1,j+1,p+1,i+1,i+1,j+1,i+1);
@@ -437,13 +437,13 @@ void printProteinInteractionNetwork(void * individual)
 	
 	for (i=0; i < n; ++i)
 	{
-		tot = (*net).totals[i]; //total concentration of u[i]
+		tot = net->totals[i]; //total concentration of u[i]
 		printf("tot%i = %lf;\n",i,tot);
 		
-		for (j=0; j < (*net).regulators[i].size; ++j)
+		for (j=0; j < net->regulators[i].size; ++j)
 		{
-			vmax = (*net).regulators[i].Vmax[j]; //vmax for this regulation
-			km = (*net).regulators[i].Km[j];  //km for this regulation
+			vmax = net->regulators[i].Vmax[j]; //vmax for this regulation
+			km = net->regulators[i].Km[j];  //km for this regulation
 			if (vmax != 0)
 				printf("vmax%i%i = %lf;\n ",vmax,i+1,j+1,vmax);
 			if (km != 0)
@@ -471,29 +471,29 @@ GApopulation randomProteinInteractionNetworks(int num)
 		n = (int)(1 + s * 2.0 * mtrand());
 		net = malloc(sizeof(ProteinInteractionNetwork)); //new network
 	
-		(*net).species = n;    //number of proteins
-		(*net).fixed = malloc(n * sizeof(int));
+		net->species = n;    //number of proteins
+		net->fixed = malloc(n * sizeof(int));
 		
-		(*net).regulators = malloc(n * sizeof(Regulators));   //allocate space
-		(*net).totals = malloc(n * sizeof(double));
+		net->regulators = malloc(n * sizeof(Regulators));   //allocate space
+		net->totals = malloc(n * sizeof(double));
 		
 		for (j=0; j < n; ++j)   //random regulators for each protein
 		{
-			(*net).fixed[i] = 0; //no fixed species by default
-			(*net).totals[j] = 2.0*mtrand()*AVG_TOTAL;
+			net->fixed[i] = 0; //no fixed species by default
+			net->totals[j] = 2.0*mtrand()*AVG_TOTAL;
 			m = (int)(2 + mtrand() * n * AVG_NUM_REGULATIONS);
-			(*net).regulators[j].size = m;
-			(*net).regulators[j].proteins = malloc(m * sizeof(int));
-			(*net).regulators[j].Km = malloc(m * sizeof(double));
-			(*net).regulators[j].Vmax = malloc(m * sizeof(double));
+			net->regulators[j].size = m;
+			net->regulators[j].proteins = malloc(m * sizeof(int));
+			net->regulators[j].Km = malloc(m * sizeof(double));
+			net->regulators[j].Vmax = malloc(m * sizeof(double));
 			for (k=0; k < m; ++k)  //random values for the new protein
 			{
-				(*net).regulators[j].proteins[k] = (int)(mtrand() * (*net).species);
-				(*net).regulators[j].Km[k] = mtrand() * KM_RANGE;
-				(*net).regulators[j].Vmax[k] = mtrand() * VMAX_RANGE;
+				net->regulators[j].proteins[k] = (int)(mtrand() * net->species);
+				net->regulators[j].Km[k] = mtrand() * KM_RANGE;
+				net->regulators[j].Vmax[k] = mtrand() * VMAX_RANGE;
 				
 				if (mtrand() < 0.5 || k == (m-1))
-					(*net).regulators[j].Vmax[k] *= -1.0;  //negative regulator
+					net->regulators[j].Vmax[k] *= -1.0;  //negative regulator
 			}
 		}
 		
