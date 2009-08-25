@@ -9,11 +9,9 @@
 	Build the cvode library first by compiling all the source files in cvode_src and 
 	using ar *.o -o libcvode.a
 	
-	use one of the following to compile:
+	use the following to compile:
 	
-	gcc mtrand.c ga.c cvodesim.c ssa.c mass_action_network.c ga_reduceNoise.c -lm -lcvode
-	gcc mtrand.c ga.c cvodesim.c ssa.c protein_network.c ga_reduceNoise.c -lm -lcvode
-	gcc mtrand.c ga.c cvodesim.c ssa.c genetic_network.c ga_reduceNoise.c -lm -lcvode
+	gcc mtrand.c ga.c cvodesim.c ssa.c reactionNetwork.c ga_reduceNoise.c -lm -lcvode
 	
 	Uncomment one of the following pairs:
 ****************************************************/
