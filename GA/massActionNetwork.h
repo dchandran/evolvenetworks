@@ -42,6 +42,7 @@ typedef struct
 	double * k;  //rate constant for each reaction
 	int reactions;    //number of reactions;
 	int species;    //number of species;
+	int * fixed;  //array of size=species. 1= ith species is fixed
 } 
 MassActionNetwork;
 

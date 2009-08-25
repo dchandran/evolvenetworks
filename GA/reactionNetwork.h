@@ -59,6 +59,14 @@ ReactionNetwork;
  \ingroup genericNetwork
 */
 void printNetwork(ReactionNetwork *);
+/*! \brief print the reaction network to a file. 
+    This function simply calls the print functions of one 
+	of the individual networks.
+ \param ReactionNetwork network
+ \param char* file name
+ \ingroup genericNetwork
+*/
+void printNetworkToFile(ReactionNetwork *, char * filename);
 /*! \brief get the number of variables (e.g. genes, molecular species, etc.) in the network.
     This is equal to the number of rows in the stoichiometry matrix
  \param ReactionNetwork network
@@ -231,3 +239,24 @@ GAindividual mutateNetwork(GAindividual);
 	\ingroup genericNetwork
 */
 GAindividual crossoverNetwork(GAindividual, GAindividual);
+
+/***********************************************************
+  @name Premade fitness functions
+************************************************************/
+
+/*! \brief compares the steady state values of the network to an input/output table provided. 
+           Sets the first n input species as fixed species, and compares the output
+		   again each of the other species.
+		   returns the fitness value 1/(1 + sum_of_square_differences), where
+		   sum_of_square_differences is the sum of square differences between the desired
+		   outputs and the best matching species in the network.
+	\param GAindividual must be a ReactionNetwork* casted as GAindividual
+	\param double** input/output table. 
+			Number of inputs + number of outputs <= number of species in network.
+	\param int number of rows in the input table
+	\param int number of input columns (first set of columns)
+	\param int number of output columns (last set of columns)
+	\return double fitness score = 1/(1 + sum_of_square_differences)
+	\ingroup genericNetwork
+*/
+double compareSteadyStates(GAindividual, double **, int , int, int);

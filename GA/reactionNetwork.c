@@ -226,6 +226,9 @@ double * simulateNetworkODE( ReactionNetwork * r, double* iv, double time, doubl
 	double * N, * y;
 	int species = 0, reactions = 0;
 	void * p = 0;
+	MassActionNetwork * net1;
+	ProteinInteractionNetwork * net2;
+	GeneRegulationNetwork * net3;
 
 	if (!r) return 0;
 
@@ -237,26 +240,26 @@ double * simulateNetworkODE( ReactionNetwork * r, double* iv, double time, doubl
 
 	if ((*r).type == MASS_ACTION_NETWORK_INDEX)
 	{	
-		MassActionNetwork * net = (MassActionNetwork*)((*r).network);
-		species = (*net).species;
-		reactions = (*net).reactions;
-		p = net;
+		net1 = (MassActionNetwork*)((*r).network);
+		species = (*net1).species;
+		reactions = (*net1).reactions;
+		p = net1;
 	}
 
 	if ((*r).type == PROTEIN_INTERACTION_NETWORK_INDEX)
 	{
-		ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)((*r).network);
-		species = (*net).species;
-		reactions = 2 * (*net).species;
-		p = net;
+		net2 = (ProteinInteractionNetwork*)((*r).network);
+		species = (*net2).species;
+		reactions = 2 * (*net2).species;
+		p = net2;
 	}
 
 	if ((*r).type == GENE_REGULATION_NETWORK_INDEX)
 	{
-		GeneRegulationNetwork * net = (GeneRegulationNetwork*)((*r).network);
-		species = (*net).species;
-		reactions = 2 * (*net).species;
-		p = net;
+		net3 = (GeneRegulationNetwork*)((*r).network);
+		species = (*net3).species;
+		reactions = 2 * (*net3).species;
+		p = net3;
 	}
 
 	y = ODEsim2(species, reactions,	N, rate, iv, 0, time, dt, p);
@@ -272,6 +275,9 @@ double * networkSteadyState( ReactionNetwork * r, double* iv)
 	double * N = stoic((*r).network);
 	PropensityFunction rate = rateFunctions[(*r).type];
 	double * y = 0;
+	MassActionNetwork * net1;
+	ProteinInteractionNetwork * net2;
+	GeneRegulationNetwork * net3;
 
 	void * p = 0;
 
@@ -281,26 +287,26 @@ double * networkSteadyState( ReactionNetwork * r, double* iv)
 
 	if ((*r).type == MASS_ACTION_NETWORK_INDEX)
 	{
-		MassActionNetwork * net = (MassActionNetwork*)((*r).network);
-		species = (*net).species;
-		reactions = (*net).reactions;
-		p = net;
+		net1 = (MassActionNetwork*)((*r).network);
+		species = (*net1).species;
+		reactions = (*net1).reactions;
+		p = net1;
 	}
 
 	if ((*r).type == PROTEIN_INTERACTION_NETWORK_INDEX)
 	{
-		ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)((*r).network);
-		species = (*net).species;
-		reactions = 2 * (*net).species;
-		p = net;
+		net2 = (ProteinInteractionNetwork*)((*r).network);
+		species = (*net2).species;
+		reactions = 2 * (*net2).species;
+		p = net2;
 	}
 
 	if ((*r).type == GENE_REGULATION_NETWORK_INDEX)
 	{
-		GeneRegulationNetwork * net = (GeneRegulationNetwork*)((*r).network);
-		species = (*net).species;
-		reactions = 2 * (*net).species;
-		p = net;
+		net3 = (GeneRegulationNetwork*)((*r).network);
+		species = (*net3).species;
+		reactions = 2 * (*net3).species;
+		p = net3;
 	}
 
 	y = steadyState2(species, reactions, N, rate, iv, p, 1.0E-3,10000.0,0.1);
@@ -316,31 +322,34 @@ double * simulateNetworkStochastically( ReactionNetwork * r, double* iv, double 
 	double * y = 0;
 	int species = 0, reactions = 0;
 	void * p = 0;
+	MassActionNetwork * net1;
+	ProteinInteractionNetwork * net2;
+	GeneRegulationNetwork * net3;
 
 	if (!r) return 0;
 
 	if ((*r).type == MASS_ACTION_NETWORK_INDEX)
 	{	
-		MassActionNetwork * net = (MassActionNetwork*)((*r).network);
-		species = (*net).species;
-		reactions = (*net).reactions;
-		p = net;
+		net1 = (MassActionNetwork*)((*r).network);
+		species = (*net1).species;
+		reactions = (*net1).reactions;
+		p = net1;
 	}
 
 	if ((*r).type == PROTEIN_INTERACTION_NETWORK_INDEX)
 	{
-		ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)((*r).network);
-		species = (*net).species;
-		reactions = 2 * (*net).species;
-		p = net;
+		net2 = (ProteinInteractionNetwork*)((*r).network);
+		species = (*net2).species;
+		reactions = 2 * (*net2).species;
+		p = net2;
 	}
 
 	if ((*r).type == GENE_REGULATION_NETWORK_INDEX)
 	{
-		GeneRegulationNetwork * net = (GeneRegulationNetwork*)((*r).network);
-		species = (*net).species;
-		reactions = 2 * (*net).species;
-		p = net;
+		net3 = (GeneRegulationNetwork*)((*r).network);
+		species = (*net3).species;
+		reactions = 2 * (*net3).species;
+		p = net3;
 	}
 
 	y = SSA(species, reactions,	N, rate, iv, 0, time, 1.0E5, sz, p);
@@ -367,48 +376,69 @@ void printNetwork(ReactionNetwork * r)
 	}
 }
 
+void printNetworkToFile(ReactionNetwork * r, char * filename)
+{
+	FILE *stream ;
+	if ((stream = freopen(filename, "w", stdout)) == 0)
+		return;
+
+	printNetwork(r);
+	
+	fclose(stream);
+}
+
 int getNumSpecies(ReactionNetwork * r)
 {
+	MassActionNetwork * net1;
+	ProteinInteractionNetwork * net2;
+	GeneRegulationNetwork * net3;
+	
 	if (!r) return 0;
+
 	if ((*r).type == MASS_ACTION_NETWORK_INDEX)
 	{	
-		MassActionNetwork * net = (MassActionNetwork*)((*r).network);
-		return (*net).species;
+		net1 = (MassActionNetwork*)((*r).network);
+		return (*net1).species;
 	}
 
 	if ((*r).type == PROTEIN_INTERACTION_NETWORK_INDEX)
 	{
-		ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)((*r).network);
-		return (*net).species;
+		net2 = (ProteinInteractionNetwork*)((*r).network);
+		return (*net2).species;
 	}
 
 	if ((*r).type == GENE_REGULATION_NETWORK_INDEX)
 	{
-		GeneRegulationNetwork * net = (GeneRegulationNetwork*)((*r).network);
-		return  (*net).species;
+		net3 = (GeneRegulationNetwork*)((*r).network);
+		return  (*net3).species;
 	}
 	return 0;
 }
 
 int getNumReactions(ReactionNetwork * r)
 {
+	MassActionNetwork * net1;
+	ProteinInteractionNetwork * net2;
+	GeneRegulationNetwork * net3;
+	
 	if (!r) return 0;
+	
 	if ((*r).type == MASS_ACTION_NETWORK_INDEX)
 	{	
-		MassActionNetwork * net = (MassActionNetwork*)((*r).network);
-		return (*net).reactions;
+		net1 = (MassActionNetwork*)((*r).network);
+		return (*net1).reactions;
 	}
 
 	if ((*r).type == PROTEIN_INTERACTION_NETWORK_INDEX)
 	{
-		ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)((*r).network);
-		return (2 * (*net).species);
+		net2 = (ProteinInteractionNetwork*)((*r).network);
+		return (2 * (*net2).species);
 	}
 
 	if ((*r).type == GENE_REGULATION_NETWORK_INDEX)
 	{
-		GeneRegulationNetwork * net = (GeneRegulationNetwork*)((*r).network);
-		return (2 * (*net).species);
+		net3 = (GeneRegulationNetwork*)((*r).network);
+		return (2 * (*net3).species);
 	}
 	return 0;
 }
@@ -521,4 +551,115 @@ GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GACallbackFnc callbackF
 
 	P = GArun(P,sz0,sz1,maxIter,callbackFunc);
 	return P;
+}
+
+double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs, int outputs)
+{
+	int i, j, k, l, m, cols, n, * fixed;
+	double * ss, * iv, closest, temp, sumOfSq;
+	ReactionNetwork * r = (ReactionNetwork*)(p);
+	MassActionNetwork * net1;
+	ProteinInteractionNetwork * net2;
+	GeneRegulationNetwork * net3;
+	
+	cols = inputs + outputs;
+	
+	n = getNumSpecies(r);
+	
+	if (n < cols) return 0.0; // not enough species
+	
+	fixed = malloc(inputs * sizeof(int));  //save network's fixed array
+	
+	if ((*r).type == MASS_ACTION_NETWORK_INDEX)
+	{
+		net1 = (MassActionNetwork*)((*r).network);
+		for (i=0; i < inputs; ++i)
+			fixed[i] = (*net1).fixed[i];
+	}
+
+	if ((*r).type == PROTEIN_INTERACTION_NETWORK_INDEX)
+	{
+		net2 = (ProteinInteractionNetwork*)((*r).network);
+		for (i=0; i < inputs; ++i)
+			fixed[i] = (*net2).fixed[i];
+	}
+
+	if ((*r).type == GENE_REGULATION_NETWORK_INDEX)
+	{
+		net3 = (GeneRegulationNetwork*)((*r).network);
+		for (i=0; i < inputs; ++i)
+			fixed[i] = (*net3).fixed[i];
+	}
+	
+	sumOfSq = 0.0;
+	iv = malloc( n * sizeof(double) );
+	
+	for (m=0; m < rows; ++m)
+	{	
+		for (i=0; i < inputs; ++i)
+			iv[i] = table[m][i];
+		
+		for (i=inputs; i < n; ++i)
+			iv[i] = 0.0;
+		
+		ss = networkSteadyState(r,iv);
+		
+		if (ss) //error in simulation?
+		{			
+			for (i=0; i < outputs; ++i) //for each target output
+			{
+				closest = -1.0;
+				
+				for (j=inputs; j < n; ++j) //find best match
+				{
+					temp = (ss[j] - table[m][inputs+i]);
+					if ((closest < 0.0) || ((temp*temp) < closest))
+						closest = temp*temp;
+				}
+				
+				sumOfSq += closest;
+				
+				if (closest < 0.0)
+				{
+					sumOfSq = -1.0;
+					break;
+				}
+			}
+			
+			free(ss);		
+		}
+		else
+		{
+			sumOfSq = -1.0;
+		}
+	}
+	
+	free(iv);
+	
+	//restore the fixed
+	if ((*r).type == MASS_ACTION_NETWORK_INDEX)
+	{
+		net1 = (MassActionNetwork*)((*r).network);
+		for (i=0; i < inputs; ++i)
+			(*net1).fixed[i] = fixed[i];
+	}
+
+	if ((*r).type == PROTEIN_INTERACTION_NETWORK_INDEX)
+	{
+		net2 = (ProteinInteractionNetwork*)((*r).network);
+		for (i=0; i < inputs; ++i)
+			(*net2).fixed[i] = fixed[i];
+	}
+
+	if ((*r).type == GENE_REGULATION_NETWORK_INDEX)
+	{
+		net3 = (GeneRegulationNetwork*)((*r).network);
+		for (i=0; i < inputs; ++i)
+			(*net3).fixed[i] = fixed[i];
+	}
+	free(fixed);
+	
+	if (sumOfSq < 0.0) return 0.0;
+	
+	return (1.0 / (1.0 + sumOfSq));
 }

@@ -192,6 +192,9 @@ TARGET_LINK_LIBRARIES( evolveOscillator netga )
 ADD_EXECUTABLE( evolveNoiseDamper ${NETWORKEVOLUTION_SOURCE_DIR}/examples/ga_reduceNoise.c )
 TARGET_LINK_LIBRARIES( evolveNoiseDamper netga )
 
+ADD_EXECUTABLE( evolveXOR ${NETWORKEVOLUTION_SOURCE_DIR}/examples/ga_logicGate.c )
+TARGET_LINK_LIBRARIES( evolveXOR netga )
+
 # Not related to GA
 
 ADD_EXECUTABLE( findLoops ${NETWORKEVOLUTION_SOURCE_DIR}/loops/test_loops.c )

@@ -1,14 +1,15 @@
 /****************************************************
     This file uses either one of the three network types
 	included in the network evolution library to 
-	evolve an oscillator.
+	evolve a logic gate. Demonstrates the use of a predefined fitness function called
+	compareSteadyStates
 	
 	Build the cvode library first by compiling all the source files in cvode_src and 
 	using ar *.o -o libcvode.a
 	
 	use the following to compile:
 	
-	gcc mtrand.c ga.c cvodesim.c ssa.c reactionNetwork.c ga_oscillator.c -lm -lcvode
+	gcc mtrand.c ga.c cvodesim.c ssa.c reactionNetwork.c ga_logicGate.c -lm -lcvode
 	
 	Uncomment one of the following pairs:
 ****************************************************/
@@ -16,6 +17,8 @@
 #include "reactionNetwork.h"
 
 /****************************************************/
+
+double ** XORtable(); //make XOR table
 
 /* fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(GAindividual p);
@@ -33,11 +36,9 @@ int main()
 	
 	setFitnessFunction( &fitness );  //set the fitness function	
 	
-	//setNetworkType( MASS_ACTION_NETWORK );  //use this network type
-	setNetworkType( PROTEIN_INTERACTION_NETWORK );  //use this network type
-	//setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
+	setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
 	
-	setInitialNetworkSize(6,3);  //network size
+	setInitialNetworkSize(3,2);  //network size
 	
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
 	pop = evolveNetworks(1000,200,30,&callback);  
@@ -47,8 +48,7 @@ int main()
 	printNetwork(net); //print the best network
 	
 	/******simulate the best network and write the result to a file************/
-	
-	
+		
 	N = getNumSpecies(net);    //number of variables in the network
 	iv = malloc( N * sizeof(double));  
 	for (i = 0; i < N; ++i) iv[i] = 0.0; //initial values
@@ -63,55 +63,36 @@ int main()
 	/****** free all the networks returned by the genetic algorithm ************/
 	for (i=0; i < 50; ++i)
 		deleteNetwork(pop[i]);
-		
+
 	
 	return 0; //done
 }
 
 
+
 /* fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(GAindividual p)
 {
-	int i, N;
-	double * y, * iv, time, f, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0;
-	ReactionNetwork * net = (ReactionNetwork*)p;  //get the network
+	int i,j, num_rows, num_inputs, num_outputs;
+	double score;
 	
-	N = getNumSpecies(net);
+	double ** table = XORtable();
 	
-	iv = malloc( N * sizeof(double));  //initial concentrations
-	for (i = 0; i < N; ++i) iv[i] = 0.0;
-
-	time = 500.0;
-
-	y = simulateNetworkODE(net,iv,time,1);  //simulate
-	free(iv);
-
-	f = 0;   //calculate correlation to sine wave
-	if (y != 0)
+	num_rows = 4;
+	num_inputs = 2;
+	num_outputs = 1;
+	
+	score = compareSteadyStates(p, table, num_rows, num_inputs, num_outputs);
+	
+	//free table
+	for (i=0; i < 4; ++i)
 	{
-		mXY = mX = mY = mX2 = mY2 = 0;
-		
-		for (i = 0; i < time; ++i)
-		{
-			mX += getValue(y,N+1,i,1);
-			mY += sin(i/4.0);
-			mXY += sin(i/4.0) * getValue(y,N+1,i,1);
-			mX2 += getValue(y,N+1,i,1)*getValue(y,N+1,i,1);
-			mY2 += sin(i/4.0)*sin(i/4.0);
-		}
-		mX /= time;
-		mY /= time;
-		mXY /= time;
-		mX2 /= time;
-		mY2 /= time;
-
-		f = ( (mXY - mX*mY)/( 0.01 + sqrt(mX2 - mX*mX)*sqrt(mY2 - mY*mY)) );   //correlation formula
-		if (f < 0) f = -f; //negative correlation is just as good as positive (for oscillations)
-		free(y);
+		free(table[i]);
 	}
-	if(getNumSpecies(net) > 30)        //disallow large networks
-	  return (0);
-	return (f);
+	
+	free(table);
+	
+	return score;
 }
 
 /* print the number of each generation and the fitness of the best network */
@@ -121,16 +102,32 @@ int callback(int iter,GApopulation pop,int popSz)
 	double f = fitness(pop[0]);
 	
 	printf("%i\t%lf\n",iter,f);
-	if (iter > 50 && f < 0.5)
-	{
-		for (i=1; i < popSz; ++i)
-		{
-			for (j=0; j < 10; ++j)
-				pop[i] = mutateNetwork(pop[i]);
-		}
-	}
 	
-	if (f >= 0.5) return 1;  //stop
+	if (f >= 0.9) return 1;  //stop if good enough
 	
 	return 0;
+}
+
+double** XORtable() //make XOR table
+{
+	int i,j;
+	//XOR logic
+	double XOR[][3] =
+	{
+	   {  0.1,  0.1,  0.0 },  //input = low low,   output = low
+	   {  0.1, 10.0, 10.0 },  //input = low high,  output = high
+	   { 10.0,  0.1, 10.0 },  //input = high low,  output = high
+	   { 10.0, 10.0,  0.0 },  //input = high high, output = low
+	};
+	
+	double ** table = malloc( 4 * sizeof(double*) );
+	
+	for (i=0; i < 4; ++i)
+	{
+		table[i] = malloc( 3 * sizeof(double) );
+		for (j=0; j < 3; ++j)
+			table[i][j] = XOR[i][j];
+	}
+	
+	return table;
 }

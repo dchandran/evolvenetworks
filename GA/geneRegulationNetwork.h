@@ -54,6 +54,8 @@ typedef struct
 	
 	double * Vmax; //the Vmax for each protein
 	double * degradation; //degradation rate for each protein
+	
+	int * fixed;  //array of size=species. 1= ith species is fixed
 } 
 GeneRegulationNetwork;
 

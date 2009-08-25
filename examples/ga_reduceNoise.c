@@ -1,5 +1,3 @@
-#include "ga.h"
-
 /****************************************************
 This file uses either one of the three network types
 included in the network evolution library to 
@@ -21,7 +19,7 @@ Uncomment one of the following pairs:
 /****************************************************/
 
 /* fitness that calculates the coefficient of variation (CV) */
-double fitness(void * p);
+double fitness(GAindividual p);
 
 /* print the generation number and fitness of best network during each iteration */
 int callback(int iter,GApopulation pop,int popSz);
@@ -68,7 +66,7 @@ int main()
 }
 
 /* fitness that calculates the coefficient of variation (CV) */
-double fitness(void * p)
+double fitness(GAindividual p)
 {
 	int i,r,n,sz;
 	double f, sd, dt, time, * iv, * y, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0;

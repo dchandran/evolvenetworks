@@ -56,6 +56,7 @@ typedef struct
 	int species;
 	double * totals; //the total concentration of each protein
 	Regulators * regulators; //the set of regulators for each protein
+	int * fixed;  //array of size=species. 1= ith species is fixed
 } 
 ProteinInteractionNetwork;
 

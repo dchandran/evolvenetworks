@@ -56,6 +56,7 @@ void deleteMassActionNetwork(void * individual)
 	if ((*net).p1) free((*net).p1);
 	if ((*net).p2) free((*net).p2);
 	if ((*net).k) free((*net).k);
+	if ((*net).fixed) free((*net).fixed);
 }
 
 void* cloneMassActionNetwork(void * individual)
@@ -78,6 +79,12 @@ void* cloneMassActionNetwork(void * individual)
 	(*net2).r2 = malloc(m * sizeof(int));
 	(*net2).p1 = malloc(m * sizeof(int));
 	(*net2).p2 = malloc(m * sizeof(int));
+	(*net2).fixed = malloc(n * sizeof(int));
+	
+	for (i=0; i < n; ++i)   //copy values
+	{
+		(*net2).fixed[i] = (*net).fixed[i];
+	}
 	
 	for (i=0; i < m; ++i)   //copy values
 	{
@@ -143,6 +150,11 @@ void* crossoverMassActionNetwork(void * individualA, void * individualB)
 	}
 	
 	(*net3).species = m + 1;
+	
+	(*net3).fixed = malloc( (m + 1)*sizeof(int) );
+	for (i=0; i < (m+1); ++i)
+		(*net3).fixed[i] = 0;
+	
 	return (void*)(net3);
 }
 
@@ -282,25 +294,53 @@ double * stoichiometryForMassActionNetwork(void * p)
 		for (j=0; j < (*net).species; ++j)
 			getValue(N,n,j,i) = 0;
 		
-		if ((*net).r1[i] >= 0) getValue(N,n,(*net).r1[i],i) = -1;
-		if ((*net).r2[i] >= 0) getValue(N,n,(*net).r2[i],i) = -1;
-		if ((*net).p1[i] >= 0) getValue(N,n,(*net).p1[i],i) = 1;
-		if ((*net).p2[i] >= 0) getValue(N,n,(*net).p2[i],i) = 1;
+		if (((*net).r1[i] >= 0) && (((*net).fixed[ (*net).r1[i] ]) == 0)) 
+			getValue(N,n,(*net).r1[i],i) = -1;
+			
+		if (((*net).r2[i] >= 0) && (((*net).fixed[ (*net).r2[i] ]) == 0)) 
+			getValue(N,n,(*net).r2[i],i) = -1;
+			
+		if (((*net).p1[i] >= 0) && (((*net).fixed[ (*net).p1[i] ]) == 0)) 
+			getValue(N,n,(*net).p1[i],i) = 1;
+		
+		if (((*net).p2[i] >= 0) && (((*net).fixed[ (*net).p2[i] ]) == 0)) 
+			getValue(N,n,(*net).p2[i],i) = 1;
 	}
 	return N;
 }
 
 void printMassActionNetwork(void * individual)
 {
-	int i,j,k;
+	int i,j,k,fix;
 	MassActionNetwork * net;
 	
 	if (!individual) return;
 	net = (MassActionNetwork*)individual;
 	
+	fix = 0;
+	for (i=0; i < (*net).species; ++i)
+	{
+		if ((*net).fixed[i])
+		{
+			fix = i+1;
+			break;
+		}
+	}
+	
+	if (fix)
+	{
+		printf("const s%i",fix);
+		for (i=0; i < (*net).species; ++i)
+		{
+			if ((*net).fixed[i])			
+				printf(", s%i",i+1);			
+		}
+		printf("\n");
+	}
+	
 	for (i=0; i < (*net).reactions; ++i)
 	{
-		printf("%i + %i -> %i + %i;\t%lf\n",(*net).r1[i]+1,(*net).r2[i]+1,(*net).p1[i]+1,(*net).p2[i]+1,(*net).k[i]);
+		printf("s%i + s%i -> s%i + s%i;\t%lf * s%i * s%i;\n",(*net).r1[i]+1,(*net).r2[i]+1,(*net).p1[i]+1,(*net).p2[i]+1,(*net).k[i],(*net).r1[i]+1,(*net).r2[i]+1);
 	}
 }
 
@@ -346,12 +386,17 @@ GApopulation randomMassActionNetworks(int num)
 
 MassActionNetwork * newMassActionNetwork(int s,int r)
 {
+	int i;
 	MassActionNetwork * net;
 
 	net = malloc(sizeof(MassActionNetwork));
 	(*net).species = s;
 	(*net).reactions = r;
-		
+	
+	(*net).fixed = malloc(s * sizeof(int));
+	for (i=0; i < s; ++i)
+		(*net).fixed[i] = 0; //no fixed species by default
+	
 	(*net).k = malloc((*net).reactions * sizeof(double));
 	(*net).r1 = malloc((*net).reactions * sizeof(int));
 	(*net).r2 = malloc((*net).reactions * sizeof(int));
@@ -388,3 +433,49 @@ int main()  //just for testing
 	}
 }
 */
+
+/*
+char* printMassActionNetwork(void * individual)
+{
+	int i,j,k,sz1, sz2;
+	char * string, * s;
+	char temp[500];
+	MassActionNetwork * net;
+	
+	if (!individual) return;
+	net = (MassActionNetwork*)individual;
+	
+	sz1 = 100*(*net).reactions; //upper bound for size of string first
+	
+	string = (char*)malloc(sz1*sizeof(char));
+	
+	sz2 = 0;
+	k = 0;
+	for (i=0; i < (*net).reactions; ++i)
+	{
+		sprintf(temp, "s%i + s%i -> s%i + s%i;\t%0.3%lf*s%i*s%i;\n\0",(*net).r1[i]+1,(*net).r2[i]+1,(*net).p1[i]+1,(*net).p2[i]+1,(*net).k[i],(*net).r1[i]+1,(*net).r2[i]+1);
+		j = 0;
+		while (temp[j] != 0) ++k;
+		
+		if ((sz2+k) > sz1)
+		{
+			s = string;
+			string = malloc((sz2+k)*2*sizeof(char));
+			sz1 = (sz2+k)*2;
+			for (j=0; j < sz2; ++j)
+			{
+				string[j] = s[j];
+			}
+			free(s);
+		}
+		
+		for (j=0; j < k; ++j)
+		{
+			string[j+sz2] = temp[j];
+		}
+		
+		sz2 += k;
+	}
+	
+	return string;
+}*/
