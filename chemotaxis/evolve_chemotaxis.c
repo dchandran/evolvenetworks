@@ -38,10 +38,11 @@ double gaussian(double x0, double y0, double x, double y)
 //ODE function for simulating chemotaxis
 void chemotaxisODE(double time,double* u,double* du,void * p)
 {
-	int i,j,h;
+	int i,j;
 	double angle, * rates, * N;
 	int numReactions, numVars;
 	chemotaxis_network * net;
+	ReactionNetwork * rnet;
 	
 	net = (chemotaxis_network*)p;
 	u[FOOD] = MAX*gaussian(X0,Y0,(*net).x,(*net).y);  //update food
@@ -92,7 +93,7 @@ void chemotaxisODE(double time,double* u,double* du,void * p)
 	
 	//use rates and stoichiometry functions from the network evolution  library
 	
-	ReactionNetwork * rnet = (*net).network;
+	rnet = (*net).network;
 	
 	numReactions = getNumReactions(rnet);
 	numVars = getNumSpecies(rnet);
@@ -214,7 +215,7 @@ double fitness(void * p)
 		for (i=0; i < n; ++i)
 			init[i] = 0.0;
 		
-		sz = TIME * 10;
+		sz = (int)(TIME * 10);
 		
 		y = 0;
 		//if (STOCHASTIC)
@@ -266,12 +267,15 @@ int callback(int iter,GApopulation pop,int popSz)
 
 int main(int args, char ** argv)
 {
+	int numspecs , numreacs ;
 	char * outfile = "out.tab";
 	double * N = 0, * J = 0, * init, *y, * p;
 	int sz, initsz = 1000, iter = 30, i,j,n,r;
 	ReactionNetwork * rnet;
 	LoopsInformation info;
-	
+	GApopulation pop;
+	chemotaxis_network cnet;
+
 	//parameters used in simulating chemotaxis
 	TIME = 500;
 	FOUT = 0;
@@ -297,7 +301,8 @@ int main(int args, char ** argv)
 	if (args > 3)
 		initsz = atoi(argv[3]);
 	
-	int numspecs = 5, numreacs = 2;
+	numspecs = 5;
+	numreacs = 2;
 	
 	if (args > 5)
 	{
@@ -343,7 +348,7 @@ int main(int args, char ** argv)
 	
 	setInitialNetworkSize(numspecs, numreacs);
 	
-	GApopulation pop = evolveNetworks(initsz,initsz/2,iter, &callback);
+	pop = evolveNetworks(initsz,initsz/2,iter, &callback);
 	
 	//pop = GArun(pop,initsz,initsz/2,iter, &callback);
 	
@@ -354,7 +359,6 @@ int main(int args, char ** argv)
 	
 	FOUT = fopen(outfile,"w");
 	
-	chemotaxis_network cnet;
 	rnet = (ReactionNetwork*)(pop[0]);
 	
 	n = getNumSpecies(rnet);

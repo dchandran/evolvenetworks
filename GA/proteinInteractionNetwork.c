@@ -111,8 +111,8 @@ void* cloneProteinInteractionNetwork(void * individual)
 
 void* crossoverProteinInteractionNetwork(void * individualA, void * individualB)
 {
-	int i, j, k, i1, i2, n, m;
-	ProteinInteractionNetwork * net1, * net2;
+	int i, j, k, i1, i2, n;
+	ProteinInteractionNetwork * net1, * net2, * net3;
 	
 	if (mtrand() > CROSSOVER_PROB) return mutateProteinInteractionNetwork(cloneProteinInteractionNetwork(individualA)); 
 	
@@ -130,7 +130,7 @@ void* crossoverProteinInteractionNetwork(void * individualA, void * individualB)
 	
 	n = i1 + (*net2).species - i2;
 	
-	ProteinInteractionNetwork * net3 = malloc(sizeof(ProteinInteractionNetwork));  //child network
+	net3 = malloc(sizeof(ProteinInteractionNetwork));  //child network
 	(*net3).species = n;
 	(*net3).regulators = malloc(n * sizeof(Regulators));
 	(*net3).totals = malloc(n * sizeof(double));
@@ -298,7 +298,7 @@ void* mutateProteinInteractionNetwork(void * individual)
 void ratesForProteinInteractionNetwork(double time,double* u,double* rate,void * individual)
 {
 	int i,j,n,p,forward, backward;
-	double km,vmax,tot,f;
+	double km,vmax,tot;
 	ProteinInteractionNetwork * net;
 	
 	net = (ProteinInteractionNetwork*)(individual);
@@ -337,7 +337,7 @@ void ratesForProteinInteractionNetwork(double time,double* u,double* rate,void *
 
 double * stoichiometryForProteinInteractionNetwork(void * p)
 {
-	int i,j,n;
+	int i,n;
 	double * N;
 	ProteinInteractionNetwork * net;
 	

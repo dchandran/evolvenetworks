@@ -67,10 +67,12 @@ static int isBad(Parameters * p)
 static void setBad(Parameters * p)
 {
    int i=0, k = 0;
+   Parameters ** temp;
+
    if (BAD_PARAMS)
    {  
       while (BAD_PARAMS[k]) ++k;
-      Parameters ** temp = BAD_PARAMS;
+      temp = BAD_PARAMS;
       BAD_PARAMS = malloc( (k+1) * sizeof(Parameters*) );
       for (i=0; i < k; ++i)
           BAD_PARAMS[i] = temp[i];
@@ -216,11 +218,11 @@ static double * findZeros(Parameters * p, double * x, double * fopt)
 
 double fitness(void * individual)
 {
-   int i,j, allPos, N;
+   int i, allPos, N;
    double * ss0, * ss1, * ss2, fmin, score;
    Parameters * p = (Parameters*)individual;
    
-   allPos = 1.0;
+   allPos = 1;
    N = (*p).numVars;
 
    for (i=0; i < (*p).numVars; ++i)
@@ -555,6 +557,7 @@ BistablePoint makeBistable(int n, int p,double* iv, int maxIter, int popSz, void
    int popsz1, i;
    BistablePoint ans;
    Parameters * param;
+   GApopulation pop;
    
    _U0 = malloc( n * sizeof(double));
    _U = malloc( n * sizeof(double));
@@ -563,7 +566,7 @@ BistablePoint makeBistable(int n, int p,double* iv, int maxIter, int popSz, void
    INIT_VALUE = iv;
 
    GAinit(&deleteGAindividual,&clone,&fitness,&crossover,&mutate,0);
-   GApopulation pop = GArun((void**)initGApopulation(popSz,n,p),popSz,popsz1,maxIter,&callbackf);
+   pop = GArun((void**)initGApopulation(popSz,n,p),popSz,popsz1,maxIter,&callbackf);
    
    param = pop[0];
  

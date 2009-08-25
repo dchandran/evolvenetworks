@@ -50,11 +50,12 @@ typedef struct
 static int f(realtype t, N_Vector u, N_Vector udot, void * userFunc)
 {
   realtype *udata, *dudata;
-
+  UserFunction * info;
+  
   udata = NV_DATA_S(u);
   dudata = NV_DATA_S(udot);
 
-  UserFunction * info = (UserFunction*) userFunc;
+  info = (UserFunction*) userFunc;
 
   if ((*info).ODEfunc != NULL)
       ((*info).ODEfunc)(t,udata,dudata,(*info).userData);
@@ -110,10 +111,11 @@ static int _EventFunction(realtype t,N_Vector y, realtype *gout, void * g_data)
 	int i;
 	EventFunction event;
 	realtype *u;
-	
+	UserFunction * info;
+
 	u = NV_DATA_S(y);
 
-	UserFunction * info = (UserFunction*) g_data;
+	info = (UserFunction*) g_data;
 
 	for (i=0; i < (*info).numEvents; ++i)
 	{
@@ -268,6 +270,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 	N_Vector u;
 	int flag, i, j, M;
 	UserFunction * funcData;
+	realtype * udata;
 	
 	t = 0.0;
 	tout = 0.0;
@@ -295,7 +298,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 
 	/* Initialize u vector */
 
-	realtype * udata = NV_DATA_S(u);
+	udata = NV_DATA_S(u);
 
 	if (initialValues != NULL)
 		for (i=0; i < N; ++i)
@@ -303,7 +306,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 
 	/* allocate output matrix */
 
-	M = (endTime - startTime) / stepSize;
+	M = (int)((endTime - startTime) / stepSize);
 	data = malloc ((N+1) * (M+1)  * sizeof(double) );
 
 	/* setup CVODE */
@@ -417,7 +420,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
  */
 double* jacobian(int N, double * point,  void (*odefnc)(double,double*,double*,void*), void * params)
 {
-	int i,j,k;
+	int i,j;
 	double dx, * dy0, * dy1, * J;
 	
 	if (odefnc == 0 || point == 0) return (0);
