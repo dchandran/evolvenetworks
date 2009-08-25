@@ -22,15 +22,6 @@ static PropensityFunction rateFunctions[] =
 	&ratesForGeneRegulationNetwork
 };
 
-typedef double* (*StoichiometryFunction)(GAindividual);
-
-static StoichiometryFunction stoicFunctions[] =
-{
-	&stoichiometryForMassActionNetwork,
-	&stoichiometryForProteinInteractionNetwork, 
-	&stoichiometryForGeneRegulationNetwork
-};
-
 static GACrossoverFnc crossoverFunctions[] =
 {
 	&crossoverMassActionNetwork, 
@@ -59,6 +50,51 @@ static GACloneFnc cloneFunctions[] =
 	&cloneGeneRegulationNetwork
 };
 
+typedef double* (*StoichiometryFunction)(GAindividual);
+
+static StoichiometryFunction stoicFunctions[] =
+{
+	&stoichiometryForMassActionNetwork,
+	&stoichiometryForProteinInteractionNetwork, 
+	&stoichiometryForGeneRegulationNetwork
+};
+
+typedef int (*GetNumSpeciesFunction)(GAindividual);
+
+static GetNumSpeciesFunction getNumSpeciesFunctions[] =
+{
+	&getNumSpeciesForMassActionNetwork,
+	&getNumSpeciesForProteinInteractionNetwork, 
+	&getNumSpeciesForGeneRegulationNetwork
+};
+
+typedef int (*GetNumReactionsFunction)(GAindividual);
+
+static GetNumReactionsFunction getNumReactionsFunctions[] =
+{
+	&getNumReactionsForMassActionNetwork,
+	&getNumReactionsForProteinInteractionNetwork, 
+	&getNumReactionsForGeneRegulationNetwork
+};
+
+typedef void (*PrintNetworkFunction)(GAindividual);
+
+static PrintNetworkFunction printNetworkFunctions[] =
+{
+	&printMassActionNetwork,
+	&printProteinInteractionNetwork, 
+	&printGeneRegulationNetwork
+};
+
+typedef void (*SetFixedSpeciesFunction)(GAindividual,int,int);
+
+static SetFixedSpeciesFunction setFixedSpeciesFunctions[] =
+{
+	&setFixedSpeciesForMassActionNetwork,
+	&setFixedSpeciesForProteinInteractionNetwork, 
+	&setFixedSpeciesForGeneRegulationNetwork
+};
+
 /***********************************************************/
 
 GApopulation randomNetworks(int sz0)
@@ -70,15 +106,15 @@ GApopulation randomNetworks(int sz0)
 
 	P = malloc( sz0 * sizeof (GAindividual) );
 
-	r = networkProbs[MASS_ACTION_NETWORK_INDEX] * sz0;
+	r = networkProbs[MASS_ACTION_NETWORK] * sz0;
 
-	if (r > 0 && r < 1.0)
+	if (r > 0 && r < sz0)
 	{
 		P1 = randomMassActionNetworks((int)r);
 		for (i=0; i < r; ++i)
 		{
 			rnet = malloc(sizeof(ReactionNetwork));
-			rnet->type = MASS_ACTION_NETWORK_INDEX;
+			rnet->type = MASS_ACTION_NETWORK;
 			rnet->network = P1[i];
 
 			P[i] = rnet;
@@ -86,14 +122,14 @@ GApopulation randomNetworks(int sz0)
 		total += (int)r;
 	}
 
-	r = networkProbs[PROTEIN_INTERACTION_NETWORK_INDEX] * sz0;
-	if (r > 0 && r < 1.0)
+	r = networkProbs[PROTEIN_INTERACTION_NETWORK] * sz0;
+	if (r > 0 && r < sz0)
 	{
 		P2 = randomProteinInteractionNetworks((int)r);
 		for (i=0; i < r; ++i)
 		{
 			rnet = malloc(sizeof(ReactionNetwork));
-			rnet->type = PROTEIN_INTERACTION_NETWORK_INDEX;
+			rnet->type = PROTEIN_INTERACTION_NETWORK;
 			rnet->network = P2[i];
 
 			P[i] = rnet;
@@ -108,7 +144,7 @@ GApopulation randomNetworks(int sz0)
 		for (i=0; i < k; ++i)
 		{
 			rnet = malloc(sizeof(ReactionNetwork));
-			rnet->type = GENE_REGULATION_NETWORK_INDEX;
+			rnet->type = GENE_REGULATION_NETWORK;
 			rnet->network = P3[i];
 
 			P[i] = rnet;
@@ -120,74 +156,26 @@ GApopulation randomNetworks(int sz0)
 
 void setCrossoverFunction( int i, GACrossoverFnc f)
 {
-	if (i == MASS_ACTION_NETWORK)
-	{
-		crossoverFunctions[MASS_ACTION_NETWORK_INDEX] = f;
-	}
-	else
-		if (i == PROTEIN_INTERACTION_NETWORK)
-		{
-			crossoverFunctions[PROTEIN_INTERACTION_NETWORK_INDEX] = f;
-		}
-		else
-			if (i == GENE_REGULATION_NETWORK)
-			{
-				crossoverFunctions[GENE_REGULATION_NETWORK_INDEX] = f;
-			}
+	if (i < NUMBER_OF_NETWORK_TYPES)
+	crossoverFunctions[i] = f;
 }
 
 void setMutationFunction( int i, GAMutateFnc f)
 {
-	if (i == MASS_ACTION_NETWORK)
-	{
-		mutateFunctions[MASS_ACTION_NETWORK_INDEX] = f;
-	}
-	else
-		if (i == PROTEIN_INTERACTION_NETWORK)
-		{
-			mutateFunctions[PROTEIN_INTERACTION_NETWORK_INDEX] = f;
-		}
-		else
-			if (i == GENE_REGULATION_NETWORK)
-			{
-				mutateFunctions[GENE_REGULATION_NETWORK_INDEX] = f;
-			}
+	if (i < NUMBER_OF_NETWORK_TYPES)
+	mutateFunctions[i] = f;
 }
 
 void setRatesFunction( int i, PropensityFunction f)
 {
-	if (i == MASS_ACTION_NETWORK)
-	{
-		rateFunctions[MASS_ACTION_NETWORK_INDEX] = f;
-	}
-	else
-		if (i == PROTEIN_INTERACTION_NETWORK)
-		{
-			rateFunctions[PROTEIN_INTERACTION_NETWORK_INDEX] = f;
-		}
-		else
-			if (i == GENE_REGULATION_NETWORK)
-			{
-				rateFunctions[GENE_REGULATION_NETWORK_INDEX] = f;
-			}
+	if (i < NUMBER_OF_NETWORK_TYPES)
+	rateFunctions[i] = f;
 }
 
 void setStoichiometryFunction( int i, double* (*f)(GAindividual) )
 {
-	if (i == MASS_ACTION_NETWORK)
-	{
-		stoicFunctions[MASS_ACTION_NETWORK_INDEX] = f;
-	}
-	else
-		if (i == PROTEIN_INTERACTION_NETWORK)
-		{
-			stoicFunctions[PROTEIN_INTERACTION_NETWORK_INDEX] = f;
-		}
-		else
-			if (i == GENE_REGULATION_NETWORK)
-			{
-				stoicFunctions[GENE_REGULATION_NETWORK_INDEX] = f;
-			}
+	if (i < NUMBER_OF_NETWORK_TYPES)
+	stoicFunctions[i] = f;
 }
 
 void setNetworkType(int p)
@@ -200,15 +188,9 @@ void setNetworkType(int p)
 void setNetworkTypeProbability(int i, double p)
 {
 	double total;
-
-	if (i & MASS_ACTION_NETWORK)
-		networkProbs[ MASS_ACTION_NETWORK_INDEX ] = p;
-
-	if (i & PROTEIN_INTERACTION_NETWORK)
-		networkProbs[ PROTEIN_INTERACTION_NETWORK_INDEX ] = p;
-
-	if (i & GENE_REGULATION_NETWORK)
-		networkProbs[ GENE_REGULATION_NETWORK_INDEX ] = p;
+	
+	if (i < NUMBER_OF_NETWORK_TYPES)
+		networkProbs[ i ] = p;
 
 	total = 0.0;
 
@@ -231,37 +213,16 @@ double * simulateNetworkODE( ReactionNetwork * r, double* iv, double time, doubl
 	ProteinInteractionNetwork * net2;
 	GeneRegulationNetwork * net3;
 
-	if (!r) return 0;
+	if (!r || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 
 	stoic = stoicFunctions[r->type];
 	N = stoic(r->network);
 
 	rate = rateFunctions[r->type];
-	y = 0;
-
-	if (r->type == MASS_ACTION_NETWORK_INDEX)
-	{	
-		net1 = (MassActionNetwork*)(r->network);
-		species = (*net1).species;
-		reactions = (*net1).reactions;
-		p = net1;
-	}
-
-	if (r->type == PROTEIN_INTERACTION_NETWORK_INDEX)
-	{
-		net2 = (ProteinInteractionNetwork*)(r->network);
-		species = (*net2).species;
-		reactions = 2 * (*net2).species;
-		p = net2;
-	}
-
-	if (r->type == GENE_REGULATION_NETWORK_INDEX)
-	{
-		net3 = (GeneRegulationNetwork*)(r->network);
-		species = (*net3).species;
-		reactions = 2 * (*net3).species;
-		p = net3;
-	}
+	
+	p = r->network;
+	species = getNumSpecies(r);
+	reactions = getNumReactions(r);
 
 	y = ODEsim2(species, reactions,	N, rate, iv, 0, time, dt, p);
 
@@ -272,54 +233,38 @@ double * simulateNetworkODE( ReactionNetwork * r, double* iv, double time, doubl
 
 double * networkSteadyState( ReactionNetwork * r, double* iv)
 {
-	StoichiometryFunction stoic = stoicFunctions[r->type];
-	double * N = stoic(r->network);
-	PropensityFunction rate = rateFunctions[r->type];
+	StoichiometryFunction stoic;
+	double * N;
+	PropensityFunction rate;
 	double * y = 0;
 	MassActionNetwork * net1;
 	ProteinInteractionNetwork * net2;
 	GeneRegulationNetwork * net3;
-
 	void * p = 0;
-
 	int species = 0, reactions = 0;
 
-	if (!r) return 0;
+	if (!r || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
+	
+	stoic = stoicFunctions[r->type];
+	N = stoic(r->network);
 
-	if (r->type == MASS_ACTION_NETWORK_INDEX)
-	{
-		net1 = (MassActionNetwork*)(r->network);
-		species = (*net1).species;
-		reactions = (*net1).reactions;
-		p = net1;
-	}
-
-	if (r->type == PROTEIN_INTERACTION_NETWORK_INDEX)
-	{
-		net2 = (ProteinInteractionNetwork*)(r->network);
-		species = (*net2).species;
-		reactions = 2 * (*net2).species;
-		p = net2;
-	}
-
-	if (r->type == GENE_REGULATION_NETWORK_INDEX)
-	{
-		net3 = (GeneRegulationNetwork*)(r->network);
-		species = (*net3).species;
-		reactions = 2 * (*net3).species;
-		p = net3;
-	}
+	rate = rateFunctions[r->type];
+	
+	p = r->network;
+	species = getNumSpecies(r);
+	reactions = getNumReactions(r);
 
 	y = steadyState2(species, reactions, N, rate, iv, p, 1.0E-3,10000.0,0.1);
 	free(N);
+	
 	return y;
 }
 
 double * simulateNetworkStochastically( ReactionNetwork * r, double* iv, double time, int* sz)
 {
-	StoichiometryFunction stoic = stoicFunctions[r->type];
-	double * N = stoic(r->network);
-	PropensityFunction rate = rateFunctions[r->type];
+	StoichiometryFunction stoic;
+	double * N;
+	PropensityFunction rate;
 	double * y = 0;
 	int species = 0, reactions = 0;
 	void * p = 0;
@@ -327,31 +272,16 @@ double * simulateNetworkStochastically( ReactionNetwork * r, double* iv, double 
 	ProteinInteractionNetwork * net2;
 	GeneRegulationNetwork * net3;
 
-	if (!r) return 0;
+	if (!r || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
+	
+	stoic = stoicFunctions[r->type];
+	N = stoic(r->network);
 
-	if (r->type == MASS_ACTION_NETWORK_INDEX)
-	{	
-		net1 = (MassActionNetwork*)(r->network);
-		species = (*net1).species;
-		reactions = (*net1).reactions;
-		p = net1;
-	}
-
-	if (r->type == PROTEIN_INTERACTION_NETWORK_INDEX)
-	{
-		net2 = (ProteinInteractionNetwork*)(r->network);
-		species = (*net2).species;
-		reactions = 2 * (*net2).species;
-		p = net2;
-	}
-
-	if (r->type == GENE_REGULATION_NETWORK_INDEX)
-	{
-		net3 = (GeneRegulationNetwork*)(r->network);
-		species = (*net3).species;
-		reactions = 2 * (*net3).species;
-		p = net3;
-	}
+	rate = rateFunctions[r->type];
+	
+	p = r->network;
+	species = getNumSpecies(r);
+	reactions = getNumReactions(r);
 
 	y = SSA(species, reactions,	N, rate, iv, 0, time, 1.0E5, sz, p);
 
@@ -361,20 +291,13 @@ double * simulateNetworkStochastically( ReactionNetwork * r, double* iv, double 
 
 void printNetwork(ReactionNetwork * r)
 {
-	if (r->type == MASS_ACTION_NETWORK_INDEX)
-	{	
-		printMassActionNetwork((MassActionNetwork*)r->network);		
-	}
-
-	if (r->type == PROTEIN_INTERACTION_NETWORK_INDEX)
-	{
-		printProteinInteractionNetwork((ProteinInteractionNetwork*)r->network);
-	}
-
-	if (r->type == GENE_REGULATION_NETWORK_INDEX)
-	{
-		printGeneRegulationNetwork((GeneRegulationNetwork*)r->network);
-	}
+	PrintNetworkFunction f;
+	
+	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return;
+	
+	f = printNetworkFunctions[r->type];
+	
+	f(r->network);
 }
 
 void printNetworkToFile(ReactionNetwork * r, char * filename)
@@ -390,67 +313,34 @@ void printNetworkToFile(ReactionNetwork * r, char * filename)
 
 int getNumSpecies(ReactionNetwork * r)
 {
-	MassActionNetwork * net1;
-	ProteinInteractionNetwork * net2;
-	GeneRegulationNetwork * net3;
+	GetNumSpeciesFunction f;
 	
-	if (!r) return 0;
-
-	if (r->type == MASS_ACTION_NETWORK_INDEX)
-	{	
-		net1 = (MassActionNetwork*)(r->network);
-		return (*net1).species;
-	}
-
-	if (r->type == PROTEIN_INTERACTION_NETWORK_INDEX)
-	{
-		net2 = (ProteinInteractionNetwork*)(r->network);
-		return (*net2).species;
-	}
-
-	if (r->type == GENE_REGULATION_NETWORK_INDEX)
-	{
-		net3 = (GeneRegulationNetwork*)(r->network);
-		return  (*net3).species;
-	}
-	return 0;
+	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
+	
+	f = getNumSpeciesFunctions[r->type];
+	
+	return (f(r->network));
 }
 
 int getNumReactions(ReactionNetwork * r)
 {
-	MassActionNetwork * net1;
-	ProteinInteractionNetwork * net2;
-	GeneRegulationNetwork * net3;
+	GetNumReactionsFunction f;
 	
-	if (!r) return 0;
+	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 	
-	if (r->type == MASS_ACTION_NETWORK_INDEX)
-	{	
-		net1 = (MassActionNetwork*)(r->network);
-		return (*net1).reactions;
-	}
-
-	if (r->type == PROTEIN_INTERACTION_NETWORK_INDEX)
-	{
-		net2 = (ProteinInteractionNetwork*)(r->network);
-		return (2 * (*net2).species);
-	}
-
-	if (r->type == GENE_REGULATION_NETWORK_INDEX)
-	{
-		net3 = (GeneRegulationNetwork*)(r->network);
-		return (2 * (*net3).species);
-	}
-	return 0;
+	f = getNumReactionsFunctions[r->type];
+	
+	return (f(r->network));
 }
 
 double* getReactionRates(ReactionNetwork * r, double* u)
 {
-	PropensityFunction f = rateFunctions[r->type];
+	PropensityFunction f;
 	double * rates;
 	
-	if (!r) return 0;
-
+	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
+	
+	f = rateFunctions[r->type];
 	rates = malloc( getNumReactions(r) );
 	f(0,u,rates,r->network);
 
@@ -459,10 +349,11 @@ double* getReactionRates(ReactionNetwork * r, double* u)
 
 double* getStoichiometryMatrix(ReactionNetwork * r)
 {
-	StoichiometryFunction stoic = stoicFunctions[r->type];
+	StoichiometryFunction stoic;
 	double * N;
 
-	if (!r) return 0;
+	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
+	stoic = stoicFunctions[r->type];
 
 	N = stoic(r->network);
 	return N;
@@ -471,10 +362,14 @@ double* getStoichiometryMatrix(ReactionNetwork * r)
 GAindividual mutateNetwork(GAindividual p)
 {
 	ReactionNetwork * r = (ReactionNetwork*)(p);
-	GAMutateFnc f = mutateFunctions[r->type];
+	GAMutateFnc f;
 
 	GAindividual net;
 	ReactionNetwork * r2;
+	
+	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return p;
+	
+	f = mutateFunctions[r->type];
 
 	if (f)
 	{
@@ -515,7 +410,9 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 void deleteNetwork(GAindividual p)
 {
 	ReactionNetwork * r = (ReactionNetwork*)(p);
-	if (!r) return;
+	
+	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return;
+	
 	deleteFunctions[r->type](r->network);
 	free(r);
 }
@@ -523,7 +420,12 @@ void deleteNetwork(GAindividual p)
 GAindividual cloneNetwork(GAindividual p)
 {
 	ReactionNetwork * r = (ReactionNetwork*)(p);
-	ReactionNetwork * r2 = malloc(sizeof(ReactionNetwork));
+	ReactionNetwork * r2;
+	
+	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return p;
+	
+	r2 = malloc(sizeof(ReactionNetwork));
+	
 	r2->type = r->type;
 	r2->network = cloneFunctions[r->type](r->network);
 	return r2;
@@ -556,7 +458,7 @@ GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GACallbackFnc callbackF
 
 double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs, int outputs)
 {
-	int i, j, k, l, m, cols, n, * fixed;
+	int i, j, k, l, m, cols, n;
 	double * ss, * iv, closest, temp, sumOfSq;
 	ReactionNetwork * r = (ReactionNetwork*)(p);
 	MassActionNetwork * net1;
@@ -569,29 +471,13 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 	
 	if (n < cols) return 0.0; // not enough species
 	
-	fixed = malloc(inputs * sizeof(int));  //save network's fixed array
+	SetFixedSpeciesFunction setFixed = setFixedSpeciesFunctions[r->type];
 	
-	if (r->type == MASS_ACTION_NETWORK_INDEX)
+	for (i=0; i < inputs; ++i)
 	{
-		net1 = (MassActionNetwork*)(r->network);
-		for (i=0; i < inputs; ++i)
-			fixed[i] = (*net1).fixed[i];
+		setFixed(r->network,i,1);
 	}
 
-	if (r->type == PROTEIN_INTERACTION_NETWORK_INDEX)
-	{
-		net2 = (ProteinInteractionNetwork*)(r->network);
-		for (i=0; i < inputs; ++i)
-			fixed[i] = (*net2).fixed[i];
-	}
-
-	if (r->type == GENE_REGULATION_NETWORK_INDEX)
-	{
-		net3 = (GeneRegulationNetwork*)(r->network);
-		for (i=0; i < inputs; ++i)
-			fixed[i] = (*net3).fixed[i];
-	}
-	
 	sumOfSq = 0.0;
 	iv = malloc( n * sizeof(double) );
 	
@@ -639,27 +525,10 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 	free(iv);
 	
 	//restore the fixed
-	if (r->type == MASS_ACTION_NETWORK_INDEX)
+	for (i=0; i < inputs; ++i)
 	{
-		net1 = (MassActionNetwork*)(r->network);
-		for (i=0; i < inputs; ++i)
-			(*net1).fixed[i] = fixed[i];
+		setFixed(r->network,i,0);
 	}
-
-	if (r->type == PROTEIN_INTERACTION_NETWORK_INDEX)
-	{
-		net2 = (ProteinInteractionNetwork*)(r->network);
-		for (i=0; i < inputs; ++i)
-			(*net2).fixed[i] = fixed[i];
-	}
-
-	if (r->type == GENE_REGULATION_NETWORK_INDEX)
-	{
-		net3 = (GeneRegulationNetwork*)(r->network);
-		for (i=0; i < inputs; ++i)
-			(*net3).fixed[i] = fixed[i];
-	}
-	free(fixed);
 	
 	if (sumOfSq < 0.0) return 0.0;
 	

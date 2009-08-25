@@ -24,13 +24,9 @@
 #include "proteinInteractionNetwork.h"
 #include "geneRegulationNetwork.h"
 
-#define MASS_ACTION_NETWORK 1
-#define PROTEIN_INTERACTION_NETWORK 2
-#define GENE_REGULATION_NETWORK 4
-
-#define MASS_ACTION_NETWORK_INDEX 0
-#define PROTEIN_INTERACTION_NETWORK_INDEX 1
-#define GENE_REGULATION_NETWORK_INDEX 2
+#define MASS_ACTION_NETWORK 0
+#define PROTEIN_INTERACTION_NETWORK 1
+#define GENE_REGULATION_NETWORK 2
 
 /*! \brief A generic network that can contain either a 
 	mass-action network, protein-interaction network, or 

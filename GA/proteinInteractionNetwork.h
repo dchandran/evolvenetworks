@@ -114,6 +114,25 @@ double * stoichiometryForProteinInteractionNetwork(GAindividual);
  * \ingroup proteinnetwork
 */
 void printProteinInteractionNetwork(GAindividual);
+/*! \brief get the number of variables in the network.
+    This is equal to the number of rows in the stoichiometry matrix
+ \param ProteinInteractionNetwork network
+ \ingroup proteinnetwork
+*/
+int getNumSpeciesForProteinInteractionNetwork(GAindividual);
+/*! \brief get the number of reactions in the network. 
+    This is equal to the number of columns in the stoichiometry matrix
+ \param ProteinInteractionNetwork network
+ \ingroup proteinnetwork
+*/
+int getNumReactionsForProteinInteractionNetwork(GAindividual);
+/*! \brief set a species as a fixed (constant, boundary) species
+ \param ProteinInteractionNetwork network
+ \param int index of species that should be set at fixed
+ \param int value = 0 or 1, where 1 = fixed
+ \ingroup proteinnetwork
+*/
+void setFixedSpeciesForProteinInteractionNetwork(GAindividual, int, int);
 
 /*****************************************************
    @name Functions for initializing a GA

@@ -34,6 +34,10 @@ int main()
 	GApopulation pop;
 	ReactionNetwork * net;
 	
+	i = 1;
+	
+	printf("%i\n",i << 1);
+	
 	setFitnessFunction( &fitness );  //set the fitness function	
 	
 	setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
@@ -56,7 +60,8 @@ int main()
 	iv[0] = 0.1;
 	iv[1] = 10.0;
 	
-	y = networkSteadyState((ReactionNetwork*)(net),iv);
+	y = networkSteadyState((ReactionNetwork*)(net),iv);	
+	
 	
 	if (y)
 	{

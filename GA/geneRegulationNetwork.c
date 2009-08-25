@@ -402,6 +402,25 @@ void* mutateGeneRegulationNetwork(void * individual)
    Functions for simulating and printing
 ******************************************************/
 
+int getNumSpeciesForGeneRegulationNetwork(void * individual)
+{
+	GeneRegulationNetwork * net = (GeneRegulationNetwork*)(individual);
+	return (net->species);
+}
+
+int getNumReactionsForGeneRegulationNetwork(void * individual)
+{
+	GeneRegulationNetwork * net = (GeneRegulationNetwork*)(individual);
+	return (2 * net->species);
+}
+
+void setFixedSpeciesForGeneRegulationNetwork(void * individual, int i, int value)
+{
+	GeneRegulationNetwork * net = (GeneRegulationNetwork*)(individual);
+	if (i < net->species)
+		net->fixed[i] = value;
+}
+
 void ratesForGeneRegulationNetwork(double time,double* u,double* rate,void * p)
 {
 	int i,j,k;

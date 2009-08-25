@@ -309,6 +309,26 @@ double * stoichiometryForMassActionNetwork(void * p)
 	return N;
 }
 
+
+int getNumSpeciesForMassActionNetwork(void * individual)
+{
+	MassActionNetwork * net = (MassActionNetwork*)(individual);
+	return (net->species);
+}
+
+int getNumReactionsForMassActionNetwork(void * individual)
+{
+	MassActionNetwork * net = (MassActionNetwork*)(individual);
+	return (net->reactions);
+}
+
+void setFixedSpeciesForMassActionNetwork(void * individual, int i, int value)
+{
+	MassActionNetwork * net = (MassActionNetwork*)(individual);
+	if (i < net->species)
+		net->fixed[i] = value;
+}
+
 void printMassActionNetwork(void * individual)
 {
 	int i,j,k,fix;

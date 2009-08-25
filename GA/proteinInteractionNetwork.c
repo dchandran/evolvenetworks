@@ -308,6 +308,26 @@ void* mutateProteinInteractionNetwork(void * individual)
    Functions for simulating and printing
 ******************************************************/
 
+
+int getNumSpeciesForProteinInteractionNetwork(void * individual)
+{
+	ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)(individual);
+	return (net->species);
+}
+
+int getNumReactionsForProteinInteractionNetwork(void * individual)
+{
+	ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)(individual);
+	return (2 * net->species);
+}
+
+void setFixedSpeciesForProteinInteractionNetwork(void * individual, int i, int value)
+{
+	ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)(individual);
+	if (i < net->species)
+		net->fixed[i] = value;
+}
+
 void ratesForProteinInteractionNetwork(double time,double* u,double* rate,void * individual)
 {
 	int i,j,n,p,forward, backward;

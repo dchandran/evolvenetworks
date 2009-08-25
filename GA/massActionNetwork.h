@@ -101,6 +101,26 @@ double * stoichiometryForMassActionNetwork(GAindividual);
  * \ingroup massaction
 */
 void printMassActionNetwork(GAindividual);
+/*! \brief get the number of variables in the network.
+    This is equal to the number of rows in the stoichiometry matrix
+ \param MassActionNetwork network
+ \ingroup massaction
+*/
+int getNumSpeciesForMassActionNetwork(GAindividual);
+/*! \brief get the number of reactions in the network. 
+    This is equal to the number of columns in the stoichiometry matrix
+ \param MassActionNetwork network
+ \ingroup massaction
+*/
+int getNumReactionsForMassActionNetwork(GAindividual);
+/*! \brief set a species as a fixed (constant, boundary) species
+ \param MassActionNetwork network
+ \param int index of species that should be set at fixed
+ \param int value = 0 or 1, where 1 = fixed
+ \ingroup massaction
+*/
+void setFixedSpeciesForMassActionNetwork(GAindividual, int,int);
+
 
 /*****************************************************
     @name Functions for initializing a GA
