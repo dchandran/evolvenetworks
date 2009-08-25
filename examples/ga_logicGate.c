@@ -34,15 +34,11 @@ int main()
 	GApopulation pop;
 	ReactionNetwork * net;
 	
-	i = 1;
-	
-	printf("%i\n",i << 1);
-	
 	setFitnessFunction( &fitness );  //set the fitness function	
 	
-	setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
+	setNetworkType( PROTEIN_INTERACTION_NETWORK );  //use this network type
 	
-	setInitialNetworkSize(3,2);  //network size
+	setInitialNetworkSize(5,2);  //network size
 	
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
 	pop = evolveNetworks(1000,200,30,&callback);  
@@ -61,7 +57,6 @@ int main()
 	iv[1] = 10.0;
 	
 	y = networkSteadyState((ReactionNetwork*)(net),iv);	
-	
 	
 	if (y)
 	{

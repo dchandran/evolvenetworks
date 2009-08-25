@@ -287,8 +287,10 @@ double * stoichiometryForMassActionNetwork(void * p)
 	MassActionNetwork * net;
 	
 	net = (MassActionNetwork*)(p);
+	
 	n = net->reactions;
 	N = malloc(net->species * n * sizeof(double));
+	
 	for (i=0; i < n; ++i)
 	{
 		for (j=0; j < net->species; ++j)
@@ -296,7 +298,7 @@ double * stoichiometryForMassActionNetwork(void * p)
 		
 		if ((net->r1[i] >= 0) && ((net->fixed[ net->r1[i] ]) == 0)) 
 			getValue(N,n,net->r1[i],i) = -1;
-			
+		
 		if ((net->r2[i] >= 0) && ((net->fixed[ net->r2[i] ]) == 0)) 
 			getValue(N,n,net->r2[i],i) = -1;
 			
@@ -400,9 +402,13 @@ GApopulation randomMassActionNetworks(int num)
 			
 			if (mtrand() < PROB_SECOND_REACTANT) 
 				net->r2[j] = (int)(net->species * mtrand()); //second reactant
+			else
+				net->r2[j] = -1;
 				
 			if (mtrand() < PROB_SECOND_PRODUCT) 
 				net->p2[j] = (int)(net->species * mtrand()); //second product
+			else
+				net->p2[j] = -1;
 		}
 		
 		array[i] = net;

@@ -48,7 +48,6 @@ int main()
 	
 	/******simulate the best network and write the result to a file************/
 	
-	
 	N = getNumSpecies(net);    //number of variables in the network
 	iv = malloc( N * sizeof(double));  
 	for (i = 0; i < N; ++i) iv[i] = 0.0; //initial values

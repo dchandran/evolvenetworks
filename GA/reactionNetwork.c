@@ -99,18 +99,17 @@ static SetFixedSpeciesFunction setFixedSpeciesFunctions[] =
 
 GApopulation randomNetworks(int sz0)
 {
-	int i, total = 0, k = 0;
+	int i, total = 0, r, k;
 	ReactionNetwork * rnet;
-	double r;
 	GApopulation P1 = 0, P2 = 0, P3 = 0, P;
 
 	P = malloc( sz0 * sizeof (GAindividual) );
 
-	r = networkProbs[MASS_ACTION_NETWORK] * sz0;
-
-	if (r > 0 && r < sz0)
+	r = (int)(networkProbs[MASS_ACTION_NETWORK] * sz0);
+	
+	if (r > 0 && r <= sz0)
 	{
-		P1 = randomMassActionNetworks((int)r);
+		P1 = randomMassActionNetworks(r);
 		for (i=0; i < r; ++i)
 		{
 			rnet = malloc(sizeof(ReactionNetwork));
@@ -119,13 +118,13 @@ GApopulation randomNetworks(int sz0)
 
 			P[i] = rnet;
 		}
-		total += (int)r;
+		total += r;
 	}
 
-	r = networkProbs[PROTEIN_INTERACTION_NETWORK] * sz0;
-	if (r > 0 && r < sz0)
+	r = (int)(networkProbs[PROTEIN_INTERACTION_NETWORK] * sz0);
+	if (r > 0 && r <= sz0)
 	{
-		P2 = randomProteinInteractionNetworks((int)r);
+		P2 = randomProteinInteractionNetworks(r);
 		for (i=0; i < r; ++i)
 		{
 			rnet = malloc(sizeof(ReactionNetwork));
@@ -134,7 +133,7 @@ GApopulation randomNetworks(int sz0)
 
 			P[i] = rnet;
 		}
-		total += (int)r;
+		total += r;
 	}
 
 	if (total < sz0)
@@ -153,6 +152,14 @@ GApopulation randomNetworks(int sz0)
 
 	return P;
 }
+
+/*******************************************************************
+
+The following functions rely entirely on 
+the array of function pointers defined at 
+the beginning of this file
+
+********************************************************************/
 
 void setCrossoverFunction( int i, GACrossoverFnc f)
 {
@@ -214,7 +221,7 @@ double * simulateNetworkODE( ReactionNetwork * r, double* iv, double time, doubl
 	GeneRegulationNetwork * net3;
 
 	if (!r || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
-
+	
 	stoic = stoicFunctions[r->type];
 	N = stoic(r->network);
 
@@ -246,8 +253,9 @@ double * networkSteadyState( ReactionNetwork * r, double* iv)
 	if (!r || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 	
 	stoic = stoicFunctions[r->type];
+	
 	N = stoic(r->network);
-
+	
 	rate = rateFunctions[r->type];
 	
 	p = r->network;
@@ -464,6 +472,7 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 	MassActionNetwork * net1;
 	ProteinInteractionNetwork * net2;
 	GeneRegulationNetwork * net3;
+	SetFixedSpeciesFunction setFixed;
 	
 	cols = inputs + outputs;
 	
@@ -471,7 +480,7 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 	
 	if (n < cols) return 0.0; // not enough species
 	
-	SetFixedSpeciesFunction setFixed = setFixedSpeciesFunctions[r->type];
+	setFixed = setFixedSpeciesFunctions[r->type];
 	
 	for (i=0; i < inputs; ++i)
 	{

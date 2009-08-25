@@ -180,7 +180,6 @@ void* crossoverProteinInteractionNetwork(void * individualA, void * individualB)
 			net3->regulators[k].Vmax[j] = net2->regulators[i].Vmax[j];
 		}
 	}
-	
 	return (void*)(net3);
 }
 
@@ -499,7 +498,7 @@ GApopulation randomProteinInteractionNetworks(int num)
 		
 		for (j=0; j < n; ++j)   //random regulators for each protein
 		{
-			net->fixed[i] = 0; //no fixed species by default
+			net->fixed[j] = 0; //no fixed species by default
 			net->totals[j] = 2.0*mtrand()*AVG_TOTAL;
 			m = (int)(2 + mtrand() * n * AVG_NUM_REGULATIONS);
 			net->regulators[j].size = m;
@@ -516,7 +515,6 @@ GApopulation randomProteinInteractionNetworks(int num)
 					net->regulators[j].Vmax[k] *= -1.0;  //negative regulator
 			}
 		}
-		
 		array[i] = net;
 	}
 	
