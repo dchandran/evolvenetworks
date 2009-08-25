@@ -55,17 +55,17 @@ What executables get generated
 simple examples of using netga
 --------------------------------------
 
-gaOscillator, gaReduceNoise
+evolveOscillator, evolveNoiseDamper
 
 --------------------------------------
 more complex use of netga and ga
 --------------------------------------
 
-chemotaxis
+evolveChemotaxis
 bistabilize
 
 --------------------------------------
 finding loops in a Jacobian matrix
 --------------------------------------
 
-loops
+findLoops
