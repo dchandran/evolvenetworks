@@ -340,7 +340,14 @@ void printMassActionNetwork(void * individual)
 	
 	for (i=0; i < (*net).reactions; ++i)
 	{
-		printf("s%i + s%i -> s%i + s%i;\t%lf * s%i * s%i;\n",(*net).r1[i]+1,(*net).r2[i]+1,(*net).p1[i]+1,(*net).p2[i]+1,(*net).k[i],(*net).r1[i]+1,(*net).r2[i]+1);
+		printf("s%i + s%i -> s%i + s%i;\tk%i * s%i * s%i;\n",(*net).r1[i]+1,(*net).r2[i]+1,(*net).p1[i]+1,(*net).p2[i]+1,i+1,(*net).r1[i]+1,(*net).r2[i]+1);
+	}
+	
+	printf("\n");
+	
+	for (i=0; i < (*net).reactions; ++i)
+	{
+		printf("k%i = %lf;\n",i+1,(*net).k[i]);
 	}
 }
 

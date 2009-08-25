@@ -406,29 +406,23 @@ void printProteinInteractionNetwork(void * individual)
 		f = 0;
 		for (j=0; j < (*net).regulators[i].size; ++j)
 		{
-			tot = (*net).totals[i]; //total concentration of u[i]
-			vmax = (*net).regulators[i].Vmax[j]; //vmax for this regulation
-			km = (*net).regulators[i].Km[j];  //km for this regulation
 			p = (*net).regulators[i].proteins[j]; //index of regulating protein
 			if (vmax > 0)
 				if (!f)
 				{
-					printf("%lf * s%i * (%lf - s%i) / (%lf + (%lf - s%i)) ",vmax,i+1,tot,p+1,km,tot,i+1);
+					printf("vmax%i%i * s%i * (tot%i - s%i) / (km%i%i + (tot%i - s%i)) ",i+1,j+1,i+1,i+1,p+1,i+1,j+1,i+1,i+1);
 					f = 1;
 				}
 				else
-					printf(" + %lf * s%i * (%lf - s%i) / (%lf + (%lf - s%i)) ",vmax,i+1,tot,p+1,km,tot,i+1);
+					printf(" + %lf * s%i * (tot%i - s%i) / (km%i%i + (tot%i - s%i)) ",i+1,j+1,i+1,i+1,p+1,i+1,j+1,i+1,i+1);
 		}
 		
 		for (j=0; j < (*net).regulators[i].size; ++j)
 		{
-			tot = (*net).totals[i]; //total concentration of u[i]
-			vmax = (*net).regulators[i].Vmax[j]; //vmax for this regulation
-			km = (*net).regulators[i].Km[j];  //km for this regulation
 			p = (*net).regulators[i].proteins[j]; //index of regulating protein
 			if (vmax < 0) 
 			{
-				printf(" - %lf * s%i * s%i / (%lf + s%i)",-vmax,p+1,i+1,km,i+1);
+				printf(" - vmax%i%i * s%i * s%i / (km%i%i + s%i)",i+1,j+1,p+1,i+1,i+1,j+1,i+1);
 				if (!f) f = 1;
 			}
 		}
@@ -437,6 +431,24 @@ void printProteinInteractionNetwork(void * individual)
 			printf("0;\n");
 		else
 			printf(";\n");
+	}
+	
+	printf("\n");
+	
+	for (i=0; i < n; ++i)
+	{
+		tot = (*net).totals[i]; //total concentration of u[i]
+		printf("tot%i = %lf;\n",i,tot);
+		
+		for (j=0; j < (*net).regulators[i].size; ++j)
+		{
+			vmax = (*net).regulators[i].Vmax[j]; //vmax for this regulation
+			km = (*net).regulators[i].Km[j];  //km for this regulation
+			if (vmax != 0)
+				printf("vmax%i%i = %lf;\n ",vmax,i+1,j+1,vmax);
+			if (km != 0)
+				printf("km%i%i = %lf;\n ",km,i+1,j+1,km);	
+		}
 	}
 }
 

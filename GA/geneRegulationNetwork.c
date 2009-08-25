@@ -497,7 +497,7 @@ void printGeneRegulationNetwork(void * individual)
 	
 	for (i=0; i < (*net).species; ++i)
 	{
-		printf("$X -> s%i; %lf * (",i+1, (*net).Vmax[i]);
+		printf("$X -> s%i; vmax%i * (",i+1,i+1);
 		num = denom = 0;
 		p = 0;
 		for (j=0; j < (*net).numComplexes; ++j)
@@ -507,7 +507,7 @@ void printGeneRegulationNetwork(void * individual)
 				if (p > 0)
 					printf("+");
 				++p;
-				printf("%lf",(*net).Ka[j]);
+				printf("Ka%i",j+1);
 				for (k=0; k < (*net).complexes[j].size; ++k)
 					printf("*s%i",(*net).complexes[j].TFs[k]+1);
 			}
@@ -527,10 +527,7 @@ void printGeneRegulationNetwork(void * individual)
 				++p;
 				if ((*net).Ka[j] != 0)
 				{
-					if ((*net).Ka[j] < 0)
-						printf("%lf",-(*net).Ka[j]);
-					else
-						printf("%lf",(*net).Ka[j]);
+					printf("Ka%i",j+1);
 					for (k=0; k < (*net).complexes[j].size; ++k)
 						printf("*s%i",(*net).complexes[j].TFs[k]+1);
 				}
@@ -538,7 +535,25 @@ void printGeneRegulationNetwork(void * individual)
 		}
 		
 		printf(");\n");
-		printf("s%i -> $X; %lf*s%i;\n",i+1,(*net).degradation[i],i+1);
+		printf("s%i -> $X; deg%i*s%i;\n",i+1,i+1,i+1);
+	}
+	
+	printf("\n");
+	
+	for (i=0; i < (*net).species; ++i)
+	{
+		printf("vmax%i = %lf;\n",i+1, (*net).Vmax[i]);
+		printf("deg%i = %lf;\n",i+1,(*net).degradation[i]);
+	}
+	for (j=0; j < (*net).numComplexes; ++j)
+	{
+		if ((*net).Ka[j] != 0)
+		{
+			if ((*net).Ka[j] < 0)
+				printf("Ka%i = %lf;\n",j+1,-(*net).Ka[j]);
+			else
+				printf("Ka%i = %lf;\n",j+1,(*net).Ka[j]);
+		}
 	}
 }
 
