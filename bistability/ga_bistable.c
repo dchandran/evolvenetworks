@@ -54,8 +54,8 @@ static int isBad(Parameters * p)
       int i=0;
       while (BAD_PARAMS[i])
       {
-         if (   (distance( (*BAD_PARAMS[i]).params, (*p).params, (*p).numParams ) < 10.0)
-             && (distance( (*BAD_PARAMS[i]).alphas, (*p).alphas, (*p).numVars   ) < 10.0) )
+         if (   (distance( BAD_PARAMS[i]->params, p->params, p->numParams ) < 10.0)
+             && (distance( BAD_PARAMS[i]->alphas, p->alphas, p->numVars   ) < 10.0) )
             return 1;
          ++i;
       }
@@ -119,8 +119,8 @@ void deleteGAindividual(void * individual)
    Parameters * p = (Parameters*)individual;
    if (p != NULL)
    {
-      free((*p).params);
-      free((*p).alphas);
+      free(p->params);
+      free(p->alphas);
       free(p);
    }
 }
@@ -131,18 +131,18 @@ void * clone(void * x)
    Parameters * p = malloc(sizeof(Parameters));
    Parameters * net = (Parameters*)x;
    
-   (*p).numVars = (*net).numVars;
-   (*p).numParams = (*net).numParams;
-   (*p).params  = malloc(  (*p).numParams * sizeof(double) );
-   (*p).alphas  = malloc(  (*p).numVars * sizeof(double) );
+   p->numVars = (*net).numVars;
+   p->numParams = (*net).numParams;
+   p->params  = malloc(  p->numParams * sizeof(double) );
+   p->alphas  = malloc(  p->numVars * sizeof(double) );
 
-   for (i = 0; i < (*p).numVars; ++i)
+   for (i = 0; i < p->numVars; ++i)
    {
-      (*p).alphas[i]  = (*net).alphas[i];
+      p->alphas[i]  = (*net).alphas[i];
    }
-   for (i = 0; i < (*p).numParams; ++i)
+   for (i = 0; i < p->numParams; ++i)
    {
-      (*p).params[i]  = (*net).params[i];
+      p->params[i]  = (*net).params[i];
    }
    return ((void*)p);
 }
@@ -152,33 +152,33 @@ Parameters * randomNetwork(int numVars, int numParams)
    int i;
    
    Parameters * p = malloc(sizeof(Parameters));
-   (*p).numParams = numParams;
-   (*p).numVars = numVars;
-   (*p).params  = malloc( numParams * sizeof(double) );
-   (*p).alphas  = malloc( numVars * sizeof(double) );
+   p->numParams = numParams;
+   p->numVars = numVars;
+   p->params  = malloc( numParams * sizeof(double) );
+   p->alphas  = malloc( numVars * sizeof(double) );
 
-   for (i = 0; i < numParams; ++i) (*p).params[i] = 10.0*randnum;
-   for (i = 0; i < numVars; ++i) (*p).alphas[i] = 2.0*randnum - 1.0;
-   normalize ((*p).alphas , (*p).numVars);
+   for (i = 0; i < numParams; ++i) p->params[i] = 10.0*randnum;
+   for (i = 0; i < numVars; ++i) p->alphas[i] = 2.0*randnum - 1.0;
+   normalize (p->alphas , p->numVars);
    return (p);
 }
 
 static double * regularSteadyState(Parameters * p, double * iv)
 {
    int i;
-   int N = (*p).numVars;
+   int N = p->numVars;
    double * ss, * alphas = malloc(N*sizeof(double));
 
    for (i=0; i < N; ++i)
    {
-       alphas[i] = (*p).alphas[i];
-       (*p).alphas[i] = 1.0;
+       alphas[i] = p->alphas[i];
+       p->alphas[i] = 1.0;
    }
 
    ss = steadyState(N,iv,ODE_FNC,(void*)p,SS_MIN_ERROR,SS_MAX_TIME,SS_MIN_DT);
    
    for (i=0; i < N; ++i)
-       (*p).alphas[i] = alphas[i];
+       p->alphas[i] = alphas[i];
    free(alphas);
 
    return ss;
@@ -186,7 +186,7 @@ static double * regularSteadyState(Parameters * p, double * iv)
 
 static double * unstableSteadyState(Parameters * p, double * iv)
 {
-   double * ss = steadyState((*p).numVars,iv,ODE_FNC,(void*)p,SS_MIN_ERROR,SS_MAX_TIME,SS_MIN_DT);
+   double * ss = steadyState(p->numVars,iv,ODE_FNC,(void*)p,SS_MIN_ERROR,SS_MAX_TIME,SS_MIN_DT);
    return ss;
 }
 
@@ -195,15 +195,15 @@ static double * findZeros(Parameters * p, double * x, double * fopt)
    int i;
    double * ss = 0;
    
-   _DU = malloc((*p).numVars*sizeof(double));
+   _DU = malloc(p->numVars*sizeof(double));
    _PARAM = p;
    
-   for (i=0; i < (*p).numVars; ++i)
+   for (i=0; i < p->numVars; ++i)
    {
        _U[i] = x[i];
    }
 
-   if (NelderMeadSimplexMethod((*p).numVars, &(FMIN), _U, 10.00, fopt, 1000.0, 1.0e-10) == success)
+   if (NelderMeadSimplexMethod(p->numVars, &(FMIN), _U, 10.00, fopt, 1000.0, 1.0e-10) == success)
    {
          if ((*fopt) <= 1.0e-5)
               ss = _DU;
@@ -223,11 +223,11 @@ double fitness(void * individual)
    Parameters * p = (Parameters*)individual;
    
    allPos = 1;
-   N = (*p).numVars;
+   N = p->numVars;
 
-   for (i=0; i < (*p).numVars; ++i)
+   for (i=0; i < p->numVars; ++i)
    {
-      if ((*p).alphas[i] < -MIN_EIG_DEV)
+      if (p->alphas[i] < -MIN_EIG_DEV)
       {
           allPos = 0;
           break;
@@ -247,7 +247,7 @@ double fitness(void * individual)
        }
    }*/
 
-   for (i=0; i < (*p).numVars; ++i)  //tell nelder-mead to avoid this value
+   for (i=0; i < p->numVars; ++i)  //tell nelder-mead to avoid this value
    {
        _U0[i] = ss0[i];
    }
@@ -374,20 +374,20 @@ void * mutate(void * individual)
    int i,j,n,m;
    Parameters * p = (Parameters*)individual;
 
-   n = (*p).numParams;
-   m = (*p).numVars;
+   n = p->numParams;
+   m = p->numVars;
 
    if (mtrand() < 0.5)
    {
       i = (int)(mtrand() * n);
-      (*p).params[i] *= randnum;
+      p->params[i] *= randnum;
    }
    else
    {
       j = (int)(mtrand() * m);
-      (*p).alphas[j] *= 2.0 * randnum - 1.0;
+      p->alphas[j] *= 2.0 * randnum - 1.0;
    }
-   normalize ((*p).alphas , m);
+   normalize (p->alphas , m);
    return (p);
 }
 
@@ -465,10 +465,10 @@ int callbackf(int gen, void ** pop, int popsz)
        for (i=0; i < popsz/2; ++i)
        {
            p = (Parameters*)pop[i];
-           for (j=0; j < (*p).numVars; ++j) (*p).alphas[j] *= 2.0 * randnum;
-           for (j=0; j < (*p).numParams; ++j) (*p).params[j] *= 2.0 * randnum;
-           normalize ((*p).alphas , (*p).numVars);
-           normalize ((*p).params , (*p).numParams);
+           for (j=0; j < p->numVars; ++j) p->alphas[j] *= 2.0 * randnum;
+           for (j=0; j < p->numParams; ++j) p->params[j] *= 2.0 * randnum;
+           normalize (p->alphas , p->numVars);
+           normalize (p->params , p->numParams);
        }
    }
 
@@ -484,27 +484,27 @@ static double** findTwoSteadyStates(Parameters * p0)
    if (!iv) return 0;
 
    p = clone((void*)p0);
-   for (i=0; i < (*p).numVars; ++i) (*p).alphas[i] = 1.0;
+   for (i=0; i < p->numVars; ++i) p->alphas[i] = 1.0;
 
-   iv2 = malloc( (*p).numVars * sizeof(double) ); //unstable point
-   for (i=0; i < (*p).numVars; ++i) iv2[i] = iv[i];
+   iv2 = malloc( p->numVars * sizeof(double) ); //unstable point
+   for (i=0; i < p->numVars; ++i) iv2[i] = iv[i];
 
    y = y0 = 0; //y0 and y are the two steady states (if they exist)
 
    for (i=0; i < 100; ++i)
    {
-      for (j=0; j < (*p).numVars; ++j)
+      for (j=0; j < p->numVars; ++j)
            iv2[j] = iv[j] + 10.0*randnum - 5.0;  //random perturbation
 
-      //y = steadyState((*p).numVars,iv2, ODE_FNC, p,SS_MIN_ERROR,SS_MAX_TIME,SS_MIN_DT); //steady state
+      //y = steadyState(p->numVars,iv2, ODE_FNC, p,SS_MIN_ERROR,SS_MAX_TIME,SS_MIN_DT); //steady state
       y = 0;
-      _DU = malloc( ((*p).numVars) * sizeof(double));
+      _DU = malloc( (p->numVars) * sizeof(double));
       _PARAM = p;
-      for (j=0; j < (*p).numVars; ++j)
+      for (j=0; j < p->numVars; ++j)
       {
           _U0[j] = _U[j] = INIT_VALUE[j];
       }
-      if (NelderMeadSimplexMethod((*p).numVars, &(FMIN), _U, 1.00, &fopt, 1000.0, 1.0e-10) == success)
+      if (NelderMeadSimplexMethod(p->numVars, &(FMIN), _U, 1.00, &fopt, 1000.0, 1.0e-10) == success)
       {
           if (fopt < 1.0e-5)
               y = _DU;
@@ -516,13 +516,13 @@ static double** findTwoSteadyStates(Parameters * p0)
 
       if (y)
       {
-          for (j=0; j < (*p).numVars; ++j)
+          for (j=0; j < p->numVars; ++j)
                if (y[j]==iv2[j])
                    y[j] = 0.0;
           if (y0)  //first steady state exists
           {
              diff = 0;  //difference between second steady state
-             for (j=0; j < (*p).numVars; ++j)
+             for (j=0; j < p->numVars; ++j)
                   diff += (y[j] - y0[j])*(y[j] - y0[j]);
 
              if (diff > MIN_ERROR) //significantly different

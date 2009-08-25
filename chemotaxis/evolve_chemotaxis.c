@@ -45,55 +45,55 @@ void chemotaxisODE(double time,double* u,double* du,void * p)
 	ReactionNetwork * rnet;
 	
 	net = (chemotaxis_network*)p;
-	u[FOOD] = MAX*gaussian(X0,Y0,(*net).x,(*net).y);  //update food
+	u[FOOD] = MAX*gaussian(X0,Y0,net->x,net->y);  //update food
 	
-	(*net).angle += /*(mtrand()-0.5) */ SPEED * u[ANGLE]; //update angle
+	net->angle += /*(mtrand()-0.5) */ SPEED * u[ANGLE]; //update angle
 	
 	//make sure angle is between 0 and 2*PI
-	if ((*net).angle > DOUBLEPI)
-		(*net).angle -= DOUBLEPI;
+	if (net->angle > DOUBLEPI)
+		net->angle -= DOUBLEPI;
 		
-	if ((*net).angle < DOUBLEPI)
-		(*net).angle += DOUBLEPI;
+	if (net->angle < DOUBLEPI)
+		net->angle += DOUBLEPI;
 	
-	angle = (*net).angle;
+	angle = net->angle;
 	
 	//update coordinates
 	if (THRUST > 0)
 	{
-		(*net).x += SPEED * (u[THRUST]) * cos(angle);
-		(*net).y += SPEED * (u[THRUST]) * sin(angle);
+		net->x += SPEED * (u[THRUST]) * cos(angle);
+		net->y += SPEED * (u[THRUST]) * sin(angle);
 	}
 	else
 	{
-		(*net).x += SPEED * cos(angle);
-		(*net).y += SPEED * sin(angle);
+		net->x += SPEED * cos(angle);
+		net->y += SPEED * sin(angle);
 	}
 	
 	//make sure location is within the grid
-	if ((*net).x > GRIDSZ) (*net).x = -GRIDSZ;
-	if ((*net).y > GRIDSZ) (*net).y = -GRIDSZ;
-	if ((*net).x < -GRIDSZ) (*net).x = GRIDSZ;
-	if ((*net).y < -GRIDSZ) (*net).y = GRIDSZ;
+	if (net->x > GRIDSZ) net->x = -GRIDSZ;
+	if (net->y > GRIDSZ) net->y = -GRIDSZ;
+	if (net->x < -GRIDSZ) net->x = GRIDSZ;
+	if (net->y < -GRIDSZ) net->y = GRIDSZ;
 	
 	//This is for recording the variability in the path, which is used to compute fitness
 	if (time > MEASURING_TIME)
 	{
-		if ((*net).x > (*net).xmax || (*net).xmax == 0.0) (*net).xmax =(*net).x;
-		if ((*net).x < (*net).xmin || (*net).xmin == 0.0) (*net).xmin =(*net).x;
-		if ((*net).y > (*net).ymax || (*net).ymax == 0.0) (*net).ymax =(*net).y;
-		if ((*net).y < (*net).ymin || (*net).ymin == 0.0) (*net).ymin =(*net).y;
+		if (net->x > net->xmax || net->xmax == 0.0) net->xmax =net->x;
+		if (net->x < net->xmin || net->xmin == 0.0) net->xmin =net->x;
+		if (net->y > net->ymax || net->ymax == 0.0) net->ymax =net->y;
+		if (net->y < net->ymin || net->ymin == 0.0) net->ymin =net->y;
 	}
 	
 	//This is for printing the path
 	if (FOUT)
-		fprintf(FOUT, "%lf\t%lf\t%lf\t%lf\n",u[0],(*net).x,(*net).y,(*net).angle);
+		fprintf(FOUT, "%lf\t%lf\t%lf\t%lf\n",u[0],net->x,net->y,net->angle);
 	
-	//ODEfunction(time,u,du,(*net).network);  //update species
+	//ODEfunction(time,u,du,net->network);  //update species
 	
 	//use rates and stoichiometry functions from the network evolution  library
 	
-	rnet = (*net).network;
+	rnet = net->network;
 	
 	numReactions = getNumReactions(rnet);
 	numVars = getNumSpecies(rnet);
@@ -129,49 +129,49 @@ void chemotaxisPropensity(double time,double* u,double* v,void * p)
 
 	net = (chemotaxis_network*)p;
 	
-	u[FOOD] = MAX*gaussian(X0,Y0,(*net).x,(*net).y);  //update food
+	u[FOOD] = MAX*gaussian(X0,Y0,net->x,net->y);  //update food
 	
-	(*net).angle += /*(mtrand()-0.5) */ SPEED * u[ANGLE]; 
-	if ((*net).angle > DOUBLEPI)
-		(*net).angle -= DOUBLEPI;
+	net->angle += /*(mtrand()-0.5) */ SPEED * u[ANGLE]; 
+	if (net->angle > DOUBLEPI)
+		net->angle -= DOUBLEPI;
 		
-	if ((*net).angle < DOUBLEPI)
-		(*net).angle += DOUBLEPI;
+	if (net->angle < DOUBLEPI)
+		net->angle += DOUBLEPI;
 	
-	angle = (*net).angle;
+	angle = net->angle;
 	
 	//update coordinates
 	if (THRUST > 0)
 	{
-		(*net).x += SPEED * (u[THRUST]) * cos(angle);
-		(*net).y += SPEED * (u[THRUST]) * sin(angle);
+		net->x += SPEED * (u[THRUST]) * cos(angle);
+		net->y += SPEED * (u[THRUST]) * sin(angle);
 	}
 	else
 	{
-		(*net).x += SPEED * cos(angle);
-		(*net).y += SPEED * sin(angle);
+		net->x += SPEED * cos(angle);
+		net->y += SPEED * sin(angle);
 	}
 	
-	if ((*net).x > GRIDSZ) (*net).x = -GRIDSZ;
-	if ((*net).y > GRIDSZ) (*net).y = -GRIDSZ;
-	if ((*net).x < -GRIDSZ) (*net).x = GRIDSZ;
-	if ((*net).y < -GRIDSZ) (*net).y = GRIDSZ;
+	if (net->x > GRIDSZ) net->x = -GRIDSZ;
+	if (net->y > GRIDSZ) net->y = -GRIDSZ;
+	if (net->x < -GRIDSZ) net->x = GRIDSZ;
+	if (net->y < -GRIDSZ) net->y = GRIDSZ;
 	
 	//used by fitness function
 	if (time > MEASURING_TIME)
 	{
-		if ((*net).x > (*net).xmax || (*net).xmax == 0.0) (*net).xmax =(*net).x;
-		if ((*net).x < (*net).xmin || (*net).xmin == 0.0) (*net).xmin =(*net).x;
-		if ((*net).y > (*net).ymax || (*net).ymax == 0.0) (*net).ymax =(*net).y;
-		if ((*net).y < (*net).ymin || (*net).ymin == 0.0) (*net).ymin =(*net).y;
+		if (net->x > net->xmax || net->xmax == 0.0) net->xmax =net->x;
+		if (net->x < net->xmin || net->xmin == 0.0) net->xmin =net->x;
+		if (net->y > net->ymax || net->ymax == 0.0) net->ymax =net->y;
+		if (net->y < net->ymin || net->ymin == 0.0) net->ymin =net->y;
 	}
 	
 	//print path to file
 	if (FOUT)
-		fprintf(FOUT, "%lf\t%lf\t%lf\t%lf\n",u[0],(*net).x,(*net).y,(*net).angle);
+		fprintf(FOUT, "%lf\t%lf\t%lf\t%lf\n",u[0],net->x,net->y,net->angle);
 	
 	//call propensity function from the network evolution library
-	rnet = (*net).network;
+	rnet = net->network;
 	
 	numReactions = getNumReactions(rnet);
 	
