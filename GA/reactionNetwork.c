@@ -474,10 +474,10 @@ GAindividual cloneNetwork(GAindividual p)
 	r2->parents = 0;
 	if (i > 0)
 	{
-		++i;
-		r2->parents = malloc(i*sizeof(int));
+		r2->parents = malloc((i+1)*sizeof(int));
 		for (j=0; j < i; ++j)
 			r2->parents[j] = r->parents[j];
+		r2->parents[i] = 0;
 	}
 	r2->id = r->id;
 	r2->type = r->type;

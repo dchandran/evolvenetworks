@@ -43,7 +43,7 @@ int main()
 	setInitialNetworkSize(6,2);  //network size
 	
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(1000,300,20,&callback);  
+	pop = evolveNetworks(200,100,30,&callback);  
 	
 	net = pop[0]; //get the best network
 	
@@ -91,7 +91,7 @@ void printLineage(GApopulation pop, int popSz, int num)
 
 			for (j=0; r->parents[j] != 0; ++j)
 				if (r->parents[j] < num)
-					ids2[ r->parents[j] ] = 1;
+					ids2[ r->parents[j] ] += 1;
 			
 			for (j=0; j < num; ++j)
 				ids[ j ] += ids2[ j ];
@@ -170,16 +170,16 @@ int callback(int iter,GApopulation pop,int popSz)
 
 	printf("%i\t%lf\t%i\n",iter,f,getNumSpecies((ReactionNetwork*)(pop[0])));
 	
-	if (iter > 1 && (iter % 10 == 0) && f < 0.5)
+	/*if (iter > 1 && (iter % 10 == 0) && f < 0.5)
 	{
 		for (i=1; i < popSz; ++i)
 		{
 			for (j=0; j < 10; ++j)
 				pop[i] = mutateNetwork(pop[i]);
 		}
-	}
+	}*/
 	
-	printLineage(pop,popSz,1000);
+	printLineage(pop,popSz,200);
 
 	if (f >= 0.5) return 1;  //stop
 	
