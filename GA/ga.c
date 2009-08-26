@@ -183,6 +183,11 @@ GApopulation GAnextGen(GApopulation currentGApopulation, int oldPopSz, int newPo
 			fitnessArray[k] = temp;
 			x2 = currentGApopulation[k2];
 			x1 = crossover(x1,x2);
+
+			if (x1 == currentGApopulation[k] || x1 == currentGApopulation[k2])
+			{
+				x1 = clone(x1); //cannot allow the same x1
+			}
 		}
 		else
 		{
@@ -193,12 +198,12 @@ GApopulation GAnextGen(GApopulation currentGApopulation, int oldPopSz, int newPo
 		{
 			x1 = mutate(x1);
 		}
+
 		nextGApopulation[i] = x1; //add to the new population
 	}
 	/*free the memory from the old population*/
 	if (keepOldGApopulation == 0)
 	{
-
 		for (i = 0; i < oldPopSz; ++i)
 			if (currentGApopulation[i] != NULL)
 				deleteGAindividual(currentGApopulation[i]);

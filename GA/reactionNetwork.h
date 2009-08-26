@@ -41,6 +41,12 @@ typedef struct
 	
 	//the network itself
 	GAindividual network;
+
+	//network ID
+	int id;
+
+	//parent network IDs for following evolutionary lineage (null terminated)
+	int * parents;
 }
 ReactionNetwork;
 

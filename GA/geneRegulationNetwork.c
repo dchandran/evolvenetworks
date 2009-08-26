@@ -461,7 +461,7 @@ void ratesForGeneRegulationNetwork(double time,double* u,double* rate,void * p)
 double * stoichiometryForGeneRegulationNetwork(void * p)
 {
 	int i,j,m,n;
-	double prod, num, denom, *N;
+	double *N;
 	GeneRegulationNetwork * net;
 	
 	net = (GeneRegulationNetwork*)(p);
@@ -486,7 +486,7 @@ double * stoichiometryForGeneRegulationNetwork(void * p)
 void printGeneRegulationNetwork(void * individual)
 {
 	int i,j,k,p,fix;
-	double prod, num, denom;
+	double num, denom;
 	GeneRegulationNetwork * net;
 	
 	if (!individual) return;

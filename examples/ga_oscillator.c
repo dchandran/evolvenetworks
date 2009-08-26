@@ -40,7 +40,7 @@ int main()
 	setInitialNetworkSize(6,3);  //network size
 	
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(1000,200,30,&callback);  
+	pop = evolveNetworks(1000,300,60,&callback);  
 	
 	net = pop[0]; //get the best network
 	
@@ -61,8 +61,7 @@ int main()
 	
 	/****** free all the networks returned by the genetic algorithm ************/
 	for (i=0; i < 50; ++i)
-		deleteNetwork(pop[i]);
-		
+		deleteNetwork(pop[i]);		
 	
 	return 0; //done
 }
@@ -108,6 +107,7 @@ double fitness(GAindividual p)
 		if (f < 0) f = -f; //negative correlation is just as good as positive (for oscillations)
 		free(y);
 	}
+
 	if(getNumSpecies(net) > 30)        //disallow large networks
 	  return (0);
 	return (f);
@@ -116,11 +116,12 @@ double fitness(GAindividual p)
 /* print the number of each generation and the fitness of the best network */
 int callback(int iter,GApopulation pop,int popSz)
 {
-	int i,j;
-	double f = fitness(pop[0]);
-	
+	int i,j,N;
+	double f = fitness(pop[0]), *iv, *y;
+
 	printf("%i\t%lf\n",iter,f);
-	if (iter > 50 && f < 0.5)
+	
+	if (iter > 1 && (iter % 10 == 0) && f < 0.5)
 	{
 		for (i=1; i < popSz; ++i)
 		{

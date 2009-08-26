@@ -129,10 +129,11 @@ void setFixedSpeciesForMassActionNetwork(GAindividual, int,int);
 /*! \brief Set parameters for randomly generating mass-action networks
  * \param double percent of reactions having two reactants instead of one
  * \param double percent of reactions having two products instead of one
+ * \param double percent of reactions representing creation or degradation (i.e. no products or reactants)
  * \param double average rate constant
  * \ingroup massaction
 */
-void setParametersForMassActionNetwork(double , double , double );
+void setParametersForMassActionNetwork(double , double , double, double );
 /*! \brief Set parameters for randomly generating mass-action networks
  * \param int average number of species
  * \param int average number of reactions

@@ -13,15 +13,17 @@
 
 static double CROSSOVER_PROB = 1.0;
 static double MUTATE_COEFF_PROB = 0.5;
+static double PROB_NOTHING = 0.5;
 static double PROB_SECOND_REACTANT = 0.3;
 static double PROB_SECOND_PRODUCT = 0.3;
 static double AVG_RATE_CONSTANT = 1.0;
-static int AVG_NUM_SPECIES = 1.0;
-static int AVG_NUM_REACTIONS = 1.0;
+static int AVG_NUM_SPECIES = 1;
+static int AVG_NUM_REACTIONS = 1;
 
-void setParametersForMassActionNetwork(double prob1, double prob2, double k)
+void setParametersForMassActionNetwork(double prob1, double prob2, double empty, double k)
 {
 	AVG_RATE_CONSTANT = k;
+	PROB_NOTHING = empty;
 	PROB_SECOND_REACTANT = prob1;
 	PROB_SECOND_PRODUCT = prob2;
 }
@@ -100,7 +102,7 @@ void* cloneMassActionNetwork(void * individual)
 
 void* crossoverMassActionNetwork(void * individualA, void * individualB)
 {
-	int i, j, i1, i2, n = 0, m = 0; 
+	int i, i1, i2, n = 0, m = 0; 
 	MassActionNetwork * net1, * net2, * net3;
 	
 	if (mtrand() > CROSSOVER_PROB) return mutateMassActionNetwork(cloneMassActionNetwork(individualA));  //do crossover?
@@ -160,7 +162,7 @@ void* crossoverMassActionNetwork(void * individualA, void * individualB)
 
 void* mutateMassActionNetwork(void * individual)
 {
-	int i,j,j2,k,m,n;
+	int i,j,j2,m,n;
 	MassActionNetwork * net, * net2;
 	
 	net = (MassActionNetwork*)individual;
@@ -290,7 +292,6 @@ double * stoichiometryForMassActionNetwork(void * p)
 	
 	n = net->reactions;
 	N = malloc(net->species * n * sizeof(double));
-	
 	for (i=0; i < n; ++i)
 	{
 		for (j=0; j < net->species; ++j)
@@ -333,7 +334,7 @@ void setFixedSpeciesForMassActionNetwork(void * individual, int i, int value)
 
 void printMassActionNetwork(void * individual)
 {
-	int i,j,k,fix;
+	int i,fix;
 	MassActionNetwork * net;
 	
 	if (!individual) return;
@@ -395,20 +396,26 @@ GApopulation randomMassActionNetworks(int num)
 		for (j=0; j < net->reactions; ++j)
 		{
 			net->k[j] = AVG_RATE_CONSTANT * 2.0 * mtrand();   //reaction rate constant
+			net->r1[j] = net->r2[j] = net->p1[j] = net->p2[j] = -1;
+
+			if (mtrand() < PROB_NOTHING)
+			{
+				if (mtrand() < 0.5) //no reactants
+					net->p1[j] = (int)(net->species * mtrand());  //first product
+				else  //no products
+					net->r1[j] = (int)(net->species * mtrand());  //first reactant
+			}
+			else  // at least one reactant and product
+			{
+				net->r1[j] = (int)(net->species * mtrand());  //first reactant
+				net->p1[j] = (int)(net->species * mtrand());  //first product
+			}
 			
-			net->r1[j] = (int)(net->species * mtrand());  //first reactant
-			
-			net->p1[j] = (int)(net->species * mtrand());  //first product
-			
-			if (mtrand() < PROB_SECOND_REACTANT) 
+			if (net->r1[j] >=0 && (mtrand() < PROB_SECOND_REACTANT))
 				net->r2[j] = (int)(net->species * mtrand()); //second reactant
-			else
-				net->r2[j] = -1;
 				
-			if (mtrand() < PROB_SECOND_PRODUCT) 
+			if (net->p2[j] >= 0 && (mtrand() < PROB_SECOND_PRODUCT))
 				net->p2[j] = (int)(net->species * mtrand()); //second product
-			else
-				net->p2[j] = -1;
 		}
 		
 		array[i] = net;

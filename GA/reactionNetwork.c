@@ -115,6 +115,8 @@ GApopulation randomNetworks(int sz0)
 			rnet = malloc(sizeof(ReactionNetwork));
 			rnet->type = MASS_ACTION_NETWORK;
 			rnet->network = P1[i];
+			rnet->id = i;
+			rnet->parents = 0;
 
 			P[i] = rnet;
 		}
@@ -130,8 +132,10 @@ GApopulation randomNetworks(int sz0)
 			rnet = malloc(sizeof(ReactionNetwork));
 			rnet->type = PROTEIN_INTERACTION_NETWORK;
 			rnet->network = P2[i];
+			rnet->parents = 0;
 
-			P[i] = rnet;
+			rnet->id = i+total;
+			P[i+total] = rnet;
 		}
 		total += r;
 	}
@@ -145,8 +149,10 @@ GApopulation randomNetworks(int sz0)
 			rnet = malloc(sizeof(ReactionNetwork));
 			rnet->type = GENE_REGULATION_NETWORK;
 			rnet->network = P3[i];
+			rnet->parents = 0;
 
-			P[i] = rnet;
+			rnet->id = i+total;
+			P[i+total] = rnet;
 		}
 	}
 
@@ -216,9 +222,6 @@ double * simulateNetworkODE( ReactionNetwork * r, double* iv, double time, doubl
 	double * N, * y;
 	int species = 0, reactions = 0;
 	void * p = 0;
-	MassActionNetwork * net1;
-	ProteinInteractionNetwork * net2;
-	GeneRegulationNetwork * net3;
 
 	if (!r || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 	
@@ -244,9 +247,6 @@ double * networkSteadyState( ReactionNetwork * r, double* iv)
 	double * N;
 	PropensityFunction rate;
 	double * y = 0;
-	MassActionNetwork * net1;
-	ProteinInteractionNetwork * net2;
-	GeneRegulationNetwork * net3;
 	void * p = 0;
 	int species = 0, reactions = 0;
 
@@ -276,9 +276,6 @@ double * simulateNetworkStochastically( ReactionNetwork * r, double* iv, double 
 	double * y = 0;
 	int species = 0, reactions = 0;
 	void * p = 0;
-	MassActionNetwork * net1;
-	ProteinInteractionNetwork * net2;
-	GeneRegulationNetwork * net3;
 
 	if (!r || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 	
@@ -291,7 +288,7 @@ double * simulateNetworkStochastically( ReactionNetwork * r, double* iv, double 
 	species = getNumSpecies(r);
 	reactions = getNumReactions(r);
 
-	y = SSA(species, reactions,	N, rate, iv, 0, time, 1.0E5, sz, p);
+	y = SSA(species, reactions,	N, rate, iv, 0.0, time, 1000000, sz, p);
 
 	free(N);
 	return y;
@@ -382,9 +379,9 @@ GAindividual mutateNetwork(GAindividual p)
 	if (f)
 	{
 		net = f(r->network);
-		r2 = malloc(sizeof(ReactionNetwork));
-		r2->type = r->type;
+		r2 = r;
 		r2->network = net;
+		
 		return r;
 	}
 	return 0;
@@ -397,6 +394,7 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 	GACrossoverFnc f;
 	GAindividual net;
 	ReactionNetwork * r;
+	int i,j,k;
 
 	if (r1->type != r2->type || r2->type < 0 || r2->type >= NUMBER_OF_NETWORK_TYPES)
 		return mutateNetwork(p1);
@@ -409,6 +407,27 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 		r = malloc(sizeof(ReactionNetwork));
 		r->type = r1->type;
 		r->network = net;
+		r->id = r1->id;
+		i = 0;
+		j = 0;
+		if (r1->parents)
+			while (r1->parents[i]) ++i;
+		if (r2->parents)
+			while (r2->parents[i]) ++j;
+		r->parents = 0;
+		if ((i+j) > 0)
+		{
+			r->parents = malloc((i+j+1)*sizeof(int));
+			r->parents[i+j] = 0;
+
+			if (i > 0)
+				for (k=0; k < i; ++k)
+					r->parents[k] = r1->parents[k];
+			if (j > 0)
+				for (k=0; k < j; ++k)
+					r->parents[k+i] = r2->parents[k];
+		}
+
 		return r;
 	}
 
@@ -422,6 +441,10 @@ void deleteNetwork(GAindividual p)
 	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return;
 	
 	deleteFunctions[r->type](r->network);
+	
+	if (r->parents)
+		free(r->parents);
+
 	free(r);
 }
 
@@ -429,11 +452,27 @@ GAindividual cloneNetwork(GAindividual p)
 {
 	ReactionNetwork * r = (ReactionNetwork*)(p);
 	ReactionNetwork * r2;
-	
+	int i,j;
+
 	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return p;
 	
 	r2 = malloc(sizeof(ReactionNetwork));
 	
+	i = 0;
+	if (r->parents)
+	{
+		while (r->parents[i]) ++i;
+	}
+
+	r2->parents = 0;
+	if (i > 0)
+	{
+		++i;
+		r2->parents = malloc(i*sizeof(int));
+		for (j=0; j < i; ++j)
+			r2->parents[j] = r->parents[j];
+	}
+	r2->id = r->id;
 	r2->type = r->type;
 	r2->network = cloneFunctions[r->type](r->network);
 	return r2;
@@ -466,12 +505,9 @@ GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GACallbackFnc callbackF
 
 double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs, int outputs)
 {
-	int i, j, k, l, m, cols, n;
+	int i, j, m, cols, n;
 	double * ss, * iv, closest, temp, sumOfSq;
 	ReactionNetwork * r = (ReactionNetwork*)(p);
-	MassActionNetwork * net1;
-	ProteinInteractionNetwork * net2;
-	GeneRegulationNetwork * net3;
 	SetFixedSpeciesFunction setFixed;
 	
 	cols = inputs + outputs;
