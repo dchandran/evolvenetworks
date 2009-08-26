@@ -393,7 +393,7 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 	GACrossoverFnc f;
 	GAindividual net;
 	ReactionNetwork * r;
-	int i,j,k;
+	int i,j,k,sz1,sz2;
 
 	if (r1->type != r2->type || r2->type < 0 || r2->type >= NUMBER_OF_NETWORK_TYPES)
 		return mutateNetwork(p1);
@@ -407,24 +407,45 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 		r->type = r1->type;
 		r->network = net;
 		r->id = r1->id;
-		i = 0;
-		j = 0;
+		i = j = sz1 = sz2 = 0;
 		if (r1->parents)
-			while (r1->parents[i]) ++i;
-		if (r2->parents)
-			while (r2->parents[j]) ++j;
-		r->parents = 0;
-		if ((i+j) > 0)
 		{
-			r->parents = malloc((i+j+1)*sizeof(int));
-			r->parents[i+j] = 0;
+			while (r1->parents[i]) 
+			{
+				j = 0;
+				while (j < i && r1->parents[i] != r1->parents[j])
+					++j;
+				if (j == i)
+					++sz1;
+				++i;
+			}
+		}
+		i = 0;
+		if (r2->parents)
+		{
+			while (r2->parents[i]) 
+			{
+				j = 0;
+				while (j < i && r2->parents[i] != r2->parents[j])
+					++j;
+				if (j == i)
+					++sz2;
+				++i;
+			}
+		}
 
-			if (i > 0)
-				for (k=0; k < i; ++k)
+		r->parents = 0;
+		if ((sz1+sz2) > 0)
+		{
+			r->parents = malloc((sz1+sz2+1)*sizeof(int));
+			r->parents[sz1+sz2] = 0;
+
+			if (sz1 > 0)
+				for (k=0; k < sz1; ++k)
 					r->parents[k] = r1->parents[k];
-			if (j > 0)
-				for (k=0; k < j; ++k)
-					r->parents[k+i] = r2->parents[k];
+			if (sz2 > 0)
+				for (k=0; k < sz2; ++k)
+					r->parents[k+sz1] = r2->parents[k];
 		}
 		else
 		{

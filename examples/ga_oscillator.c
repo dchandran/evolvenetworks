@@ -42,6 +42,8 @@ int main()
 	
 	setInitialNetworkSize(6,2);  //network size
 	
+	printf("generation\tbest fitness\tnetwork size\n");
+
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
 	pop = evolveNetworks(200,100,30,&callback);  
 	
@@ -91,7 +93,7 @@ void printLineage(GApopulation pop, int popSz, int num)
 
 			for (j=0; r->parents[j] != 0; ++j)
 				if (r->parents[j] < num)
-					ids2[ r->parents[j] ] += 1;
+					ids2[ r->parents[j] ] = 1;
 			
 			for (j=0; j < num; ++j)
 				ids[ j ] += ids2[ j ];
