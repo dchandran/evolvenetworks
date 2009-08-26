@@ -282,12 +282,12 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 ***********************************************************************/
 
 // is x < y ?
-int less(double x, double y) {
+static int less(double x, double y) {
 	return (x > y);
 }
 
 // exchange a[i] and a[j]
-void exch(GApopulation population, double* a, int i, int j) 
+static void exch(GApopulation population, double* a, int i, int j) 
 {
 	void * temp;
 	double swap;
@@ -302,7 +302,8 @@ void exch(GApopulation population, double* a, int i, int j)
 }
 
 // partition a[left] to a[right], assumes left < right
-int partition(GApopulation population, double* a, int left, int right) {
+static int partition(GApopulation population, double* a, int left, int right) 
+{
 	int i = left - 1;
 	int j = right;
 	while (1) {
@@ -318,7 +319,7 @@ int partition(GApopulation population, double* a, int left, int right) {
 }
 
 // quicksort helper a[left] to a[right]
-void quicksort(GApopulation population, double* a, int left, int right) 
+static void quicksort(GApopulation population, double* a, int left, int right) 
 {
 	int i = partition(population, a, left, right);
 

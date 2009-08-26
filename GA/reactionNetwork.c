@@ -505,7 +505,7 @@ GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GACallbackFnc callbackF
 
 double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs, int outputs)
 {
-	int i, j, m, cols, n;
+	int i, j, m, cols, n, best;
 	double * ss, * iv, closest, temp, sumOfSq;
 	ReactionNetwork * r = (ReactionNetwork*)(p);
 	SetFixedSpeciesFunction setFixed;
@@ -525,6 +525,8 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 
 	sumOfSq = 0.0;
 	iv = malloc( n * sizeof(double) );
+
+	best = -1;
 	
 	for (m=0; m < rows; ++m)
 	{	
@@ -537,18 +539,29 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 		ss = networkSteadyState(r,iv);
 		
 		if (ss) //error in simulation?
-		{			
+		{
 			for (i=0; i < outputs; ++i) //for each target output
 			{
-				closest = -1.0;
-				
-				for (j=inputs; j < n; ++j) //find best match
+				if (best < 0)
 				{
-					temp = (ss[j] - table[m][inputs+i]);
-					if ((closest < 0.0) || ((temp*temp) < closest))
-						closest = temp*temp;
+					closest = -1.0;
+					
+					for (j=inputs; j < n; ++j) //find best match
+					{
+						temp = (ss[j] - table[m][inputs+i]);
+						if ((closest < 0.0) || ((temp*temp) < closest))
+						{
+							closest = temp*temp;
+							best = j;
+						}
+					}
 				}
-				
+				else
+				{
+					j = best;
+					temp = (ss[j] - table[m][inputs+i]);
+					closest = temp*temp;
+				}
 				sumOfSq += closest;
 				
 				if (closest < 0.0)
@@ -558,7 +571,7 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 				}
 			}
 			
-			free(ss);		
+			free(ss);
 		}
 		else
 		{

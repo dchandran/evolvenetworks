@@ -23,6 +23,8 @@ double fitness(GAindividual p);
 /* print the number of each generation and the fitness of the best network */
 int callback(int iter,GApopulation pop,int popSz);
 
+FILE * lineageFile;
+
 /*main*/
 int main()
 {	
@@ -31,6 +33,7 @@ int main()
 	GApopulation pop;
 	ReactionNetwork * net;
 	
+	lineageFile = fopen("lineage.txt","w");
 	setFitnessFunction( &fitness );  //set the fitness function	
 	
 	//setNetworkType( MASS_ACTION_NETWORK );  //use this network type
@@ -40,11 +43,11 @@ int main()
 	setInitialNetworkSize(6,3);  //network size
 	
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(1000,300,60,&callback);  
+	pop = evolveNetworks(1000,300,10,&callback);  
 	
 	net = pop[0]; //get the best network
 	
-	printNetwork(net); //print the best network
+	printNetworkToFile(net,"network.txt"); //print the best network
 	
 	/******simulate the best network and write the result to a file************/
 	
@@ -63,9 +66,37 @@ int main()
 	for (i=0; i < 50; ++i)
 		deleteNetwork(pop[i]);		
 	
+	fclose(lineageFile);
+
 	return 0; //done
 }
 
+void printLineage(GApopulation pop, int popSz, int num)
+{
+	int i,j;
+	int * ids = malloc(num * sizeof(int));
+	ReactionNetwork * r;
+
+	for (i=0; i < num; ++i)
+		ids[i] = 0;
+
+	for (i=0; i < popSz; ++i)
+	{
+		r = (ReactionNetwork*)pop[i];
+		if (r->id < num)
+			ids[r->id] += 1;
+		if (r->parents)
+			for (j=0; r->parents[j] != 0; ++j)
+				if (r->parents[j] < num)
+					ids[ r->parents[j] ] += 1;
+	}
+	for (i=0; i < num; ++i)
+		if (i==0)
+			fprintf(lineageFile,"%i",ids[i]);
+		else
+			fprintf(lineageFile,",%i",ids[i]);
+	fprintf(lineageFile,"\n");
+}
 
 /* fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(GAindividual p)
@@ -130,6 +161,8 @@ int callback(int iter,GApopulation pop,int popSz)
 		}
 	}
 	
+	printLineage(pop,popSz,1000);
+
 	if (f >= 0.5) return 1;  //stop
 	
 	return 0;

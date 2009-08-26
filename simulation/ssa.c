@@ -91,7 +91,7 @@ double * SSA(int m, int n, double * N, void (*propensity)(double, double*,double
 
 double * getRatesFromSimulatedData(double* data, int rows, int cols1, int cols2, int skip, void (*f)(double,double*,double*,void*), void* param)
 {
-	int i,j,k;
+	int i,j;
 	double * y, * rates, * dat;
 	
 	y = malloc( cols1 * sizeof(double));

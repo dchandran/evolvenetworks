@@ -190,7 +190,7 @@ void* crossoverProteinInteractionNetwork(void * individualA, void * individualB)
 
 void* mutateProteinInteractionNetwork(void * individual)
 {
-	int i,j,j2,k,m,n,n2, * fixed, * proteins;
+	int i,j,j2,k,m,n,n2, * fixed;
 	double r, * totals;
 	ProteinInteractionNetwork * net;
 	Regulators * regulators;
@@ -400,10 +400,10 @@ void ratesForProteinInteractionNetwork(double time,double* u,double* rate,void *
 			}
 		}
 		if (!forward)
-			rate[2*i] += VMAX_RANGE/2.0 * u[i] / (km + u[i]);
+			rate[2*i] += VMAX_RANGE/2.0 * u[i] / (tot/2.0 + u[i]);
 		
 		if (!backward)
-			rate[2*i+1] += VMAX_RANGE/2.0 * (tot - u[i]) / (km + (tot - u[i]));
+			rate[2*i+1] += VMAX_RANGE/2.0 * (tot - u[i]) / (tot/2.0 + (tot - u[i]));
 	}
 }
 

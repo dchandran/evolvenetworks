@@ -36,12 +36,12 @@ int main()
 	
 	setFitnessFunction( &fitness );  //set the fitness function	
 	
-	setNetworkType( PROTEIN_INTERACTION_NETWORK );  //use this network type
+	setNetworkType( MASS_ACTION_NETWORK );  //use this network type
 	
-	setInitialNetworkSize(5,2);  //network size
+	setInitialNetworkSize(5,8);  //network size
 	
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(1000,200,30,&callback);  
+	pop = evolveNetworks(1000,200,10,&callback);  
 	
 	net = pop[0]; //get the best network
 	
