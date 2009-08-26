@@ -508,9 +508,9 @@ void printProteinInteractionNetwork(void * individual)
 			vmax = net->regulators[i].Vmax[j]; //vmax for this regulation
 			km = net->regulators[i].Km[j];  //km for this regulation
 			if (vmax != 0)
-				printf("vmax%i%i = %lf;\n ",vmax,i+1,j+1,vmax);
+				printf("vmax%i%i = %lf;\n ",i+1,j+1,vmax);
 			if (km != 0)
-				printf("km%i%i = %lf;\n ",km,i+1,j+1,km);	
+				printf("km%i%i = %lf;\n ",i+1,j+1,km);	
 		}
 	}
 }

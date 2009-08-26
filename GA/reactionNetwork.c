@@ -379,8 +379,7 @@ GAindividual mutateNetwork(GAindividual p)
 	if (f)
 	{
 		net = f(r->network);
-		r2 = r;
-		r2->network = net;
+		r->network = net;
 		
 		return r;
 	}
@@ -413,7 +412,7 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 		if (r1->parents)
 			while (r1->parents[i]) ++i;
 		if (r2->parents)
-			while (r2->parents[i]) ++j;
+			while (r2->parents[j]) ++j;
 		r->parents = 0;
 		if ((i+j) > 0)
 		{
@@ -426,6 +425,14 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 			if (j > 0)
 				for (k=0; k < j; ++k)
 					r->parents[k+i] = r2->parents[k];
+		}
+		else
+		{
+			r->parents = malloc((3)*sizeof(int));
+			r->parents[2] = 0;
+
+			r->parents[0] = r1->id;
+			r->parents[1] = r2->id;
 		}
 
 		return r;

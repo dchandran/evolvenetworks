@@ -40,10 +40,10 @@ int main()
 	setNetworkType( PROTEIN_INTERACTION_NETWORK );  //use this network type
 	//setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
 	
-	setInitialNetworkSize(6,3);  //network size
+	setInitialNetworkSize(6,2);  //network size
 	
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(1000,300,10,&callback);  
+	pop = evolveNetworks(1000,300,20,&callback);  
 	
 	net = pop[0]; //get the best network
 	
@@ -64,7 +64,7 @@ int main()
 	
 	/****** free all the networks returned by the genetic algorithm ************/
 	for (i=0; i < 50; ++i)
-		deleteNetwork(pop[i]);		
+		deleteNetwork(pop[i]);
 	
 	fclose(lineageFile);
 
@@ -74,7 +74,7 @@ int main()
 void printLineage(GApopulation pop, int popSz, int num)
 {
 	int i,j;
-	int * ids = malloc(num * sizeof(int));
+	int * ids = malloc(num * sizeof(int)), * ids2 = malloc(num * sizeof(int));
 	ReactionNetwork * r;
 
 	for (i=0; i < num; ++i)
@@ -83,19 +83,37 @@ void printLineage(GApopulation pop, int popSz, int num)
 	for (i=0; i < popSz; ++i)
 	{
 		r = (ReactionNetwork*)pop[i];
-		if (r->id < num)
-			ids[r->id] += 1;
+		
 		if (r->parents)
+		{
+			for (j=0; j < num; ++j)
+				ids2[j] = 0;
+
 			for (j=0; r->parents[j] != 0; ++j)
 				if (r->parents[j] < num)
-					ids[ r->parents[j] ] += 1;
+					ids2[ r->parents[j] ] = 1;
+			
+			for (j=0; j < num; ++j)
+				ids[ j ] += ids2[ j ];
+		}
+		else
+		{
+			if (r->id < num)
+				ids[r->id]++;
+		}
 	}
 	for (i=0; i < num; ++i)
 		if (i==0)
+		{
 			fprintf(lineageFile,"%i",ids[i]);
+		}
 		else
+		{
 			fprintf(lineageFile,",%i",ids[i]);
+		}
 	fprintf(lineageFile,"\n");
+	free(ids);
+	free(ids2);
 }
 
 /* fitness function that tests for oscillations by using correlation to a sine wave */
@@ -147,10 +165,10 @@ double fitness(GAindividual p)
 /* print the number of each generation and the fitness of the best network */
 int callback(int iter,GApopulation pop,int popSz)
 {
-	int i,j,N;
-	double f = fitness(pop[0]), *iv, *y;
+	int i,j;
+	double f = fitness(pop[0]);
 
-	printf("%i\t%lf\n",iter,f);
+	printf("%i\t%lf\t%i\n",iter,f,getNumSpecies((ReactionNetwork*)(pop[0])));
 	
 	if (iter > 1 && (iter % 10 == 0) && f < 0.5)
 	{
