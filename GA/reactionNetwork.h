@@ -297,7 +297,11 @@ GAindividual crossoverNetwork(GAindividual, GAindividual);
 	\param int number of rows in the input table
 	\param int number of input columns (first set of columns)
 	\param int number of output columns (last set of columns)
+	\param int 1=use correlation, not absolute differences. 0 = use absolute differences.
+	\param double ** can be 0. if non-zero, this matrix MUST BE THE SAME SIZE as the input table. 
+			The output from the network will be placed in this table. This is for the purpose of
+			comparing the results against the original table.
 	\return double fitness score = 1/(1 + sum_of_square_differences)
 	\ingroup genericNetwork
 */
-double compareSteadyStates(GAindividual, double **, int , int, int);
+double compareSteadyStates(GAindividual, double **, int , int, int, int, double ** );

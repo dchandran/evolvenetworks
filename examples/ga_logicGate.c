@@ -29,21 +29,22 @@ int callback(int iter,GApopulation pop,int popSz);
 /*main*/
 int main()
 {	
-	int i, N;
+	int i, N, num_rows, num_inputs, num_outputs;
 	double *iv, * y;
 	GApopulation pop;
 	GAindividual * best;
+	double ** table;
 	
 	setFitnessFunction( &fitness );  //set the fitness function	
 	
-	setNetworkType( MASS_ACTION_NETWORK );  //use this network type
+	setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
 	
 	setInitialNetworkSize(5,8);  //network size
 
 	printf("generation\tbest fitness\tnetwork size\n");
 	
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(1000,200,10,&callback);  
+	pop = evolveNetworks(1000,200,50,&callback);  
 	
 	best = pop[0]; //get the best network
 	
@@ -58,17 +59,27 @@ int main()
 	iv[0] = 0.1;
 	iv[1] = 10.0;
 	
-	y = networkSteadyState(best,iv);	
+	table = XORtable();
+
+	num_rows = 4;
+	num_inputs = 2;
+	num_outputs = 1;
 	
-	if (y)
+	compareSteadyStates(best, table, num_rows, num_inputs, num_outputs, 1, table);
+
+	//free table
+	for (i=0; i < 4; ++i)
 	{
-		for (i=0; i < N; ++i)
-			printf("%lf\t",y[i]);
-		free(y);
+		printf("%lf\t%lf\t%lf\n",table[i][0],table[i][1],table[i][2]);
 	}
-	else
-		printf("no ss\n");
+
+	for (i=0; i < 4; ++i)
+	{
+		free(table[i]);
+	}
 	
+	free(table);
+
 	/****** free all the networks returned by the genetic algorithm ************/
 	for (i=0; i < 50; ++i)
 		deleteNetwork(pop[i]);
@@ -91,7 +102,7 @@ double fitness(GAindividual p)
 	num_inputs = 2;
 	num_outputs = 1;
 	
-	score = compareSteadyStates(p, table, num_rows, num_inputs, num_outputs);
+	score = compareSteadyStates(p, table, num_rows, num_inputs, num_outputs, 1, 0);
 	
 	//free table
 	for (i=0; i < 4; ++i)

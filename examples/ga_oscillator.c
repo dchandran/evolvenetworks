@@ -36,11 +36,11 @@ int main()
 	lineageFile = fopen("lineage.txt","w");
 	setFitnessFunction( &fitness );  //set the fitness function	
 	
-	//setNetworkType( MASS_ACTION_NETWORK );  //use this network type
-	setNetworkType( PROTEIN_INTERACTION_NETWORK );  //use this network type
+	setNetworkType( MASS_ACTION_NETWORK );  //use this network type
+	//setNetworkType( PROTEIN_INTERACTION_NETWORK );  //use this network type
 	//setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
 	
-	setInitialNetworkSize(10,10);  //network size
+	setInitialNetworkSize(6,12);  //network size
 	
 	printf("generation\tbest fitness\tnetwork size\n");
 
