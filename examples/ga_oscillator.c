@@ -31,7 +31,7 @@ int main()
 	int i, N;
 	double * iv, * y;
 	GApopulation pop;
-	ReactionNetwork * net;
+	GAindividual * best;
 	
 	lineageFile = fopen("lineage.txt","w");
 	setFitnessFunction( &fitness );  //set the fitness function	
@@ -47,17 +47,17 @@ int main()
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
 	pop = evolveNetworks(800,300,40,&callback);  
 	
-	net = pop[0]; //get the best network
+	best = pop[0]; //get the best network
 	
-	printNetworkToFile(net,"network.txt"); //print the best network
+	printNetworkToFile(best,"network.txt"); //print the best network
 	
 	/******simulate the best network and write the result to a file************/
 	
-	N = getNumSpecies(net);    //number of variables in the network
+	N = getNumSpecies(best);    //number of variables in the network
 	iv = (double*)malloc( N * sizeof(double));  
 	for (i = 0; i < N; ++i) iv[i] = 0.0; //initial values
 	
-	y = simulateNetworkODE(net, iv, 500, 1); //simulate
+	y = simulateNetworkODE(best, iv, 500, 1); //simulate
 	free(iv);
 	
 	writeToFile("dat.txt",y,500,N+1);  //print to file
@@ -75,33 +75,34 @@ int main()
 
 void printLineage(GApopulation pop, int popSz, int num)
 {
-	int i,j;
+	int i,j,*parents;
 	int * ids = (int*)malloc(num * sizeof(int)), * ids2 = (int*)malloc(num * sizeof(int));
-	ReactionNetwork * r;
+	GAindividual * p;
 
 	for (i=0; i < num; ++i)
 		ids[i] = 0;
 
 	for (i=0; i < popSz; ++i)
 	{
-		r = (ReactionNetwork*)pop[i];
-		
-		if (r->parents)
+		p = pop[i];
+		parents = getParentIDs(p);
+		if (parents)
 		{
 			for (j=0; j < num; ++j)
 				ids2[j] = 0;
 
-			for (j=0; r->parents[j] != 0; ++j)
-				if (r->parents[j] < num)
-					ids2[ r->parents[j] ] = 1;
+			for (j=0; parents[j] != 0; ++j)
+				if (parents[j] < num)
+					ids2[ parents[j] ] = 1;
 			
 			for (j=0; j < num; ++j)
 				ids[ j ] += ids2[ j ];
 		}
 		else
 		{
-			if (r->id < num)
-				ids[r->id]++;
+			j = getID(p);
+			if (j < num)
+				ids[j]++;
 		}
 	}
 	for (i=0; i < num; ++i)
@@ -167,12 +168,10 @@ double fitness(GAindividual p)
 /* print the number of each generation and the fitness of the best network */
 int callback(int iter,GApopulation pop,int popSz)
 {
-	int i,j;
 	double f = fitness(pop[0]);
-
-	printf("%i\t%lf\t%i\n",iter,f,getNumSpecies((ReactionNetwork*)(pop[0])));
+	/*int i,j;
 	
-	/*if (iter > 1 && (iter % 10 == 0) && f < 0.5)
+	if (iter > 1 && (iter % 10 == 0) && f < 0.5)
 	{
 		for (i=1; i < popSz; ++i)
 		{
@@ -181,6 +180,7 @@ int callback(int iter,GApopulation pop,int popSz)
 		}
 	}*/
 	
+	printf("%i\t%lf\t%i\n",iter,f,getNumSpecies((ReactionNetwork*)(pop[0])));
 	printLineage(pop,popSz,200);
 
 	if (f >= 0.5) return 1;  //stop

@@ -6,6 +6,7 @@
 
 *********************************************************/
 
+static int TRACK_NETWORK_PARENTS = 1;
 static int NUMBER_OF_NETWORK_TYPES = 3;
 
 static double networkProbs[] =
@@ -51,6 +52,8 @@ static GACloneFnc cloneFunctions[] =
 };
 
 typedef double* (*StoichiometryFunction)(GAindividual);
+typedef int (*GetNumSpeciesFunction)(GAindividual);
+typedef int (*GetNumReactionsFunction)(GAindividual);
 
 static StoichiometryFunction stoicFunctions[] =
 {
@@ -59,16 +62,12 @@ static StoichiometryFunction stoicFunctions[] =
 	&stoichiometryForGeneRegulationNetwork
 };
 
-typedef int (*GetNumSpeciesFunction)(GAindividual);
-
 static GetNumSpeciesFunction getNumSpeciesFunctions[] =
 {
 	&getNumSpeciesForMassActionNetwork,
 	&getNumSpeciesForProteinInteractionNetwork, 
 	&getNumSpeciesForGeneRegulationNetwork
 };
-
-typedef int (*GetNumReactionsFunction)(GAindividual);
 
 static GetNumReactionsFunction getNumReactionsFunctions[] =
 {
@@ -215,8 +214,9 @@ void setNetworkTypeProbability(int i, double p)
 		for (i=0; i < NUMBER_OF_NETWORK_TYPES; ++i) networkProbs[i] /= total;
 }
 
-double * simulateNetworkODE( ReactionNetwork * r, double* iv, double time, double dt)
+double * simulateNetworkODE( GAindividual individual, double* iv, double time, double dt)
 {	
+	ReactionNetwork * r = (ReactionNetwork*)individual;
 	StoichiometryFunction stoic;
 	PropensityFunction rate;
 	double * N, * y;
@@ -241,8 +241,9 @@ double * simulateNetworkODE( ReactionNetwork * r, double* iv, double time, doubl
 	return y;
 }
 
-double * networkSteadyState( ReactionNetwork * r, double* iv)
+double * networkSteadyState( GAindividual individual, double* iv)
 {
+	ReactionNetwork * r = (ReactionNetwork*)individual;
 	StoichiometryFunction stoic;
 	double * N;
 	PropensityFunction rate;
@@ -268,8 +269,9 @@ double * networkSteadyState( ReactionNetwork * r, double* iv)
 	return y;
 }
 
-double * simulateNetworkStochastically( ReactionNetwork * r, double* iv, double time, int* sz)
-{
+double * simulateNetworkStochastically( GAindividual individual, double* iv, double time, int* sz)
+{	
+	ReactionNetwork * r = (ReactionNetwork*)individual;
 	StoichiometryFunction stoic;
 	double * N;
 	PropensityFunction rate;
@@ -294,8 +296,9 @@ double * simulateNetworkStochastically( ReactionNetwork * r, double* iv, double 
 	return y;
 }
 
-void printNetwork(ReactionNetwork * r)
+void printNetwork(GAindividual individual)
 {
+	ReactionNetwork * r = (ReactionNetwork*)individual;
 	PrintNetworkFunction f;
 	
 	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return;
@@ -305,8 +308,9 @@ void printNetwork(ReactionNetwork * r)
 	f(r->network);
 }
 
-void printNetworkToFile(ReactionNetwork * r, char * filename)
+void printNetworkToFile(GAindividual individual, char * filename)
 {
+	ReactionNetwork * r = (ReactionNetwork*)individual;
 	FILE *stream ;
 	if ((stream = freopen(filename, "w", stdout)) == 0)
 		return;
@@ -316,8 +320,9 @@ void printNetworkToFile(ReactionNetwork * r, char * filename)
 	stream = freopen("CON", "w", stdout);
 }
 
-int getNumSpecies(ReactionNetwork * r)
+int getNumSpecies(GAindividual individual)
 {
+	ReactionNetwork * r = (ReactionNetwork*)individual;
 	GetNumSpeciesFunction f;
 	
 	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
@@ -327,8 +332,9 @@ int getNumSpecies(ReactionNetwork * r)
 	return (f(r->network));
 }
 
-int getNumReactions(ReactionNetwork * r)
+int getNumReactions(GAindividual individual)
 {
+	ReactionNetwork * r = (ReactionNetwork*)individual;
 	GetNumReactionsFunction f;
 	
 	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
@@ -338,8 +344,9 @@ int getNumReactions(ReactionNetwork * r)
 	return (f(r->network));
 }
 
-double* getReactionRates(ReactionNetwork * r, double* u)
+double* getReactionRates(GAindividual individual, double* u)
 {
+	ReactionNetwork * r = (ReactionNetwork*)individual;
 	PropensityFunction f;
 	double * rates;
 	
@@ -352,8 +359,9 @@ double* getReactionRates(ReactionNetwork * r, double* u)
 	return rates;
 }
 
-double* getStoichiometryMatrix(ReactionNetwork * r)
+double* getStoichiometryMatrix(GAindividual individual)
 {
+	ReactionNetwork * r = (ReactionNetwork*)individual;
 	StoichiometryFunction stoic;
 	double * N;
 
@@ -370,7 +378,6 @@ GAindividual mutateNetwork(GAindividual p)
 	GAMutateFnc f;
 
 	GAindividual net;
-	ReactionNetwork * r2;
 	
 	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return p;
 	
@@ -435,27 +442,29 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 		}
 
 		r->parents = 0;
-		if ((sz1+sz2) > 0)
+		if (TRACK_NETWORK_PARENTS)
 		{
-			r->parents = (int*) malloc((sz1+sz2+1)*sizeof(int));
-			r->parents[sz1+sz2] = 0;
+			if ((sz1+sz2) > 0)
+			{
+				r->parents = (int*) malloc((sz1+sz2+1)*sizeof(int));
+				r->parents[sz1+sz2] = 0;
 
-			if (sz1 > 0)
-				for (k=0; k < sz1; ++k)
-					r->parents[k] = r1->parents[k];
-			if (sz2 > 0)
-				for (k=0; k < sz2; ++k)
-					r->parents[k+sz1] = r2->parents[k];
+				if (sz1 > 0)
+					for (k=0; k < sz1; ++k)
+						r->parents[k] = r1->parents[k];
+				if (sz2 > 0)
+					for (k=0; k < sz2; ++k)
+						r->parents[k+sz1] = r2->parents[k];
+			}
+			else
+			{
+				r->parents = (int*) malloc((3)*sizeof(int));
+				r->parents[2] = 0;
+
+				r->parents[0] = r1->id;
+				r->parents[1] = r2->id;
+			}
 		}
-		else
-		{
-			r->parents = (int*) malloc((3)*sizeof(int));
-			r->parents[2] = 0;
-
-			r->parents[0] = r1->id;
-			r->parents[1] = r2->id;
-		}
-
 		return r;
 	}
 
@@ -493,7 +502,7 @@ GAindividual cloneNetwork(GAindividual p)
 	}
 
 	r2->parents = 0;
-	if (i > 0)
+	if (TRACK_NETWORK_PARENTS && (i > 0))
 	{
 		r2->parents = (int*) malloc((i+1)*sizeof(int));
 		for (j=0; j < i; ++j)
@@ -530,6 +539,47 @@ GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GACallbackFnc callbackF
 	P = GArun(P,sz0,sz1,maxIter,callbackFunc);
 	return P;
 }
+
+/*******************************
+  Related to lineage tracking
+*******************************/
+
+void lineageTrackingON()
+{
+	TRACK_NETWORK_PARENTS = 1;
+}
+
+void lineageTrackingOFF()
+{
+	TRACK_NETWORK_PARENTS = 0;
+}
+
+void setID(GAindividual individual,int i)
+{
+	ReactionNetwork * r = (ReactionNetwork*)individual;
+	if (r)
+		r->id = i;
+}
+
+int getID(GAindividual individual)
+{
+	ReactionNetwork * r = (ReactionNetwork*)individual;
+	if (!r) return -1;
+
+	return r->id;
+}
+
+int* getParentIDs(GAindividual individual)
+{
+	ReactionNetwork * r = (ReactionNetwork*)individual;
+
+	if (!r) return 0;
+	return r->parents;
+}
+
+/*******************************
+   Special fitness function
+*******************************/
 
 double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs, int outputs)
 {

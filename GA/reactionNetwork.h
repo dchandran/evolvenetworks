@@ -60,7 +60,7 @@ ReactionNetwork;
  \param ReactionNetwork network
  \ingroup genericNetwork
 */
-void printNetwork(ReactionNetwork *);
+void printNetwork(GAindividual);
 /*! \brief print the reaction network to a file. 
     This function simply calls the print functions of one 
 	of the individual networks.
@@ -68,32 +68,68 @@ void printNetwork(ReactionNetwork *);
  \param char* file name
  \ingroup genericNetwork
 */
-void printNetworkToFile(ReactionNetwork *, char * filename);
+void printNetworkToFile(GAindividual, char * filename);
 /*! \brief get the number of variables (e.g. genes, molecular species, etc.) in the network.
     This is equal to the number of rows in the stoichiometry matrix
  \param ReactionNetwork network
  \ingroup genericNetwork
 */
-int getNumSpecies(ReactionNetwork *);
+int getNumSpecies(GAindividual);
 /*! \brief get the number of reactions in the network. 
     This is equal to the number of columns in the stoichiometry matrix
  \param ReactionNetwork network
  \ingroup genericNetwork
 */
-int getNumReactions(ReactionNetwork *);
+int getNumReactions(GAindividual);
 /*! \brief get the stoichiometry matrix for the network
  \param ReactionNetwork network
  \return double* linearized 2D matrix -- use getValue(i,j)
  \ingroup genericNetwork
 */
-double* getStoichiometryMatrix(ReactionNetwork *);
+double* getStoichiometryMatrix(GAindividual);
 /*! \brief get the reaction rates at a given point
  \param ReactionNetwork network
  \param double* concentration values at which the rate should be calculated
  \return double* values for the rates at this point
  \ingroup genericNetwork
 */
-double* getReactionRates(ReactionNetwork *, double*);
+double* getReactionRates(GAindividual, double*);
+
+/************************************
+  @name Related to lineage tracking
+*************************************/
+/*! \brief turn on lineage tracking. This will track the parents of each individual when crossover occurs
+ \ingroup genericNetwork
+*/
+void lineageTrackingON();
+
+/*! \brief turn on lineage tracking. 
+	This will prevent tracking of the parents of each individual when crossover occurs
+	ReactioNetwork's parent field will be 0.
+ \ingroup genericNetwork
+*/
+void lineageTrackingOFF();
+
+/*! \brief set the ID of this individual
+ \param ReactionNetwork network
+ \param int ID for this individual
+ \ingroup genericNetwork
+*/
+void setID(GAindividual,int);
+
+/*! \brief get the ID of this individual
+ \param ReactionNetwork network
+ \return int ID for this individual
+ \ingroup genericNetwork
+*/
+int getID(GAindividual);
+
+/*! \brief get the ID for all ancestors of this individual
+ \param ReactionNetwork network
+ \return int* NULL TERMINATED array with IDs of parents. DO NOT FREE
+ \ingroup genericNetwork
+*/
+int* getParentIDs(GAindividual);
 
 /***********************************************************
   @name Simulation functions
@@ -121,7 +157,7 @@ void setStoichiometryFunction( int, double* (*f)(GAindividual) );
  \return double* linearized 2D array, use getValue (see cvodesim.h)
  \ingroup genericNetwork
 */
-double * simulateNetworkODE( ReactionNetwork *, double*, double, double );
+double * simulateNetworkODE( GAindividual, double*, double, double );
 
 /*! \brief get steady state of a system using a system (see cvodesim.h)
  \param ReactionNetwork network to simulate
@@ -129,7 +165,7 @@ double * simulateNetworkODE( ReactionNetwork *, double*, double, double );
  \return double* steady state values
  \ingroup genericNetwork
 */
-double * networkSteadyState( ReactionNetwork *, double* );
+double * networkSteadyState( GAindividual, double* );
 
 /*! \brief simulate using stochastic simulation algorithm (see ssa.h)
  \param ReactionNetwork network to simulate
@@ -140,13 +176,16 @@ double * networkSteadyState( ReactionNetwork *, double* );
  \return double* linearized 2D array, use getValue (see cvodesim.h)
  \ingroup genericNetwork
 */
-double * simulateNetworkStochastically( ReactionNetwork *, double*, double, int* );
+double * simulateNetworkStochastically( GAindividual, double*, double, int* );
 
 /**************************************
   @name Functions for GA
 ***************************************/
 
 /*! \brief set the fitness function for the GA. Use before calling evolveNetworks.
+	IMPORTANT: higher fitness = better. If you want to minimize a function, simple invert
+	the value, e.g. 1/(1+x) or something similar. Otherwise, you will need to override the selection function using
+	GAsetSelectionFunction, because the default selection function assumes higher fitness is better. 
  * \param GAFitnessFnc function pointer (cannot be 0)
  \ingroup genericNetwork
 */
@@ -195,7 +234,8 @@ void setInitialNetworkSize(int,int);
  \param int number of individuals in each successive population (use relatively small number for speed)
  \param int number of generations for evolution
  \param GACallbackFnc a callback function (optional, use 0 for none)
- \return GApopulation the final evolved population of networks
+ \return GApopulation the final evolved population of networks. Population is sorted by fitness of individuals.
+		The first individual in the population (index 0) will be the best individual.
  \ingroup genericNetwork
 */
 GApopulation evolveNetworks(int,int,int,GACallbackFnc);

@@ -30,7 +30,7 @@ int main()
 	int i, r, n, sz;
 	double * iv, * y;
 	GApopulation pop;
-	ReactionNetwork * net;
+	GAindividual * best;
 
 	setFitnessFunction( &fitness );  //set the fitness function	
 	setNetworkType( GENE_REGULATION_NETWORK );  //use this network type 
@@ -39,18 +39,18 @@ int main()
 	//evolve using 1000 initial networks, 500 neworks during each successive generation, for 20 generations
 	pop = evolveNetworks(200,100,20,&callback);  
 
-	net = (ReactionNetwork*)pop[0];  //get the best network
+	best = pop[0];  //get the best network
 
-	printNetwork(net); //print the best network
+	printNetwork(best); //print the best network
 
 	/******simulate the best network and write the result to a file************/
 
-	r = getNumReactions(net);
-	n = getNumSpecies(net);
+	r = getNumReactions(best);
+	n = getNumSpecies(best);
 	iv = (double*)malloc( n * sizeof(double));
 	for (i = 0; i < n; ++i) iv[i] = 0.0;
 
-	y = simulateNetworkStochastically(net,iv,500,&sz);  //stochastic simulation
+	y = simulateNetworkStochastically(best,iv,500,&sz);  //stochastic simulation
 	free(iv);
 
 	writeToFile("dat.txt",y,sz,n+1);  //write table to file
@@ -70,17 +70,16 @@ double fitness(GAindividual p)
 {
 	int i,r,n,sz;
 	double f, sd, dt, time, * iv, * y, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0;
-	ReactionNetwork * net = (ReactionNetwork*)p;  //the network to test
 
-	n = getNumSpecies(net);
-	r = getNumReactions(net);
+	n = getNumSpecies(p);
+	r = getNumReactions(p);
 
 	iv = (double*)malloc( n * sizeof(double));  //initial concentrations
 	for (i = 0; i < n; ++i) iv[i] = 0.0;
 
 	time = 500.0;
 
-	y = simulateNetworkStochastically(net,iv,time,&sz);  //stochastic simulation
+	y = simulateNetworkStochastically(p,iv,time,&sz);  //stochastic simulation
 	free(iv);
 
 	f = 0;
@@ -93,19 +92,21 @@ double fitness(GAindividual p)
 			mX += getValue(y,n+1,i,1) * dt;
 			mX2 += getValue(y,n+1,i,1)*getValue(y,n+1,i,1)*dt;
 		}
+
 		mX /= time;
 		mX2 /= time;
 
 		sd = sqrt(mX2 - mX*mX);  //standard deviation
 
-		if (sd <= 0 || mX <= 0 || mX > 5.0) 
+		if (sd <= 0 || mX <= 0 || mX > 5.0)
 			f = 0.0;
 		else
 			f = mX / sd;   // CV = sdev/mean, but the fitness = 1/CV = mean/sdev
 
 		free(y);
 	}
-	if(getNumSpecies(net) > 5)        //disallow large networks
+
+	if(getNumSpecies(p) > 5)       //disallow large networks
 		f = 0.0;
 
 	return (f);

@@ -32,31 +32,33 @@ int main()
 	int i, N;
 	double *iv, * y;
 	GApopulation pop;
-	ReactionNetwork * net;
+	GAindividual * best;
 	
 	setFitnessFunction( &fitness );  //set the fitness function	
 	
 	setNetworkType( MASS_ACTION_NETWORK );  //use this network type
 	
 	setInitialNetworkSize(5,8);  //network size
+
+	printf("generation\tbest fitness\tnetwork size\n");
 	
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
 	pop = evolveNetworks(1000,200,10,&callback);  
 	
-	net = pop[0]; //get the best network
+	best = pop[0]; //get the best network
 	
-	printNetwork(net); //print the best network
+	printNetwork(best); //print the best network
 	
-	printNetworkToFile(net,"network.txt"); //print the best network
+	printNetworkToFile(best,"network.txt"); //print the best network
 	
-	N = getNumSpecies(net);
+	N = getNumSpecies(best);
 	iv = (double*)malloc( N * sizeof(double) );
 	for (i=0; i < N; ++i)
 		iv[i] = 0.0;
 	iv[0] = 0.1;
 	iv[1] = 10.0;
 	
-	y = networkSteadyState((ReactionNetwork*)(net),iv);	
+	y = networkSteadyState(best,iv);	
 	
 	if (y)
 	{
@@ -70,11 +72,9 @@ int main()
 	/****** free all the networks returned by the genetic algorithm ************/
 	for (i=0; i < 50; ++i)
 		deleteNetwork(pop[i]);
-
 	
 	return 0; //done
 }
-
 
 /* 
 fitness function that tests how well the steady state outputs match the
@@ -82,7 +82,7 @@ given input/output table
 */
 double fitness(GAindividual p)
 {
-	int i,j, num_rows, num_inputs, num_outputs;
+	int i, num_rows, num_inputs, num_outputs;
 	double score;
 	
 	double ** table = XORtable();
@@ -107,7 +107,6 @@ double fitness(GAindividual p)
 /* print the number of each generation and the fitness of the best network */
 int callback(int iter,GApopulation pop,int popSz)
 {
-	int i,j;
 	double f = fitness(pop[0]);
 	
 	printf("%i\t%lf\n",iter,f);
