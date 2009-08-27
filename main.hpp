@@ -93,7 +93,7 @@ The wrapper provides support for event functions and user defined structs as par
 	The main functions are: GAinit and GArun
  */
 
-/*! \defgroup geneticnetwork Evolve bi-molecular network
+/*! \defgroup geneticnetwork Evolve gene regulatory networks
    \brief 
    	This file defines a chemical reaction network using fractional saturation rate laws. 
 	The 
