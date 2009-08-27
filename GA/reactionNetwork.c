@@ -236,8 +236,6 @@ double * simulateNetworkODE( GAindividual individual, double* iv, double time, d
 	N = stoic(r->network);
 	y = ODEsim2(species, reactions,	N, rate, iv, 0, time, dt, p);
 
-	p = 0;
-
 	free(N);
 
 	return y;
