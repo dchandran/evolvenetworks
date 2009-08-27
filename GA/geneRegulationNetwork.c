@@ -13,18 +13,18 @@
 
 static double VMAX_RANGE = 10.0;
 static double KA_RANGE = 10.0;
-static double TF_RANGE = 4.0;
 static double DEG_RANGE = 2.0;
+static int TF_RANGE = 4;
 static int AVG_NUM_GENES = 5;
 static int AVG_NUM_REGULATIONS = 2;
 
 static double CROSSOVER_PROB = 1.0;
 static double MUTATE_KA = 0.2;
-static double MUTATE_DEGRADE = 0.2;
+static double MUTATE_PRODUCTION = 0.2;
 static double MUTATE_COMPLEX = 0.2;
 static double ADD_GENE = 0.2;
 
-void setParametersForGeneRegulationNetwork(double ka, double tfs, double vmax, double deg)
+void setParametersForGeneRegulationNetwork(int tfs, double ka, double vmax, double deg)
 {
 	KA_RANGE = ka;
 	TF_RANGE = tfs;
@@ -48,7 +48,7 @@ void setMutationAndCrossoverRatesForGeneRegulationNetwork(double ka, double degr
 	if (crossover > 1.0) crossover /= 100.0;
 	CROSSOVER_PROB = crossover;
 	MUTATE_KA = ka/total;
-	MUTATE_DEGRADE = degrade/total;
+	MUTATE_PRODUCTION = degrade/total;
 	MUTATE_COMPLEX = complex/total;
 	ADD_GENE = add/total;
 }
@@ -57,7 +57,7 @@ void setMutationAndCrossoverRatesForGeneRegulationNetwork(double ka, double degr
     Clone, delete, mutate, crossover  (required by GA)
 *********************************************************/
 
-void deleteGeneRegulationNetwork(void * individual)
+void deleteGeneRegulationNetwork(GAindividual individual)
 {
 	int i;
 	GeneRegulationNetwork * net;
@@ -81,7 +81,7 @@ void deleteGeneRegulationNetwork(void * individual)
 		free (net->fixed);
 }
 
-void* cloneGeneRegulationNetwork(void * individual)
+GAindividual cloneGeneRegulationNetwork(GAindividual individual)
 {
 	int i,j,m,n;
 	GeneRegulationNetwork * net, * net2;
@@ -96,7 +96,7 @@ void* cloneGeneRegulationNetwork(void * individual)
 	net2->species = m;
 	net2->numComplexes = n;
 	
-	net2->complexes = (complex*) malloc( n * sizeof (complex) );
+	net2->complexes = (TFComplex*) malloc( n * sizeof (TFComplex) );
 	net2->targetGene = (int*) malloc( n * sizeof(int) );
 	net2->Ka = (double*) malloc( n * sizeof(double) );
 	net2->degradation = (double*) malloc( m * sizeof(double) );
@@ -121,10 +121,10 @@ void* cloneGeneRegulationNetwork(void * individual)
 		net2->Vmax[i] = net->Vmax[i];
 	}
 	
-	return (void*)(net2);  //done
+	return (GAindividual)(net2);  //done
 }
 
-void* crossoverGeneRegulationNetwork(void * individualA, void * individualB)  //crossover between complexes in two networks
+GAindividual crossoverGeneRegulationNetwork(GAindividual individualA, GAindividual individualB)  //crossover between complexes in two networks
 {
 	int i, j, k, i1, i2, n , m; 
 	GeneRegulationNetwork * net1, * net2, * net3;
@@ -186,6 +186,7 @@ void* crossoverGeneRegulationNetwork(void * individualA, void * individualB)  //
 	}
 	
 	net3->species = m + 1;
+	
 	net3->degradation = (double*) malloc( (m+1) * sizeof(double) );
 	net3->Vmax = (double*) malloc( (m+1) * sizeof(double) );
 	net3->fixed = (int*) malloc( (m+1) * sizeof(int) );
@@ -213,15 +214,15 @@ void* crossoverGeneRegulationNetwork(void * individualA, void * individualB)  //
 		}
 	}	
 	
-	return (void*)(net3);
+	return (GAindividual)(net3);
 }
 
-void* mutateGeneRegulationNetwork(void * individual)
+GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 {
 	int i,j,k,l,m,n;
 	double r, * Ka, * degradation, * Vmax;
 	int * targetGene, * fixed;
-	complex * complexes;
+	TFComplex * complexes;
 	GeneRegulationNetwork * net;
 	
 	net = (GeneRegulationNetwork*)individual;
@@ -237,28 +238,28 @@ void* mutateGeneRegulationNetwork(void * individual)
 	{
 		i = (int)(mtrand() * n);
 		net->Ka[i] *= (4.0 * mtrand() - 2.0);
-		return (void*)(net);
+		return (GAindividual)(net);
 	}
 	else
-	if (r < (MUTATE_KA+MUTATE_DEGRADE)) //mutate degradation
+	if (r < (MUTATE_KA+MUTATE_PRODUCTION)) //mutate degradation and vmax
 	{
 		i = (int)(mtrand() * m);
 		if (mtrand() > 0.5)
 			net->degradation[i] *= (mtrand() * 2.0);
 		else
 			net->Vmax[i] *= (mtrand() * 2.0);
-		return (void*)(net);
+		return (GAindividual)(net);
 	}
 	else
-	if (r < (MUTATE_KA+MUTATE_DEGRADE+MUTATE_COMPLEX))
+	if (r < (MUTATE_KA+MUTATE_PRODUCTION+MUTATE_COMPLEX))
 	{
 		i = (int)(mtrand() * n);
 		j = (int)(mtrand() * net->complexes[i].size);
 		net->complexes[i].TFs[j] = (int)(mtrand() * m);
-		return (void*)(net);
+		return (GAindividual)(net);
 	}
 	else
-	if (r < (MUTATE_KA+MUTATE_DEGRADE+MUTATE_COMPLEX+ADD_GENE))
+	if (r < (MUTATE_KA+MUTATE_PRODUCTION+MUTATE_COMPLEX+ADD_GENE))
 	{
 		++m;
 		net->species = m;
@@ -270,7 +271,7 @@ void* mutateGeneRegulationNetwork(void * individual)
 		degradation = net->degradation;
 		fixed = net->fixed;
 		
-		net->complexes = (complex*) malloc( (1+n) * sizeof (complex) );
+		net->complexes = (TFComplex*) malloc( (1+n) * sizeof (TFComplex) );
 		net->targetGene = (int*) malloc( (1+n) * sizeof(int) );
 		net->Ka = (double*) malloc( (1+n) * sizeof(double) );
 		net->degradation = (double*) malloc( m * sizeof(double) );
@@ -312,7 +313,7 @@ void* mutateGeneRegulationNetwork(void * individual)
 		net->Vmax[m-1] = mtrand() * VMAX_RANGE;
 		net->fixed[m-1] = 0;
 		
-		return (void*)(net);
+		return (GAindividual)(net);
 	}
 	else 
 	if (m > 2) //remove gene
@@ -322,7 +323,6 @@ void* mutateGeneRegulationNetwork(void * individual)
 		i = (int)(mtrand() * m);
 		
 		--m;
-		net->species = m;
 		
 		for (j=0; j < n; ++j)
 		{
@@ -334,8 +334,9 @@ void* mutateGeneRegulationNetwork(void * individual)
 				}
 		}
 		
-		if (n < (t+2)) return (void*)net;
+		if (n < (t+2)) return (GAindividual)net;
 		
+		net->species = m;
 		complexes = net->complexes;
 		targetGene = net->targetGene;
 		Ka = net->Ka;
@@ -344,7 +345,7 @@ void* mutateGeneRegulationNetwork(void * individual)
 		fixed = net->fixed;
 		
 		net->numComplexes = n-t;
-		net->complexes = (complex*) malloc( (n-t) * sizeof (complex) );
+		net->complexes = (TFComplex*) malloc( (n-t) * sizeof (TFComplex) );
 		net->targetGene = (int*) malloc( (n-t) * sizeof(int) );
 		net->Ka = (double*) malloc( (n-t) * sizeof(double) );
 		net->degradation = (double*) malloc( (m) * sizeof(double) );
@@ -392,36 +393,36 @@ void* mutateGeneRegulationNetwork(void * individual)
 		free(Vmax);
 		free(fixed);
 		
-		return (void*)(net);
+		return (GAindividual)(net);
 	}
 	
-    return (void*)(net);
+    return (GAindividual)(net);
 }
 
 /*****************************************************
    Functions for simulating and printing
 ******************************************************/
 
-int getNumSpeciesForGeneRegulationNetwork(void * individual)
+int getNumSpeciesForGeneRegulationNetwork(GAindividual individual)
 {
 	GeneRegulationNetwork * net = (GeneRegulationNetwork*)(individual);
 	return (net->species);
 }
 
-int getNumReactionsForGeneRegulationNetwork(void * individual)
+int getNumReactionsForGeneRegulationNetwork(GAindividual individual)
 {
 	GeneRegulationNetwork * net = (GeneRegulationNetwork*)(individual);
 	return (2 * net->species);
 }
 
-void setFixedSpeciesForGeneRegulationNetwork(void * individual, int i, int value)
+void setFixedSpeciesForGeneRegulationNetwork(GAindividual individual, int i, int value)
 {
 	GeneRegulationNetwork * net = (GeneRegulationNetwork*)(individual);
 	if (i < net->species)
 		net->fixed[i] = value;
 }
 
-void ratesForGeneRegulationNetwork(double time,double* u,double* rate,void * p)
+void ratesForGeneRegulationNetwork(double time,double* u,double* rate,GAindividual p)
 {
 	int i,j,k;
 	double prod, num, denom;
@@ -458,7 +459,7 @@ void ratesForGeneRegulationNetwork(double time,double* u,double* rate,void * p)
 }
 
 
-double * stoichiometryForGeneRegulationNetwork(void * p)
+double * stoichiometryForGeneRegulationNetwork(GAindividual p)
 {
 	int i,j,m,n;
 	double *N;
@@ -483,7 +484,7 @@ double * stoichiometryForGeneRegulationNetwork(void * p)
 	return N;
 }
 
-void printGeneRegulationNetwork(void * individual)
+void printGeneRegulationNetwork(GAindividual individual)
 {
 	int i,j,k,p,fix;
 	double num, denom;
@@ -630,26 +631,33 @@ GeneRegulationNetwork * newGeneRegulationNetwork(int m,int n)
 	net->species = m;    //number of genes
 	net->numComplexes = n;    //number of complexes
 	
-	net->complexes = (complex*) malloc( n * sizeof (complex) );
+	net->complexes = (TFComplex*) malloc( n * sizeof (TFComplex) );
 	net->targetGene = (int*) malloc( n * sizeof(int) );
 	net->Ka = (double*) malloc( n * sizeof(double) );
 	
-	net->Vmax = (double*) malloc( m * sizeof(double) );
-	net->degradation = (double*) malloc( m * sizeof(double) );
-	net->fixed = (int*) malloc( m * sizeof(int) );
-	
-	for (i=0; i < n; ++i)
+	net->Vmax = 0;
+	net->degradation = 0;
+	net->fixed = 0;
+
+	if (m > 0)
 	{
-		net->complexes[i].size = 0;
-		net->complexes[i].TFs = 0;		
-		net->targetGene[i] = 0;
-		net->Ka[i] = 0.0;
-	}
-	for (i=0; i < m; ++i)
-	{
-		net->degradation[i] = 0.0;
-		net->Vmax[i] = 0.0;
-		net->fixed[i] = 0;
+		net->Vmax = (double*) malloc( m * sizeof(double) );
+		net->degradation = (double*) malloc( m * sizeof(double) );
+		net->fixed = (int*) malloc( m * sizeof(int) );
+		
+		for (i=0; i < n; ++i)
+		{
+			net->complexes[i].size = 0;
+			net->complexes[i].TFs = 0;		
+			net->targetGene[i] = 0;
+			net->Ka[i] = 0.0;
+		}
+		for (i=0; i < m; ++i)
+		{
+			net->degradation[i] = 0.0;
+			net->Vmax[i] = 0.0;
+			net->fixed[i] = 0;
+		}
 	}
 	return net;
 }
@@ -676,7 +684,7 @@ int main()  //just for testing
 	
 	for (i=0; i < 50; ++i)
 	{
-		void * net = crossoverGeneRegulationNetworks(pop[ (int)(mtrand()*n) ],pop[ (int)(mtrand()*n) ]);
+		GAindividual net = crossoverGeneRegulationNetworks(pop[ (int)(mtrand()*n) ],pop[ (int)(mtrand()*n) ]);
 		printGeneRegulationNetwork(net);
 		net = mutateGeneRegulationNetwork(net);
 		deleteGeneRegulationNetwork(net);
@@ -718,7 +726,7 @@ int main()  //just for testing
 	
 	double x0[] = { 1.0, 1.0, 10.0 };
 	
-	double * N = stoichiometryForGeneRegulationNetwork((void*)net);
+	double * N = stoichiometryForGeneRegulationNetwork((GAindividual)net);
 	int sz;
 	
 	double * y = SSA(3, 6, N, &(SSAfunction), x0, 0,500,100000,&sz,net); //simulate
@@ -731,7 +739,7 @@ int main()  //just for testing
 		free(y);
 	}
 	
-	deleteGeneRegulationNetwork((void*)net);
+	deleteGeneRegulationNetwork((GAindividual)net);
 	
 }
 */

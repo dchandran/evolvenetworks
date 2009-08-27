@@ -36,27 +36,32 @@ Copyright (C) 2009 Deepak Chandran
 #ifndef PROTEIN_INTERACTION_NETWORK_FOR_GA
 #define PROTEIN_INTERACTION_NETWORK_FOR_GA
 
-/*! \brief Struct used to store a set of regulators for one protein
-* \ingroup proteinnetwork
+/*! \brief
+  A complex composed of one or more proteins (enzymes)
 */
 typedef struct
 {
+	int * proteins;
 	int size;
-	int * proteins; //index (equivalent to name) of each regulator
-	double * Km;  //Michaelis-Menten constant for each regulator
-	double * Vmax;  //Vmax for each regulator. Negative Vmax means negative regulator
 }
-Regulators;
+ProteinComplex;
 
-/*! \brief Protein interaction network
-* \ingroup proteinnetwork
+/*! \brief Protein interaction network is defined by a set of protein complexes. Each protein
+    complex catalyzes one or more reactions. Each reaction converts one protein to another
+	through a Michaelis-Menten type kinetics (the rate function can be redefined). 
+	\ingroup geneticnetwork
 */
 typedef struct
 {
-	int species;
-	double * totals; //the total concentration of each protein
-	Regulators * regulators; //the set of regulators for each protein
-	int * fixed;  //array of size=species. 1= ith species is fixed
+	int species;  //number of proteins
+	int reactions; //size of each array defined in this struct
+	
+	ProteinComplex * complexes; //a list of complexes
+	int * substrates; //the index of the substrate for each complex
+	int * products; //the index of the product for each complex
+	double * Km; //the association Km constant for the reaction
+	double * Vmax; //the Vmax for each reaction	
+	int * fixed;  //array of size=species. 1=ith species is fixed
 } 
 ProteinInteractionNetwork;
 
@@ -138,12 +143,14 @@ void setFixedSpeciesForProteinInteractionNetwork(GAindividual, int, int);
    @name Functions for initializing a GA
 ******************************************************/
 /*! \brief Set the initial (average) parameters for generating random networks.
+ * \param int maximum number of proteins in a complex
  * \param double the average Ka value for random networks
  * \param double the average Vmax value for random networks
- * \param double the average Total (conservation law) for random networks
+ * \param double percent of the reactions that involve a source or sink (i.e. external source).
+		If you set this to 0, then the initial concentrations must be non-zero.
  * \ingroup proteinnetwork
 */
-void setParametersForProteinInteractionNetwork(double, double , double );
+void setParametersForProteinInteractionNetwork(int, double, double , double );
 /*! \brief Set the initial (average) parameters for generating random networks.
  * \param int average number of species in the networks
  * \param int regulations per species
@@ -151,14 +158,15 @@ void setParametersForProteinInteractionNetwork(double, double , double );
 */
 void setSizeForProteinInteractionNetwork(int, int);
 /*! \brief Set parameters for the mutation and crossover functions. First four arguments must add to 1.
- * \param double probability of rewiring the network during mutation
- * \param double probability of changing network parameter during mutation
- * \param double probability of changing a conservation law during mutation
- * \param double probability of adding/removing a node during mutation
+ * \param double probability of changing a Km value during mutation
+ * \param double probability of changing a Vmax value during mutation
+ * \param double probability of changing the proteins in a complex during mutation
+ * \param double probability of removing a protein during mutation
+ * \param double probability of adding a new protein during mutation
  * \param double probability of crossover
  * \ingroup proteinnetwork
 */
-void setMutationAndCrossoverRatesForProteinInteractionNetwork(double, double, double, double, double);
+void setMutationAndCrossoverRatesForProteinInteractionNetwork(double, double, double, double, double, double);
 /*! \brief Creates an array of randomized mass action networks.
  * \return GAindividual* GApopulation of random networks
  * \ingroup proteinnetwork
@@ -171,7 +179,7 @@ GApopulation randomProteinInteractionNetworks(int);
  * \return ProteinInteractionNetwork* network
  * \ingroup proteinnetwork
 */
-ProteinInteractionNetwork * newForProteinInteractionNetwork(int,int);
+ProteinInteractionNetwork * newProteinInteractionNetwork(int,int);
 
 #endif
 

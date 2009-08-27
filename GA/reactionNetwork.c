@@ -226,15 +226,17 @@ double * simulateNetworkODE( GAindividual individual, double* iv, double time, d
 	if (!r || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 	
 	stoic = stoicFunctions[r->type];
-	N = stoic(r->network);
-
 	rate = rateFunctions[r->type];
 	
 	p = r->network;
 	species = getNumSpecies(r);
 	reactions = getNumReactions(r);
 
+	if (species == 0 || reactions == 0) return 0;
+	N = stoic(r->network);
 	y = ODEsim2(species, reactions,	N, rate, iv, 0, time, dt, p);
+
+	p = 0;
 
 	free(N);
 
@@ -255,14 +257,14 @@ double * networkSteadyState( GAindividual individual, double* iv)
 	
 	stoic = stoicFunctions[r->type];
 	
-	N = stoic(r->network);
-	
 	rate = rateFunctions[r->type];
 	
 	p = r->network;
 	species = getNumSpecies(r);
 	reactions = getNumReactions(r);
 
+	if (species == 0 || reactions == 0) return 0;
+	N = stoic(r->network);
 	y = steadyState2(species, reactions, N, rate, iv, p, 1.0E-3,10000.0,0.1);
 	free(N);
 	
@@ -282,16 +284,15 @@ double * simulateNetworkStochastically( GAindividual individual, double* iv, dou
 	if (!r || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 	
 	stoic = stoicFunctions[r->type];
-	N = stoic(r->network);
-
 	rate = rateFunctions[r->type];
 	
 	p = r->network;
 	species = getNumSpecies(r);
 	reactions = getNumReactions(r);
 
+	if (species == 0 || reactions == 0) return 0;
+	N = stoic(r->network);
 	y = SSA(species, reactions,	N, rate, iv, 0.0, time, 1000000, sz, p);
-
 	free(N);
 	return y;
 }

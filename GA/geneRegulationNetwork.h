@@ -38,7 +38,7 @@ typedef struct
 	int * TFs;
 	int size;
 }
-complex;
+TFComplex;
 
 /*! \brief Gene regulatory network
 	\ingroup geneticnetwork
@@ -48,7 +48,7 @@ typedef struct
 	int species;  //number of genes
 	int numComplexes; //size of each array defined in this struct
 	
-	complex * complexes; //a list of complexes
+	TFComplex * complexes; //a list of complexes
 	int * targetGene; //the gene that is regulated by the complexes
 	double * Ka; //the association constant (if negative, then it is a repressor)
 	
@@ -142,13 +142,13 @@ void setFixedSpeciesForGeneRegulationNetwork(GAindividual, int, int);
    @name Functions for initializing a GA
 ******************************************************/
 /*! \brief Set the initial parameters for generating random networks.
+ * \param int maximum number of transcription factors in a complex (i.e. 2 means that only monomers or dimers allowed)
  * \param double the average Ka value for random networks
- * \param double the average number of transcription factors per gene
  * \param double the average maximum production rate for a gene
  * \param double the average degradation rate constant for a gene product
  * \ingroup geneticnetwork
 */
-void setParametersForGeneRegulationNetwork(double, double, double, double);
+void setParametersForGeneRegulationNetwork(int, double, double, double);
 
 /*! \brief Set the initial parameters for generating random networks.
  * \param int average number of genes in the networks

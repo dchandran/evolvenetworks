@@ -46,7 +46,7 @@ void setMutationAndCrossoverRatesForMassActionNetwork(double a, double b)
     Clone, delete, mutate, crossover  (required by GA)
 *********************************************************/
 
-void deleteMassActionNetwork(void * individual)
+void deleteMassActionNetwork(GAindividual individual)
 {
 	MassActionNetwork * net;
 	
@@ -61,7 +61,7 @@ void deleteMassActionNetwork(void * individual)
 	if (net->fixed) free(net->fixed);
 }
 
-void* cloneMassActionNetwork(void * individual)
+GAindividual cloneMassActionNetwork(GAindividual individual)
 {
 	int i,m,n;
 	MassActionNetwork * net, * net2;
@@ -97,10 +97,10 @@ void* cloneMassActionNetwork(void * individual)
 		net2->p2[i] = net->p2[i];
 	}
 	
-	return (void*)(net2);  //done
+	return (GAindividual)(net2);  //done
 }
 
-void* crossoverMassActionNetwork(void * individualA, void * individualB)
+GAindividual crossoverMassActionNetwork(GAindividual individualA, GAindividual individualB)
 {
 	int i, i1, i2, n = 0, m = 0; 
 	MassActionNetwork * net1, * net2, * net3;
@@ -157,10 +157,10 @@ void* crossoverMassActionNetwork(void * individualA, void * individualB)
 	for (i=0; i < (m+1); ++i)
 		net3->fixed[i] = 0;
 	
-	return (void*)(net3);
+	return (GAindividual)(net3);
 }
 
-void* mutateMassActionNetwork(void * individual)
+GAindividual mutateMassActionNetwork(GAindividual individual)
 {
 	int i,j,j2,m,n;
 	MassActionNetwork * net, * net2;
@@ -175,7 +175,7 @@ void* mutateMassActionNetwork(void * individual)
 	if (mtrand() < MUTATE_COEFF_PROB)   //mutate coefficient
 	{
 		net->k[i] *= (mtrand() * 2.0);
-		return (void*)(net);
+		return (GAindividual)(net);
 	}
 	else              //add or remove a new reaction and/or species to the network
 	{
@@ -195,7 +195,7 @@ void* mutateMassActionNetwork(void * individual)
 				}
 			}
 			deleteMassActionNetwork(net);
-			return (void*)(net2);
+			return (GAindividual)(net2);
 		}
 		else
 		{
@@ -255,7 +255,7 @@ void* mutateMassActionNetwork(void * individual)
 			}
 			
 			deleteMassActionNetwork(net);
-			return (void*)(net2);
+			return (GAindividual)(net2);
 		}
 	}
     return (net);
@@ -266,7 +266,7 @@ void* mutateMassActionNetwork(void * individual)
 ******************************************************/
 
 
-void ratesForMassActionNetwork(double time,double* u,double* rate,void * p)
+void ratesForMassActionNetwork(double time,double* u,double* rate,GAindividual p)
 {
 	int i;
 	MassActionNetwork * net;
@@ -282,7 +282,7 @@ void ratesForMassActionNetwork(double time,double* u,double* rate,void * p)
 }
 
 
-double * stoichiometryForMassActionNetwork(void * p)
+double * stoichiometryForMassActionNetwork(GAindividual p)
 {
 	int i,j,n;
 	double * N;
@@ -313,26 +313,26 @@ double * stoichiometryForMassActionNetwork(void * p)
 }
 
 
-int getNumSpeciesForMassActionNetwork(void * individual)
+int getNumSpeciesForMassActionNetwork(GAindividual individual)
 {
 	MassActionNetwork * net = (MassActionNetwork*)(individual);
 	return (net->species);
 }
 
-int getNumReactionsForMassActionNetwork(void * individual)
+int getNumReactionsForMassActionNetwork(GAindividual individual)
 {
 	MassActionNetwork * net = (MassActionNetwork*)(individual);
 	return (net->reactions);
 }
 
-void setFixedSpeciesForMassActionNetwork(void * individual, int i, int value)
+void setFixedSpeciesForMassActionNetwork(GAindividual individual, int i, int value)
 {
 	MassActionNetwork * net = (MassActionNetwork*)(individual);
 	if (i < net->species)
 		net->fixed[i] = value;
 }
 
-void printMassActionNetwork(void * individual)
+void printMassActionNetwork(GAindividual individual)
 {
 	int i,fix;
 	MassActionNetwork * net;
@@ -460,7 +460,7 @@ int main()  //just for testing
 	
 	for (i=0; i < 100; ++i)
 	{
-		void * net = crossoverMassActionNetwork(pop[0],pop[1]);
+		GAindividual net = crossoverMassActionNetwork(pop[0],pop[1]);
 		printMassActionNetwork(net);
 		net = mutateMassActionNetwork(net);
 		printf("\n");
@@ -475,7 +475,7 @@ int main()  //just for testing
 */
 
 /*
-char* printMassActionNetwork(void * individual)
+char* printMassActionNetwork(GAindividual individual)
 {
 	int i,j,k,sz1, sz2;
 	char * string, * s;
