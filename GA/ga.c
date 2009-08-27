@@ -143,14 +143,14 @@ GApopulation GAnextGen(GApopulation currentGApopulation, int oldPopSz, int newPo
 	void * x1 = NULL, * x2 = NULL;
 	double * fitnessArray, totalFitness;
 	//allocate memory for next generation
-	GApopulation nextGApopulation = malloc( newPopSz * sizeof(void*) );
+	GApopulation nextGApopulation = (void*)malloc( newPopSz * sizeof(void*) );
 	if (nextGApopulation == NULL) 
 	{
 		return (0);
 	}
 
 	//make array of fitness values
-	fitnessArray = malloc ( oldPopSz * sizeof(double) );
+	fitnessArray = (double*) malloc ( oldPopSz * sizeof(double) );
 	totalFitness = 0;
 	best = 0;  //save best's index
 
@@ -331,7 +331,7 @@ static void quicksort(GApopulation population, double* a, int left, int right)
 //quicksort
 void GAsort(GApopulation population, GAFitnessFnc fitness, int populationSz) 
 {
-	double * a = malloc ( populationSz * sizeof(double) );
+	double * a = (double*) malloc ( populationSz * sizeof(double) );
 	int i;
 	for (i=0; i < populationSz; ++i)
 	{

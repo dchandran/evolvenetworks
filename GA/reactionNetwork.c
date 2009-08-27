@@ -103,7 +103,7 @@ GApopulation randomNetworks(int sz0)
 	ReactionNetwork * rnet;
 	GApopulation P1 = 0, P2 = 0, P3 = 0, P;
 
-	P = malloc( sz0 * sizeof (GAindividual) );
+	P = (GAindividual*) malloc( sz0 * sizeof (GAindividual) );
 
 	r = (int)(networkProbs[MASS_ACTION_NETWORK] * sz0);
 	
@@ -112,7 +112,7 @@ GApopulation randomNetworks(int sz0)
 		P1 = randomMassActionNetworks(r);
 		for (i=0; i < r; ++i)
 		{
-			rnet = malloc(sizeof(ReactionNetwork));
+			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
 			rnet->type = MASS_ACTION_NETWORK;
 			rnet->network = P1[i];
 			rnet->id = i;
@@ -129,7 +129,7 @@ GApopulation randomNetworks(int sz0)
 		P2 = randomProteinInteractionNetworks(r);
 		for (i=0; i < r; ++i)
 		{
-			rnet = malloc(sizeof(ReactionNetwork));
+			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
 			rnet->type = PROTEIN_INTERACTION_NETWORK;
 			rnet->network = P2[i];
 			rnet->parents = 0;
@@ -146,7 +146,7 @@ GApopulation randomNetworks(int sz0)
 		P3 = randomGeneRegulationNetworks(k);
 		for (i=0; i < k; ++i)
 		{
-			rnet = malloc(sizeof(ReactionNetwork));
+			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
 			rnet->type = GENE_REGULATION_NETWORK;
 			rnet->network = P3[i];
 			rnet->parents = 0;
@@ -346,7 +346,7 @@ double* getReactionRates(ReactionNetwork * r, double* u)
 	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 	
 	f = rateFunctions[r->type];
-	rates = malloc( getNumReactions(r) );
+	rates = (double*) malloc( getNumReactions(r) );
 	f(0,u,rates,r->network);
 
 	return rates;
@@ -403,7 +403,7 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 	if (f)
 	{
 		net = f(r1->network,r2->network);
-		r = malloc(sizeof(ReactionNetwork));
+		r = (ReactionNetwork*)malloc(sizeof(ReactionNetwork));
 		r->type = r1->type;
 		r->network = net;
 		r->id = r1->id;
@@ -437,7 +437,7 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 		r->parents = 0;
 		if ((sz1+sz2) > 0)
 		{
-			r->parents = malloc((sz1+sz2+1)*sizeof(int));
+			r->parents = (int*) malloc((sz1+sz2+1)*sizeof(int));
 			r->parents[sz1+sz2] = 0;
 
 			if (sz1 > 0)
@@ -449,7 +449,7 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 		}
 		else
 		{
-			r->parents = malloc((3)*sizeof(int));
+			r->parents = (int*) malloc((3)*sizeof(int));
 			r->parents[2] = 0;
 
 			r->parents[0] = r1->id;
@@ -484,7 +484,7 @@ GAindividual cloneNetwork(GAindividual p)
 
 	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return p;
 	
-	r2 = malloc(sizeof(ReactionNetwork));
+	r2 = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
 	
 	i = 0;
 	if (r->parents)
@@ -495,7 +495,7 @@ GAindividual cloneNetwork(GAindividual p)
 	r2->parents = 0;
 	if (i > 0)
 	{
-		r2->parents = malloc((i+1)*sizeof(int));
+		r2->parents = (int*) malloc((i+1)*sizeof(int));
 		for (j=0; j < i; ++j)
 			r2->parents[j] = r->parents[j];
 		r2->parents[i] = 0;
@@ -552,7 +552,7 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 	}
 
 	sumOfSq = 0.0;
-	iv = malloc( n * sizeof(double) );
+	iv = (double*) malloc( n * sizeof(double) );
 
 	best = -1;
 	

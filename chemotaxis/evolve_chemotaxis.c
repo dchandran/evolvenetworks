@@ -198,7 +198,7 @@ double fitness(void * p)
 	}
 	
 	N = getStoichiometryMatrix(rnet);	
-	init = malloc(n * sizeof(double));
+	init = (double*)malloc(n * sizeof(double));
 	score = total = 0.0;
 	
 	for (j=0; j < 10; ++j)  //take average fitness from 10 different initial positions
@@ -368,7 +368,7 @@ int main(int args, char ** argv)
 	
 	cnet.network = rnet;	
 	
-	init = malloc(n * sizeof(double));
+	init = (double*)malloc(n * sizeof(double));
 	
 	cnet.angle = 0.0;
 	cnet.x = GRIDSZ;
@@ -400,7 +400,7 @@ int main(int args, char ** argv)
 	
 	/*********   find feedback loops   ***********/
 	
-	p = malloc( n * sizeof(double) );
+	p = (double*)malloc( n * sizeof(double) );
 	
 	for (i=0; i < n; ++i)
 		p[i] = getValue(y,(1+n),sz-1,i+1);

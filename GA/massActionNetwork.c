@@ -69,19 +69,19 @@ void* cloneMassActionNetwork(void * individual)
 	if (!individual) return 0;
 	
 	net = (MassActionNetwork*)(individual);   //original
-	net2 = malloc(sizeof(MassActionNetwork)); //soon to be clone
+	net2 = (MassActionNetwork*) malloc(sizeof(MassActionNetwork)); //soon to be clone
 	
 	m = net->reactions;    //number of reactions
 	n = net->species;    //number of species
 	net2->reactions = m;
 	net2->species = n;
 	
-	net2->k = malloc(m * sizeof(double));   //allocate space
-	net2->r1 = malloc(m * sizeof(int));
-	net2->r2 = malloc(m * sizeof(int));
-	net2->p1 = malloc(m * sizeof(int));
-	net2->p2 = malloc(m * sizeof(int));
-	net2->fixed = malloc(n * sizeof(int));
+	net2->k = (double*) malloc(m * sizeof(double));   //allocate space
+	net2->r1 = (int*) malloc(m * sizeof(int));
+	net2->r2 = (int*) malloc(m * sizeof(int));
+	net2->p1 = (int*) malloc(m * sizeof(int));
+	net2->p2 = (int*) malloc(m * sizeof(int));
+	net2->fixed = (int*) malloc(n * sizeof(int));
 	
 	for (i=0; i < n; ++i)   //copy values
 	{
@@ -153,7 +153,7 @@ void* crossoverMassActionNetwork(void * individualA, void * individualB)
 	
 	net3->species = m + 1;
 	
-	net3->fixed = malloc( (m + 1)*sizeof(int) );
+	net3->fixed = (int*) malloc( (m + 1)*sizeof(int) );
 	for (i=0; i < (m+1); ++i)
 		net3->fixed[i] = 0;
 	
@@ -291,7 +291,7 @@ double * stoichiometryForMassActionNetwork(void * p)
 	net = (MassActionNetwork*)(p);
 	
 	n = net->reactions;
-	N = malloc(net->species * n * sizeof(double));
+	N = (double*) malloc(net->species * n * sizeof(double));
 	for (i=0; i < n; ++i)
 	{
 		for (j=0; j < net->species; ++j)
@@ -387,7 +387,7 @@ GApopulation randomMassActionNetworks(int num)
 	MassActionNetwork ** array;
 	
 	initMTrand(); /*initialize seeds for MT random number generator*/
-	array = malloc(num * sizeof(MassActionNetwork*));
+	array = (MassActionNetwork**)malloc(num * sizeof(MassActionNetwork*));
 	for (i=0; i < num; ++i)
 	{
 		n = (int)(1 + s * 2.0 * mtrand());
@@ -429,19 +429,19 @@ MassActionNetwork * newMassActionNetwork(int s,int r)
 	int i;
 	MassActionNetwork * net;
 
-	net = malloc(sizeof(MassActionNetwork));
+	net = (MassActionNetwork*)malloc(sizeof(MassActionNetwork));
 	net->species = s;
 	net->reactions = r;
 	
-	net->fixed = malloc(s * sizeof(int));
+	net->fixed = (int*)malloc(s * sizeof(int));
 	for (i=0; i < s; ++i)
 		net->fixed[i] = 0; //no fixed species by default
 	
-	net->k = malloc(net->reactions * sizeof(double));
-	net->r1 = malloc(net->reactions * sizeof(int));
-	net->r2 = malloc(net->reactions * sizeof(int));
-	net->p1 = malloc(net->reactions * sizeof(int));
-	net->p2 = malloc(net->reactions * sizeof(int));
+	net->k = (double*) malloc(net->reactions * sizeof(double));
+	net->r1 = (int*) malloc(net->reactions * sizeof(int));
+	net->r2 = (int*) malloc(net->reactions * sizeof(int));
+	net->p1 = (int*) malloc(net->reactions * sizeof(int));
+	net->p2 = (int*) malloc(net->reactions * sizeof(int));
 	
 	return net;
 }

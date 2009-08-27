@@ -89,24 +89,24 @@ void* cloneGeneRegulationNetwork(void * individual)
 	if (!individual) return 0;
 	
 	net = (GeneRegulationNetwork*)(individual);   //original
-	net2 = malloc(sizeof(GeneRegulationNetwork)); //soon to be clone
+	net2 = (GeneRegulationNetwork*) malloc(sizeof(GeneRegulationNetwork)); //soon to be clone
 	
 	m = net->species;    //number of genes
 	n = net->numComplexes;    //number of complexes
 	net2->species = m;
 	net2->numComplexes = n;
 	
-	net2->complexes = malloc( n * sizeof (complex) );
-	net2->targetGene = malloc( n * sizeof(int) );
-	net2->Ka = malloc( n * sizeof(double) );
-	net2->degradation = malloc( m * sizeof(double) );
-	net2->Vmax = malloc( m * sizeof(double) );
-	net2->fixed = malloc( m * sizeof(int) );
+	net2->complexes = (complex*) malloc( n * sizeof (complex) );
+	net2->targetGene = (int*) malloc( n * sizeof(int) );
+	net2->Ka = (double*) malloc( n * sizeof(double) );
+	net2->degradation = (double*) malloc( m * sizeof(double) );
+	net2->Vmax = (double*) malloc( m * sizeof(double) );
+	net2->fixed = (int*) malloc( m * sizeof(int) );
 	
 	for (i=0; i < n; ++i)
 	{
 		net2->complexes[i].size = net->complexes[i].size;
-		net2->complexes[i].TFs = malloc( net2->complexes[i].size * sizeof(int) );
+		net2->complexes[i].TFs = (int*) malloc( net2->complexes[i].size * sizeof(int) );
 		for (j=0; j < net2->complexes[i].size; ++j)
 			net2->complexes[i].TFs[j] = net->complexes[i].TFs[j];
 		
@@ -151,7 +151,7 @@ void* crossoverGeneRegulationNetwork(void * individualA, void * individualB)  //
 	for (i=0; i < i1; ++i)
 	{
 		net3->complexes[i].size = net1->complexes[i].size;
-		net3->complexes[i].TFs = malloc( net1->complexes[i].size * sizeof(int) );
+		net3->complexes[i].TFs = (int*) malloc( net1->complexes[i].size * sizeof(int) );
 		for (j=0; j < net1->complexes[i].size; ++j)
 		{
 			net3->complexes[i].TFs[j] = net1->complexes[i].TFs[j];
@@ -170,7 +170,7 @@ void* crossoverGeneRegulationNetwork(void * individualA, void * individualB)  //
 	{
 		k = i+i1-i2;
 		net3->complexes[k].size = net2->complexes[i].size;
-		net3->complexes[k].TFs = malloc( net2->complexes[i].size * sizeof(int) );
+		net3->complexes[k].TFs = (int*) malloc( net2->complexes[i].size * sizeof(int) );
 		for (j=0; j < net2->complexes[i].size; ++j)
 		{
 			net3->complexes[k].TFs[j] = net2->complexes[i].TFs[j];
@@ -186,9 +186,9 @@ void* crossoverGeneRegulationNetwork(void * individualA, void * individualB)  //
 	}
 	
 	net3->species = m + 1;
-	net3->degradation = malloc( (m+1) * sizeof(double) );
-	net3->Vmax = malloc( (m+1) * sizeof(double) );
-	net3->fixed = malloc( (m+1) * sizeof(int) );
+	net3->degradation = (double*) malloc( (m+1) * sizeof(double) );
+	net3->Vmax = (double*) malloc( (m+1) * sizeof(double) );
+	net3->fixed = (int*) malloc( (m+1) * sizeof(int) );
 	
 	for (i=0; i < net3->species; ++i)
 	{
@@ -270,12 +270,12 @@ void* mutateGeneRegulationNetwork(void * individual)
 		degradation = net->degradation;
 		fixed = net->fixed;
 		
-		net->complexes = malloc( (1+n) * sizeof (complex) );
-		net->targetGene = malloc( (1+n) * sizeof(int) );
-		net->Ka = malloc( (1+n) * sizeof(double) );
-		net->degradation = malloc( m * sizeof(double) );
-		net->Vmax = malloc( m * sizeof(double) );
-		net->fixed = malloc( m * sizeof(int) );
+		net->complexes = (complex*) malloc( (1+n) * sizeof (complex) );
+		net->targetGene = (int*) malloc( (1+n) * sizeof(int) );
+		net->Ka = (double*) malloc( (1+n) * sizeof(double) );
+		net->degradation = (double*) malloc( m * sizeof(double) );
+		net->Vmax = (double*) malloc( m * sizeof(double) );
+		net->fixed = (int*) malloc( m * sizeof(int) );
 		
 		for (j=0; j < n; ++j)
 		{
@@ -292,7 +292,7 @@ void* mutateGeneRegulationNetwork(void * individual)
 		}
 		
 		net->complexes[n].size = (int)(1 + TF_RANGE * mtrand());
-		net->complexes[n].TFs = malloc(net->complexes[n].size * sizeof(int));
+		net->complexes[n].TFs = (int*) malloc(net->complexes[n].size * sizeof(int));
 		net->complexes[n].TFs[0] = (int)(m-1);
 		for (i=1; i < net->complexes[n].size; ++i)
 		{
@@ -344,12 +344,12 @@ void* mutateGeneRegulationNetwork(void * individual)
 		fixed = net->fixed;
 		
 		net->numComplexes = n-t;
-		net->complexes = malloc( (n-t) * sizeof (complex) );
-		net->targetGene = malloc( (n-t) * sizeof(int) );
-		net->Ka = malloc( (n-t) * sizeof(double) );
-		net->degradation = malloc( (m) * sizeof(double) );
-		net->Vmax = malloc( (m) * sizeof(double) );
-		net->fixed = malloc( (m) * sizeof(int) );
+		net->complexes = (complex*) malloc( (n-t) * sizeof (complex) );
+		net->targetGene = (int*) malloc( (n-t) * sizeof(int) );
+		net->Ka = (double*) malloc( (n-t) * sizeof(double) );
+		net->degradation = (double*) malloc( (m) * sizeof(double) );
+		net->Vmax = (double*) malloc( (m) * sizeof(double) );
+		net->fixed = (int*) malloc( (m) * sizeof(int) );
 		
 		for (j=0, j1=0; j < (1+m) && j1 < m; ++j)
 		{
@@ -468,7 +468,7 @@ double * stoichiometryForGeneRegulationNetwork(void * p)
 	
 	m = net->species;
 	n = 2 * m;
-	N = malloc(m * n * sizeof(double));
+	N = (double*) malloc(m * n * sizeof(double));
 	
 	for (i=0; i < m; ++i)
 		for (j=0; j < n; ++j)
@@ -591,7 +591,7 @@ GApopulation randomGeneRegulationNetworks(int num)
 	
 	initMTrand(); /*initialize seeds for MT random number generator*/
 	
-	array = malloc( num * sizeof(GeneRegulationNetwork*) );
+	array = (GeneRegulationNetwork**) malloc( num * sizeof(GeneRegulationNetwork*) );
 	
 	for (k=0; k < num; ++k)
 	{
@@ -602,7 +602,7 @@ GApopulation randomGeneRegulationNetworks(int num)
 		for (i=0; i < n; ++i)
 		{
 			net->complexes[i].size = (int)(1 + TF_RANGE * mtrand());
-			net->complexes[i].TFs = malloc(net->complexes[i].size * sizeof(int));
+			net->complexes[i].TFs = (int*) malloc(net->complexes[i].size * sizeof(int));
 			for (j=0; j < net->complexes[i].size; ++j)
 			{
 				net->complexes[i].TFs[j] = (int)(m * mtrand());
@@ -626,17 +626,17 @@ GeneRegulationNetwork * newGeneRegulationNetwork(int m,int n)
 	int i;
 	GeneRegulationNetwork * net;
 	
-	net = malloc(sizeof(GeneRegulationNetwork));
+	net = (GeneRegulationNetwork*) malloc(sizeof(GeneRegulationNetwork));
 	net->species = m;    //number of genes
 	net->numComplexes = n;    //number of complexes
 	
-	net->complexes = malloc( n * sizeof (complex) );
-	net->targetGene = malloc( n * sizeof(int) );
-	net->Ka = malloc( n * sizeof(double) );
+	net->complexes = (complex*) malloc( n * sizeof (complex) );
+	net->targetGene = (int*) malloc( n * sizeof(int) );
+	net->Ka = (double*) malloc( n * sizeof(double) );
 	
-	net->Vmax = malloc( m * sizeof(double) );
-	net->degradation = malloc( m * sizeof(double) );
-	net->fixed = malloc( m * sizeof(int) );
+	net->Vmax = (double*) malloc( m * sizeof(double) );
+	net->degradation = (double*) malloc( m * sizeof(double) );
+	net->fixed = (int*) malloc( m * sizeof(int) );
 	
 	for (i=0; i < n; ++i)
 	{

@@ -70,9 +70,9 @@ LoopsInformation getLoops(double * values, int n)
 	Loops = 0;
 	numLoops = 0;
 
-	path = malloc(n * sizeof(int));
-	temp = malloc(n * sizeof(int));
-	visited = malloc(n * sizeof(int));
+	path = (int*) malloc(n * sizeof(int));
+	temp = (int*) malloc(n * sizeof(int));
+	visited = (int*) malloc(n * sizeof(int));
 	
 	for (j=0; j < n; ++j) visited[j] = 0;
 	
@@ -95,9 +95,9 @@ LoopsInformation getLoops(double * values, int n)
 	if (numLoops > 0)
 	{
 		info.numLoops = numLoops;
-		info.loopTypes = malloc(numLoops * sizeof(int));
-		info.loopLengths = malloc(numLoops * sizeof(int));
-		info.nodes = malloc(numLoops * sizeof(int*));
+		info.loopTypes = (int*) malloc(numLoops * sizeof(int));
+		info.loopLengths = (int*) malloc(numLoops * sizeof(int));
+		info.nodes = (int*) malloc(numLoops * sizeof(int*));
 	}
 	
 	for (i=0; i < numLoops; ++i)  //for each loop in Loops
@@ -113,7 +113,7 @@ LoopsInformation getLoops(double * values, int n)
 		}
 
 		info.loopLengths[i] = count; //number of nodes in loop i
-		info.nodes[i] = malloc(count * sizeof(int));
+		info.nodes[i] = (int*) malloc(count * sizeof(int));
 
 		for (j=0; j < n; ++j)
 		{
@@ -164,7 +164,7 @@ void recursiveLoopSearch(int n, int index, int * path, double * values, int N, i
 		if (!alreadyExistsInLoops(temp,N))
 		{
 			//copy old loops
-			int * newLoops = malloc((1+numLoops) * N * sizeof(int));
+			int * newLoops = (int**) malloc((1+numLoops) * N * sizeof(int));
 			for (i=0; i < (numLoops * N); ++i)	
 				newLoops[i] = Loops[i];
 			if (Loops) free(Loops);

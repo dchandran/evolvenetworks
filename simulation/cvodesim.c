@@ -176,7 +176,7 @@ double * ODEsim2(int m, int n, double * N, void (*f)(double, double*,double*,voi
 	propensityFunction = f;
 	numReactions = n;
 	numVars = m;
-	rates = malloc(n * sizeof(double));
+	rates = (double*) malloc(n * sizeof(double));
 	y = ODEsim(m,x0,&odeFunc,startTime,endTime,dt,dataptr);
 	free(rates);
 	return(y);
@@ -199,7 +199,7 @@ double* jacobian2(int m, int n, double * N, void (*f)(double,double*,double*,voi
 	propensityFunction = f;
 	numReactions = n;
 	numVars = m;
-	rates = malloc(n * sizeof(double));
+	rates = (double*) malloc(n * sizeof(double));
 	y = jacobian(m,point,&odeFunc,params);
 	free(rates);
 	return(y);
@@ -224,7 +224,7 @@ double* steadyState2(int m, int n, double * N, void (*f)(double,double*,double*,
 	propensityFunction = f;
 	numReactions = n;
 	numVars = m;
-	rates = malloc(n * sizeof(double));
+	rates = (double*) malloc(n * sizeof(double));
 	y = steadyState(m, initialValues, &odeFunc, params, minerr, maxtime, delta);
 	free(rates);
 	return(y);
@@ -246,7 +246,7 @@ double* getDerivatives2(int m, int n, double * N, void (*f)(double,double*,doubl
 	propensityFunction = f;
 	numReactions = n;
 	numVars = m;
-	rates = malloc(n * sizeof(double));
+	rates = (double*) malloc(n * sizeof(double));
 	y = getDerivatives(m, initValues, &odeFunc, startTime, endTime, stepSize, params);
 	free(rates);
 	return(y);
@@ -307,7 +307,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 	/* allocate output matrix */
 
 	M = (int)((endTime - startTime) / stepSize);
-	data = malloc ((N+1) * (M+1)  * sizeof(double) );
+	data = (double*) malloc ((N+1) * (M+1)  * sizeof(double) );
 
 	/* setup CVODE */
 
@@ -323,7 +323,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 		return(0);
 	}
 
-	funcData = malloc( sizeof(UserFunction) );
+	funcData = (double*) malloc( sizeof(UserFunction) );
 	(*funcData).ODEfunc = odefnc;
 	(*funcData).userData = params;
 
@@ -490,12 +490,12 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 
 	/* allocate output matrix */
 
-	ss = malloc (N * sizeof(double) );
+	ss = (double*) malloc (N * sizeof(double) );
 
 	/* Initialize u vector */
 
 	udata = NV_DATA_S(u);
-	u0 = malloc(N*sizeof(realtype));
+	u0 = (realtype*) malloc(N*sizeof(realtype));
 	if (initialValues != NULL)
 		for (i=0; i < N; ++i)
 			udata[i] = u0[i] = initialValues[i];
@@ -656,7 +656,7 @@ double* getDerivatives(int N, double * initialValues, void (*odefnc)(double,doub
 	y = ODEsim(N,initialValues,odefnc,startTime,endTime,stepSize,params);
 	if (y == 0) return 0;
 	sz = (int)((endTime-startTime)/stepSize);
-	dy = malloc(N * sizeof(double));
+	dy = (double*) malloc(N * sizeof(double));
   
 	for (i=0; i < N; ++i)
 	{

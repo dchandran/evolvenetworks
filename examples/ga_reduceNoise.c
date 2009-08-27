@@ -47,7 +47,7 @@ int main()
 
 	r = getNumReactions(net);
 	n = getNumSpecies(net);
-	iv = malloc( n * sizeof(double));
+	iv = (double*)malloc( n * sizeof(double));
 	for (i = 0; i < n; ++i) iv[i] = 0.0;
 
 	y = simulateNetworkStochastically(net,iv,500,&sz);  //stochastic simulation
@@ -75,7 +75,7 @@ double fitness(GAindividual p)
 	n = getNumSpecies(net);
 	r = getNumReactions(net);
 
-	iv = malloc( n * sizeof(double));  //initial concentrations
+	iv = (double*)malloc( n * sizeof(double));  //initial concentrations
 	for (i = 0; i < n; ++i) iv[i] = 0.0;
 
 	time = 500.0;

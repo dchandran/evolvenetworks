@@ -94,9 +94,9 @@ double * getRatesFromSimulatedData(double* data, int rows, int cols1, int cols2,
 	int i,j;
 	double * y, * rates, * dat;
 	
-	y = malloc( cols1 * sizeof(double));
-	rates = malloc( cols2 * sizeof(double));
-	dat = malloc(rows * (skip+cols2) * ( sizeof(double)));
+	y = (double*) malloc( cols1 * sizeof(double));
+	rates = (double*) malloc( cols2 * sizeof(double));
+	dat = (double*) malloc(rows * (skip+cols2) * ( sizeof(double)));
 	
 	for (i=0; i < rows; ++i)
 	{

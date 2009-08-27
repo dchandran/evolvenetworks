@@ -36,16 +36,16 @@ int main()
 	lineageFile = fopen("lineage.txt","w");
 	setFitnessFunction( &fitness );  //set the fitness function	
 	
-	//setNetworkType( MASS_ACTION_NETWORK );  //use this network type
-	setNetworkType( PROTEIN_INTERACTION_NETWORK );  //use this network type
+	setNetworkType( MASS_ACTION_NETWORK );  //use this network type
+	//setNetworkType( PROTEIN_INTERACTION_NETWORK );  //use this network type
 	//setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
 	
-	setInitialNetworkSize(6,2);  //network size
+	setInitialNetworkSize(6,12);  //network size
 	
 	printf("generation\tbest fitness\tnetwork size\n");
 
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(200,100,30,&callback);  
+	pop = evolveNetworks(800,300,40,&callback);  
 	
 	net = pop[0]; //get the best network
 	
@@ -54,7 +54,7 @@ int main()
 	/******simulate the best network and write the result to a file************/
 	
 	N = getNumSpecies(net);    //number of variables in the network
-	iv = malloc( N * sizeof(double));  
+	iv = (double*)malloc( N * sizeof(double));  
 	for (i = 0; i < N; ++i) iv[i] = 0.0; //initial values
 	
 	y = simulateNetworkODE(net, iv, 500, 1); //simulate
@@ -76,7 +76,7 @@ int main()
 void printLineage(GApopulation pop, int popSz, int num)
 {
 	int i,j;
-	int * ids = malloc(num * sizeof(int)), * ids2 = malloc(num * sizeof(int));
+	int * ids = (int*)malloc(num * sizeof(int)), * ids2 = (int*)malloc(num * sizeof(int));
 	ReactionNetwork * r;
 
 	for (i=0; i < num; ++i)
@@ -127,7 +127,7 @@ double fitness(GAindividual p)
 	
 	N = getNumSpecies(net);
 	
-	iv = malloc( N * sizeof(double));  //initial concentrations
+	iv = (double*)malloc( N * sizeof(double));  //initial concentrations
 	for (i = 0; i < N; ++i) iv[i] = 0.0;
 
 	time = 500.0;

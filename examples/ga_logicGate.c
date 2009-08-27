@@ -50,7 +50,7 @@ int main()
 	printNetworkToFile(net,"network.txt"); //print the best network
 	
 	N = getNumSpecies(net);
-	iv = malloc( N * sizeof(double) );
+	iv = (double*)malloc( N * sizeof(double) );
 	for (i=0; i < N; ++i)
 		iv[i] = 0.0;
 	iv[0] = 0.1;
@@ -129,11 +129,11 @@ double** XORtable() //make XOR table
 	   { 10.0, 10.0,  0.0 },  //input = high high, output = low
 	};
 	
-	double ** table = malloc( 4 * sizeof(double*) );
+	double ** table = (double**)malloc( 4 * sizeof(double*) );
 	
 	for (i=0; i < 4; ++i)
 	{
-		table[i] = malloc( 3 * sizeof(double) );
+		table[i] = (double*)malloc( 3 * sizeof(double) );
 		for (j=0; j < 3; ++j)
 			table[i][j] = XOR[i][j];
 	}

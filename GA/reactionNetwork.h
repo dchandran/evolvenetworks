@@ -189,9 +189,8 @@ void setNetworkType(int);
 */
 void setInitialNetworkSize(int,int);
 
-/*! \brief print the reaction network. 
-    This function simply calls the print functions of one 
-	of the individual networks.
+/*! \brief Run the genetic algorithm. 
+     Calls GArun from ga.h using a random population created using randomNetworks()
  \param int number of individuals in the initial population (use large number here)
  \param int number of individuals in each successive population (use relatively small number for speed)
  \param int number of generations for evolution

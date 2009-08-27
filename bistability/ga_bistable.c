@@ -73,7 +73,7 @@ static void setBad(Parameters * p)
    {  
       while (BAD_PARAMS[k]) ++k;
       temp = BAD_PARAMS;
-      BAD_PARAMS = malloc( (k+1) * sizeof(Parameters*) );
+      BAD_PARAMS = (Parameters**)malloc( (k+1) * sizeof(Parameters*) );
       for (i=0; i < k; ++i)
           BAD_PARAMS[i] = temp[i];
       BAD_PARAMS[k-1] = (Parameters*)clone(p);
@@ -82,7 +82,7 @@ static void setBad(Parameters * p)
    }
    else
    {
-      BAD_PARAMS = malloc( 2 * sizeof(Parameters) );
+      BAD_PARAMS = (Parameters**)malloc( 2 * sizeof(Parameters) );
       BAD_PARAMS[0] = (Parameters*)clone(p);
       BAD_PARAMS[1] = 0;
    }
@@ -128,13 +128,13 @@ void deleteGAindividual(void * individual)
 void * clone(void * x)
 {
    int i;
-   Parameters * p = malloc(sizeof(Parameters));
+   Parameters * p = (Parameters*)malloc(sizeof(Parameters));
    Parameters * net = (Parameters*)x;
    
    p->numVars = (*net).numVars;
    p->numParams = (*net).numParams;
-   p->params  = malloc(  p->numParams * sizeof(double) );
-   p->alphas  = malloc(  p->numVars * sizeof(double) );
+   p->params  = (double*)malloc(  p->numParams * sizeof(double) );
+   p->alphas  = (double*)malloc(  p->numVars * sizeof(double) );
 
    for (i = 0; i < p->numVars; ++i)
    {
@@ -151,11 +151,11 @@ Parameters * randomNetwork(int numVars, int numParams)
 {
    int i;
    
-   Parameters * p = malloc(sizeof(Parameters));
+   Parameters * p = (Parameters*)malloc(sizeof(Parameters));
    p->numParams = numParams;
    p->numVars = numVars;
-   p->params  = malloc( numParams * sizeof(double) );
-   p->alphas  = malloc( numVars * sizeof(double) );
+   p->params  = (double*)malloc( numParams * sizeof(double) );
+   p->alphas  = (double*)malloc( numVars * sizeof(double) );
 
    for (i = 0; i < numParams; ++i) p->params[i] = 10.0*randnum;
    for (i = 0; i < numVars; ++i) p->alphas[i] = 2.0*randnum - 1.0;
@@ -167,7 +167,7 @@ static double * regularSteadyState(Parameters * p, double * iv)
 {
    int i;
    int N = p->numVars;
-   double * ss, * alphas = malloc(N*sizeof(double));
+   double * ss, * alphas = (double*)malloc(N*sizeof(double));
 
    for (i=0; i < N; ++i)
    {
@@ -195,7 +195,7 @@ static double * findZeros(Parameters * p, double * x, double * fopt)
    int i;
    double * ss = 0;
    
-   _DU = malloc(p->numVars*sizeof(double));
+   _DU = (double*)malloc(p->numVars*sizeof(double));
    _PARAM = p;
    
    for (i=0; i < p->numVars; ++i)
@@ -292,7 +292,7 @@ double fitness(void * individual)
           return (0.0);
        }
 
-       double * yend = malloc(N*sizeof(double));
+       double * yend = (double*)malloc(N*sizeof(double));
        for (i=0; i<N; ++i)
            yend[i] = getValue(y,N+1,2000,i+1);
 
@@ -429,7 +429,7 @@ void * crossover(void * individual1, void * individual2)
 Parameters ** initGApopulation(int sz, int n, int p)
 {
    int i;
-   Parameters ** pop = malloc(sz * sizeof(void*));
+   Parameters ** pop = (Parameters**)malloc(sz * sizeof(Parameters*));
    
    for (i=0; i < sz; ++i)
    {
@@ -486,7 +486,7 @@ static double** findTwoSteadyStates(Parameters * p0)
    p = clone((void*)p0);
    for (i=0; i < p->numVars; ++i) p->alphas[i] = 1.0;
 
-   iv2 = malloc( p->numVars * sizeof(double) ); //unstable point
+   iv2 = (double*)malloc( p->numVars * sizeof(double) ); //unstable point
    for (i=0; i < p->numVars; ++i) iv2[i] = iv[i];
 
    y = y0 = 0; //y0 and y are the two steady states (if they exist)
@@ -498,7 +498,7 @@ static double** findTwoSteadyStates(Parameters * p0)
 
       //y = steadyState(p->numVars,iv2, ODE_FNC, p,SS_MIN_ERROR,SS_MAX_TIME,SS_MIN_DT); //steady state
       y = 0;
-      _DU = malloc( (p->numVars) * sizeof(double));
+      _DU = (double*)malloc( (p->numVars) * sizeof(double));
       _PARAM = p;
       for (j=0; j < p->numVars; ++j)
       {
@@ -528,7 +528,7 @@ static double** findTwoSteadyStates(Parameters * p0)
              if (diff > MIN_ERROR) //significantly different
              {
                  deleteGAindividual((void*)p);
-                 ys = malloc(3 * sizeof(double*));
+                 ys = (double*)malloc(3 * sizeof(double*));
                  ys[0] = iv;
                  ys[1] = y0;
                  ys[2] = y;
@@ -559,8 +559,8 @@ BistablePoint makeBistable(int n, int p,double* iv, int maxIter, int popSz, void
    Parameters * param;
    GApopulation pop;
    
-   _U0 = malloc( n * sizeof(double));
-   _U = malloc( n * sizeof(double));
+   _U0 = (double*)malloc( n * sizeof(double));
+   _U = (double*)malloc( n * sizeof(double));
    ODE_FNC = odefnc;
    popsz1 = popSz/5;
    INIT_VALUE = iv;
