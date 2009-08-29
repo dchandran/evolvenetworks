@@ -311,15 +311,15 @@ void printNetworkToFile(char * filename, GAindividual individual)
 {
 	ReactionNetwork * r = (ReactionNetwork*)individual;
 	PrintNetworkFunction f;
-	FILE *stream = fopen(filename, "w");
+	FILE *stream;
 
-	if (!stream || !r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return;
+	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return;
 
+	stream = fopen(filename, "w");
+	if (!stream) return;
 	f = printNetworkFunctions[r->type];
-	f(stream,r);
-	
-
-
+	f(stream,r->network);
+	fclose(stream);
 }
 
 int getNumSpecies(GAindividual individual)
