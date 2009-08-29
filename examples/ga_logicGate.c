@@ -30,7 +30,7 @@ int callback(int iter,GApopulation pop,int popSz);
 int main()
 {	
 	int i, N, num_rows, num_inputs, num_outputs;
-	double *iv, * y;
+	double *iv;
 	GApopulation pop;
 	GAindividual * best;
 	double ** table;
@@ -50,7 +50,7 @@ int main()
 	
 	printNetwork(best); //print the best network
 	
-	printNetworkToFile(best,"network.txt"); //print the best network
+	printNetworkToFile("network.txt",best); //print the best network
 	
 	N = getNumSpecies(best);
 	iv = (double*)malloc( N * sizeof(double) );

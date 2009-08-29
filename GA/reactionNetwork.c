@@ -1,16 +1,37 @@
 #include "reactionNetwork.h"
 
+
+/********************************************************
+
+		Global parameters
+
+*********************************************************/
+
+static double MUTATE_INIT_VALUE_PROB = 1.0;
+static double AVG_INIT_VALUES = 2.0;
+static int TRACK_NETWORK_PARENTS = 1;
+static int NUMBER_OF_NETWORK_TYPES = 4;
+
+void setAverageInitialValue(double d)
+{
+	AVG_INIT_VALUES = d;
+}
+
+void setMutationRateOfInitialValues(double d)
+{
+	MUTATE_INIT_VALUE_PROB = d;
+}
+
+
 /********************************************************
 
 		Pointers to the existing functions
 
 *********************************************************/
 
-static int TRACK_NETWORK_PARENTS = 1;
-static int NUMBER_OF_NETWORK_TYPES = 3;
-
 static double networkProbs[] =
 {
+	0.33333333333,
 	0.33333333333,
 	0.33333333333,
 	0.33333333333
@@ -19,36 +40,41 @@ static double networkProbs[] =
 static PropensityFunction rateFunctions[] =
 {
 	&ratesForMassActionNetwork,
-	&ratesForProteinInteractionNetwork, 
-	&ratesForGeneRegulationNetwork
+	&ratesForEnzymeNetwork,
+	&ratesForGeneRegulationNetwork,
+	&ratesForProteinInteractionNetwork
 };
 
 static GACrossoverFnc crossoverFunctions[] =
 {
 	&crossoverMassActionNetwork, 
-	&crossoverProteinInteractionNetwork, 
-	&crossoverGeneRegulationNetwork	
+	&crossoverEnzymeNetwork,
+	&crossoverGeneRegulationNetwork,
+	&crossoverProteinInteractionNetwork
 };
 
 static GAMutateFnc mutateFunctions[] =
 {
 	&mutateMassActionNetwork, 
-	&mutateProteinInteractionNetwork,
-	&mutateGeneRegulationNetwork	
+	&mutateEnzymeNetwork,
+	&mutateGeneRegulationNetwork,
+	&mutateProteinInteractionNetwork
 };
 
 static GADeleteFnc deleteFunctions[] =
 {
 	&deleteMassActionNetwork,
-	&deleteProteinInteractionNetwork,
-	&deleteGeneRegulationNetwork
+	&deleteEnzymeNetwork,
+	&deleteGeneRegulationNetwork,
+	&deleteProteinInteractionNetwork
 };
 
 static GACloneFnc cloneFunctions[] =
 {
 	&cloneMassActionNetwork,
-	&cloneProteinInteractionNetwork,
-	&cloneGeneRegulationNetwork
+	&cloneEnzymeNetwork,
+	&cloneGeneRegulationNetwork,
+	&cloneProteinInteractionNetwork
 };
 
 typedef double* (*StoichiometryFunction)(GAindividual);
@@ -58,22 +84,25 @@ typedef int (*GetNumReactionsFunction)(GAindividual);
 static StoichiometryFunction stoicFunctions[] =
 {
 	&stoichiometryForMassActionNetwork,
-	&stoichiometryForProteinInteractionNetwork, 
-	&stoichiometryForGeneRegulationNetwork
+	&stoichiometryForEnzymeNetwork,
+	&stoichiometryForGeneRegulationNetwork,
+	&stoichiometryForProteinInteractionNetwork
 };
 
 static GetNumSpeciesFunction getNumSpeciesFunctions[] =
 {
 	&getNumSpeciesForMassActionNetwork,
-	&getNumSpeciesForProteinInteractionNetwork, 
-	&getNumSpeciesForGeneRegulationNetwork
+	&getNumSpeciesForEnzymeNetwork, 
+	&getNumSpeciesForGeneRegulationNetwork,
+	&getNumSpeciesForProteinInteractionNetwork
 };
 
 static GetNumReactionsFunction getNumReactionsFunctions[] =
 {
 	&getNumReactionsForMassActionNetwork,
-	&getNumReactionsForProteinInteractionNetwork, 
-	&getNumReactionsForGeneRegulationNetwork
+	&getNumReactionsForEnzymeNetwork, 
+	&getNumReactionsForGeneRegulationNetwork,
+	&getNumReactionsForProteinInteractionNetwork
 };
 
 typedef void (*PrintNetworkFunction)(FILE *, GAindividual);
@@ -81,8 +110,9 @@ typedef void (*PrintNetworkFunction)(FILE *, GAindividual);
 static PrintNetworkFunction printNetworkFunctions[] =
 {
 	&printMassActionNetwork,
-	&printProteinInteractionNetwork, 
-	&printGeneRegulationNetwork
+	&printEnzymeNetwork,
+	&printGeneRegulationNetwork,
+	&printProteinInteractionNetwork
 };
 
 typedef void (*SetFixedSpeciesFunction)(GAindividual,int,int);
@@ -90,15 +120,16 @@ typedef void (*SetFixedSpeciesFunction)(GAindividual,int,int);
 static SetFixedSpeciesFunction setFixedSpeciesFunctions[] =
 {
 	&setFixedSpeciesForMassActionNetwork,
-	&setFixedSpeciesForProteinInteractionNetwork, 
-	&setFixedSpeciesForGeneRegulationNetwork
+	&setFixedSpeciesForEnzymeNetwork,
+	&setFixedSpeciesForGeneRegulationNetwork,
+	&setFixedSpeciesForProteinInteractionNetwork
 };
 
 /***********************************************************/
 
 GApopulation randomNetworks(int sz0)
 {
-	int i, total = 0, r, k;
+	int i, j, r, k, n, total = 0;
 	ReactionNetwork * rnet;
 	GApopulation P1 = 0, P2 = 0, P3 = 0, P;
 
@@ -116,6 +147,10 @@ GApopulation randomNetworks(int sz0)
 			rnet->network = P1[i];
 			rnet->id = i;
 			rnet->parents = 0;
+			n = getNumSpecies(rnet);
+			rnet->initialValues = (double*)malloc(n*sizeof(double));
+			for (j=0; j < n; ++j)
+				rnet->initialValues[j] = AVG_INIT_VALUES * mtrand();
 
 			P[i] = rnet;
 		}
@@ -132,6 +167,10 @@ GApopulation randomNetworks(int sz0)
 			rnet->type = PROTEIN_INTERACTION_NETWORK;
 			rnet->network = P2[i];
 			rnet->parents = 0;
+			n = getNumSpecies(rnet);
+			rnet->initialValues = (double*)malloc(n*sizeof(double));
+			for (j=0; j < n; ++j)
+				rnet->initialValues[j] = AVG_INIT_VALUES * mtrand();
 
 			rnet->id = i+total;
 			P[i+total] = rnet;
@@ -149,6 +188,10 @@ GApopulation randomNetworks(int sz0)
 			rnet->type = GENE_REGULATION_NETWORK;
 			rnet->network = P3[i];
 			rnet->parents = 0;
+			n = getNumSpecies(rnet);
+			rnet->initialValues = (double*)malloc(n*sizeof(double));
+			for (j=0; j < n; ++j)
+				rnet->initialValues[j] = AVG_INIT_VALUES * mtrand();
 
 			rnet->id = i+total;
 			P[i+total] = rnet;
@@ -214,7 +257,7 @@ void setNetworkTypeProbability(int i, double p)
 		for (i=0; i < NUMBER_OF_NETWORK_TYPES; ++i) networkProbs[i] /= total;
 }
 
-double * simulateNetworkODE( GAindividual individual, double* iv, double time, double dt)
+double * simulateNetworkODE( GAindividual individual, double time, double dt)
 {	
 	ReactionNetwork * r = (ReactionNetwork*)individual;
 	StoichiometryFunction stoic;
@@ -222,9 +265,11 @@ double * simulateNetworkODE( GAindividual individual, double* iv, double time, d
 	double * N, * y;
 	int species = 0, reactions = 0;
 	void * p = 0;
+	double* iv;
 
 	if (!r || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 	
+	iv = r->initialValues;
 	stoic = stoicFunctions[r->type];
 	rate = rateFunctions[r->type];
 	
@@ -241,7 +286,7 @@ double * simulateNetworkODE( GAindividual individual, double* iv, double time, d
 	return y;
 }
 
-double * networkSteadyState( GAindividual individual, double* iv)
+double * networkSteadyState( GAindividual individual )
 {
 	ReactionNetwork * r = (ReactionNetwork*)individual;
 	StoichiometryFunction stoic;
@@ -250,11 +295,12 @@ double * networkSteadyState( GAindividual individual, double* iv)
 	double * y = 0;
 	void * p = 0;
 	int species = 0, reactions = 0;
+	double* iv;
 
 	if (!r || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 	
-	stoic = stoicFunctions[r->type];
-	
+	iv = r->initialValues;
+	stoic = stoicFunctions[r->type];	
 	rate = rateFunctions[r->type];
 	
 	p = r->network;
@@ -269,18 +315,19 @@ double * networkSteadyState( GAindividual individual, double* iv)
 	return y;
 }
 
-double * simulateNetworkStochastically( GAindividual individual, double* iv, double time, int* sz)
+double * simulateNetworkStochastically( GAindividual individual, double time, int* sz)
 {	
 	ReactionNetwork * r = (ReactionNetwork*)individual;
 	StoichiometryFunction stoic;
 	double * N;
 	PropensityFunction rate;
-	double * y = 0;
+	double * y = 0, * iv;
 	int species = 0, reactions = 0;
 	void * p = 0;
 
 	if (!r || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 	
+	iv = r->initialValues;
 	stoic = stoicFunctions[r->type];
 	rate = rateFunctions[r->type];
 	
@@ -299,12 +346,23 @@ void printNetwork(GAindividual individual)
 {
 	ReactionNetwork * r = (ReactionNetwork*)individual;
 	PrintNetworkFunction f;
+	int n,i;
 	
 	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return;
 	
 	f = printNetworkFunctions[r->type];
 	
 	f(stdout,r->network);
+
+	if (r->initialValues)
+	{
+		printf("\n");
+		n = getNumSpecies(r);
+		for (i=0; i < n; ++i)
+		{
+			printf("s%i = %lf;\n",i+1,r->initialValues[i]);
+		}
+	}
 }
 
 void printNetworkToFile(char * filename, GAindividual individual)
@@ -312,6 +370,7 @@ void printNetworkToFile(char * filename, GAindividual individual)
 	ReactionNetwork * r = (ReactionNetwork*)individual;
 	PrintNetworkFunction f;
 	FILE *stream;
+	int i, n;
 
 	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return;
 
@@ -319,6 +378,16 @@ void printNetworkToFile(char * filename, GAindividual individual)
 	if (!stream) return;
 	f = printNetworkFunctions[r->type];
 	f(stream,r->network);
+
+	if (r->initialValues)
+	{
+		fprintf(stream,"\n");
+		n = getNumSpecies(r);
+		for (i=0; i < n; ++i)
+		{
+			fprintf(stream, "s%i = %lf;\n",i+1,r->initialValues[i]);
+		}
+	}
 	fclose(stream);
 }
 
@@ -416,6 +485,20 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 		r->type = r1->type;
 		r->network = net;
 		r->id = r1->id;
+
+		sz1 = getNumSpecies(r1);
+		sz2 = getNumSpecies(r2);
+		j = getNumSpecies(r);
+
+		r->initialValues = (double*)malloc(j * sizeof(double));
+
+		for (i=0; i < sz1 && i < j; ++i)
+			r->initialValues[i] = r1->initialValues[i];
+		for (i=0; i < sz2 && (sz1+i) < j; ++i)
+			r->initialValues[sz1+i] = r2->initialValues[i];
+		for (i=sz1+sz2; i < j; ++i)
+			r->initialValues[i] = AVG_INIT_VALUES * mtrand();
+
 		i = j = sz1 = sz2 = 0;
 		if (r1->parents)
 		{
@@ -484,6 +567,9 @@ void deleteNetwork(GAindividual p)
 	if (r->parents)
 		free(r->parents);
 
+	if (r->initialValues)
+		free(r->initialValues);
+
 	free(r);
 }
 
@@ -499,9 +585,9 @@ GAindividual cloneNetwork(GAindividual p)
 	
 	i = 0;
 	if (r->parents)
-	{
-		while (r->parents[i]) ++i;
-	}
+		while (r->parents[i]) 
+			++i;
+	
 
 	r2->parents = 0;
 	if (TRACK_NETWORK_PARENTS && (i > 0))
@@ -514,6 +600,13 @@ GAindividual cloneNetwork(GAindividual p)
 	r2->id = r->id;
 	r2->type = r->type;
 	r2->network = cloneFunctions[r->type](r->network);
+
+	j = getNumSpecies(r2);
+	r2->initialValues = (double*)malloc(j * sizeof(double));
+	for (i=0; i < j; ++i)
+		r2->initialValues[i] = r->initialValues[i];
+	
+
 	return r2;
 }
 
@@ -609,6 +702,8 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 	sumOfSq = 0.0;
 	corrcoef = 0.0;
 	iv = (double*) malloc( n * sizeof(double) );
+	for (i=0; i < n; ++i)
+		iv[i] = r->initialValues[i];
 
 	best = (int*) malloc ( outputs * sizeof(int) );
 	mX = (double*)malloc( outputs * sizeof(double) );
@@ -624,14 +719,14 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 	}
 
 	for (m=0; m < rows; ++m)
-	{	
+	{
 		for (i=0; i < inputs; ++i)
-			iv[i] = table[m][i];
+			r->initialValues[i] = table[m][i];
 		
 		for (i=inputs; i < n; ++i)
-			iv[i] = 0.0;
+			r->initialValues[i] = 0.0;
 		
-		ss = networkSteadyState(r,iv);
+		ss = networkSteadyState(r);
 
 		if (ss) //error in simulation?
 		{
@@ -705,6 +800,9 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 
 		corrcoef += (1.0 + temp)/2.0; //between 0 and 1, instead of -1 and 1
 	}
+
+	for (i=0; i < n; ++i)
+		r->initialValues[i] = iv[i];
 	
 	free(iv);
 	free(mX);

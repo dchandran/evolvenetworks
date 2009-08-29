@@ -28,7 +28,7 @@ int callback(int iter,GApopulation pop,int popSz);
 int main()
 {	
 	int i, r, n, sz;
-	double * iv, * y;
+	double * y;
 	GApopulation pop;
 	GAindividual * best;
 
@@ -47,12 +47,8 @@ int main()
 
 	r = getNumReactions(best);
 	n = getNumSpecies(best);
-	iv = (double*)malloc( n * sizeof(double));
-	for (i = 0; i < n; ++i) iv[i] = 0.0;
-
-	y = simulateNetworkStochastically(best,iv,500,&sz);  //stochastic simulation
-	free(iv);
-
+	y = simulateNetworkStochastically(best,500,&sz);  //stochastic simulation
+	
 	writeToFile("dat.txt",y,sz,n+1);  //write table to file
 
 	free(y);
@@ -69,18 +65,14 @@ int main()
 double fitness(GAindividual p)
 {
 	int i,r,n,sz;
-	double f, sd, dt, time, * iv, * y, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0;
+	double f, sd, dt, time, * y, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0;
 
 	n = getNumSpecies(p);
 	r = getNumReactions(p);
 
-	iv = (double*)malloc( n * sizeof(double));  //initial concentrations
-	for (i = 0; i < n; ++i) iv[i] = 0.0;
-
 	time = 500.0;
 
-	y = simulateNetworkStochastically(p,iv,time,&sz);  //stochastic simulation
-	free(iv);
+	y = simulateNetworkStochastically(p,time,&sz);  //stochastic simulation
 
 	f = 0;
 	if (y != 0)         //compute the variance

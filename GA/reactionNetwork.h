@@ -21,32 +21,40 @@
 
 #include "ga.h"
 #include "massActionNetwork.h"
+#include "enzymeNetwork.h"
 #include "proteinInteractionNetwork.h"
 #include "geneRegulationNetwork.h"
 
 #define MASS_ACTION_NETWORK 0
-#define PROTEIN_INTERACTION_NETWORK 1
+#define ENZYME_NETWORK 1
+#define PROTEIN_INTERACTION_NETWORK 3
 #define GENE_REGULATION_NETWORK 2
 
+
 /*! \brief A generic network that can contain either a 
-	mass-action network, protein-interaction network, or 
-	gene-regulation network
+	mass-action network, enzyme network, protein-interaction network, or 
+	gene-regulation network. The type information is used
+	to call the corresponding functions that are already 
+	defined in each of the other network types.
  \ingroup genericNetwork
 */
 
 typedef struct 
 {
-	//MASS_ACTION_NETWORK, PROTEIN_INTERACTION_NETWORK, or GENE_REGULATION_NETWORK
+	/*! \brief MASS_ACTION_NETWORK, PROTEIN_INTERACTION_NETWORK, or GENE_REGULATION_NETWORK*/
 	int type; 
 	
-	//the network itself
+	/*! \brief the network itself*/
 	GAindividual network;
 
-	//network ID
+	/*! \brief network ID*/
 	int id;
 
-	//parent network IDs for following evolutionary lineage (null terminated)
+	/*! \brief parent network IDs for following evolutionary lineage (null terminated)*/
 	int * parents;
+
+	/*! \brief initial values*/
+	double * initialValues;
 }
 ReactionNetwork;
 
@@ -149,34 +157,45 @@ void setRatesFunction( int, PropensityFunction );
 */
 void setStoichiometryFunction( int, double* (*f)(GAindividual) );
 
+/*! \brief set the initial values of the variables in the network
+ \param ReactionNetwork network
+ \param double* initial concentrations
+ \ingroup genericNetwork
+*/
+void setInitialValues( GAindividual, double *);
+
+/*! \brief get the initial values of the variables in the network
+ \param ReactionNetwork network
+ \return double* initial concentrations
+ \ingroup genericNetwork
+*/
+double * getInitialValues( GAindividual );
+
 /*! \brief simulate using a system of ordinary differential equations (ODE) (see cvodesim.h)
  \param ReactionNetwork network to simulate
- \param double* initial concentrations
  \param double total simulation time
  \param double step-size for simulation, 0-1
  \return double* linearized 2D array, use getValue (see cvodesim.h)
  \ingroup genericNetwork
 */
-double * simulateNetworkODE( GAindividual, double*, double, double );
+double * simulateNetworkODE( GAindividual, double, double );
 
 /*! \brief get steady state of a system using a system (see cvodesim.h)
  \param ReactionNetwork network to simulate
- \param double* initial concentrations
  \return double* steady state values
  \ingroup genericNetwork
 */
-double * networkSteadyState( GAindividual, double* );
+double * networkSteadyState( GAindividual );
 
 /*! \brief simulate using stochastic simulation algorithm (see ssa.h)
  \param ReactionNetwork network to simulate
- \param double* initial concentrations
  \param double total simulation time
  \param int* returns the final size (rows) of the matrix here
  \param double step-size for simulation, 0-1
  \return double* linearized 2D array, use getValue (see cvodesim.h)
  \ingroup genericNetwork
 */
-double * simulateNetworkStochastically( GAindividual, double*, double, int* );
+double * simulateNetworkStochastically( GAindividual, double, int* );
 
 /**************************************
   @name Functions for GA

@@ -151,15 +151,19 @@ void setParametersForProteinInteractionNetwork(double, double , double );
  * \ingroup proteinnetwork
 */
 void setSizeForProteinInteractionNetwork(int, int);
-/*! \brief Set parameters for the mutation and crossover functions. First four arguments must add to 1.
+/*! \brief Set parameters for the mutation functions. Arguments must add to 1.
  * \param double probability of rewiring the network during mutation
  * \param double probability of changing network parameter during mutation
  * \param double probability of changing a conservation law during mutation
  * \param double probability of adding/removing a node during mutation
+ * \ingroup proteinnetwork
+*/
+void setMutationRatesForProteinInteractionNetwork(double, double, double, double);
+/*! \brief Set crossover probability.
  * \param double probability of crossover
  * \ingroup proteinnetwork
 */
-void setMutationAndCrossoverRatesForProteinInteractionNetwork(double, double, double, double, double);
+void setCrossoverRateForProteinInteractionNetwork(double);
 /*! \brief Creates an array of randomized protein networks.
  * \return GAindividual* GApopulation of random networks
  * \ingroup proteinnetwork

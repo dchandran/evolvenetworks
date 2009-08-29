@@ -34,7 +34,7 @@ void setSizeForProteinInteractionNetwork(int s, int r)
 	AVG_NUM_REGULATIONS = (double)r/(double)s;
 }
 
-void setMutationAndCrossoverRatesForProteinInteractionNetwork(double a, double b, double c, double d, double e)
+void setMutationRatesForProteinInteractionNetwork(double a, double b, double c, double d)
 {
 	double total;
 
@@ -42,8 +42,10 @@ void setMutationAndCrossoverRatesForProteinInteractionNetwork(double a, double b
 	MUTATE_REWIRE = a/total;
 	MUTATE_CHANGE_PARAM = b/total;
 	MUTATE_TOTAL_CONC = c/total;
-	
-	if (e > 1.0) e /= 100.0;
+}
+
+void setCrossoverRateForProteinInteractionNetwork(double e)
+{
 	CROSSOVER_PROB = e;
 }
 

@@ -528,7 +528,7 @@ static double** findTwoSteadyStates(Parameters * p0)
              if (diff > MIN_ERROR) //significantly different
              {
                  deleteGAindividual((void*)p);
-                 ys = (double*)malloc(3 * sizeof(double*));
+                 ys = (double**)malloc(3 * sizeof(double*));
                  ys[0] = iv;
                  ys[1] = y0;
                  ys[2] = y;

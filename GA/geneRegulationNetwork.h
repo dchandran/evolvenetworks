@@ -166,16 +166,21 @@ void setParametersForGeneRegulationNetwork(int, double, double, double);
 */
 void setSizeForGeneRegulationNetwork(int,int);
 
-/*! \brief Set parameters for the mutation and crossover functions. First four arguments must add to 1.
+/*! \brief Set parameters for the mutation and crossover functions. Arguments must add to 1.
  * \param double probability of mutating a random Ka value
  * \param double probability of mutating a degradation value or Vmax value
  * \param double probability of mutating a component of a random complex
  * \param double probability of adding a gene
  * \param double probability of removing a gene
+ * \ingroup geneticnetwork
+*/
+void setMutationRatesForGeneRegulationNetwork(double, double, double, double, double);
+
+/*! \brief Set crossover probability
  * \param double probability of crossover
  * \ingroup geneticnetwork
 */
-void setMutationAndCrossoverRatesForGeneRegulationNetwork(double, double, double, double, double, double);
+void setCrossoverRateForGeneRegulationNetwork(double);
 
 /*! \brief
  * Creates an array of randomized genetic networks.

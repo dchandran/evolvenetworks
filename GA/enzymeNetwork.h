@@ -37,7 +37,7 @@ typedef struct
 	int * enzymes;
 	double * Km;
 }
-EnzymeCatalyzedNetwork;
+EnzymeNetwork;
 
 /*****************************************************
    @name  Functions needed by GA
@@ -47,13 +47,13 @@ EnzymeCatalyzedNetwork;
  * \param GAindividual a single individual
  * \ingroup modifiedmassaction
 */
-void deleteEnzymeCatalyzedNetwork(GAindividual individual);
+void deleteEnzymeNetwork(GAindividual individual);
 
 /*! \brief Make a copy of an individual and return the memory pointer
  * \param GAindividual target individual
  * \ingroup modifiedmassaction
 */
-GAindividual cloneEnzymeCatalyzedNetwork(GAindividual individual);
+GAindividual cloneEnzymeNetwork(GAindividual individual);
 
 /*! \brief Combine two individuals to generate a new individual
  * \param GAindividual parent individual 1
@@ -61,14 +61,14 @@ GAindividual cloneEnzymeCatalyzedNetwork(GAindividual individual);
  * \return GAindividual pointer to an individual (can be the same as one of the parents)
  * \ingroup modifiedmassaction
 */
-GAindividual crossoverEnzymeCatalyzedNetwork(GAindividual individualA, GAindividual individualB);
+GAindividual crossoverEnzymeNetwork(GAindividual individualA, GAindividual individualB);
 
 /*! \brief Change an individual randomly to generate a new individual
  * \param GAindividual parent individual
  * \return GAindividual pointer to an individual (can be the same as one of the parents)
  * \ingroup modifiedmassaction
 */
-GAindividual mutateEnzymeCatalyzedNetwork(GAindividual individual);
+GAindividual mutateEnzymeNetwork(GAindividual individual);
 
 /*****************************************************
    @name Functions for simulating and printing the network defined above
@@ -81,38 +81,38 @@ GAindividual mutateEnzymeCatalyzedNetwork(GAindividual individual);
  * \param GAindividual network
  * \ingroup modifiedmassaction
 */
-void ratesForEnzymeCatalyzedNetwork(double,double*,double*,GAindividual);
+void ratesForEnzymeNetwork(double,double*,double*,GAindividual);
 /*! \brief Get the stoichiometry matrix for a network
  * \param GAindividual network
  * \return double* linearized stoichiometry matrix
  * \ingroup modifiedmassaction
 */
-double * stoichiometryForEnzymeCatalyzedNetwork(GAindividual);
+double * stoichiometryForEnzymeNetwork(GAindividual);
 /*! \brief Print a network
  * \param FILE* output stream
  * \param GAindividual network
  * \ingroup modifiedmassaction
 */
-void printEnzymeCatalyzedNetwork(FILE *, GAindividual);
+void printEnzymeNetwork(FILE *, GAindividual);
 /*! \brief get the number of variables in the network.
     This is equal to the number of rows in the stoichiometry matrix
- \param EnzymeCatalyzedNetwork network
+ \param EnzymeNetwork network
  \ingroup modifiedmassaction
 */
-int getNumSpeciesForEnzymeCatalyzedNetwork(GAindividual);
+int getNumSpeciesForEnzymeNetwork(GAindividual);
 /*! \brief get the number of reactions in the network. 
     This is equal to the number of columns in the stoichiometry matrix
- \param EnzymeCatalyzedNetwork network
+ \param EnzymeNetwork network
  \ingroup modifiedmassaction
 */
-int getNumReactionsForEnzymeCatalyzedNetwork(GAindividual);
+int getNumReactionsForEnzymeNetwork(GAindividual);
 /*! \brief set a species as a fixed (constant, boundary) species
- \param EnzymeCatalyzedNetwork network
+ \param EnzymeNetwork network
  \param int index of species that should be set at fixed
  \param int value = 0 or 1, where 1 = fixed
  \ingroup modifiedmassaction
 */
-void setFixedSpeciesForEnzymeCatalyzedNetwork(GAindividual, int, int);
+void setFixedSpeciesForEnzymeNetwork(GAindividual, int, int);
 
 /*****************************************************
    @name Functions for initializing a GA
@@ -124,39 +124,48 @@ void setFixedSpeciesForEnzymeCatalyzedNetwork(GAindividual, int, int);
  * \param double percent of initial reactions having two reactant and two product
  * \param double percent of initial reactions representing creation (i.e. no reactants)
  * \param double percent of initial reactions representing degradation (i.e. no products)
+ * \ingroup modifiedmassaction
+*/
+void setDistributionOfEnzymeNetwork(double uni_uni, double uni_bi, double bi_uni, double bi_bi, double no_reactant, double no_product);
+/*! \brief Set the initial (average) parameters for generating random networks.
  * \param double average rate constant (Vmax for enzymatic reactions)
  * \param double average half-saturation point for enzyme reactions (Km)
  * \ingroup modifiedmassaction
 */
-void setParametersForEnzymeNetwork(double uni_uni, double uni_bi, double bi_uni, double bi_bi, double no_reactant, double no_product, double avg_rate_constant, double avg_km);
+void setRateConstantsForEnzymeNetwork(double avg_rate_constant, double avg_km);
+
 /*! \brief Set the initial (average) parameters for generating random networks.
  * \param int average number of species
  * \param int average number of reactions
  * \ingroup modifiedmassaction
 */
-void setSizeForEnzymeCatalyzedNetwork(int, int);
-/*! \brief Set parameters for the mutation and crossover functions. First four arguments must add to 1.
+void setSizeForEnzymeNetwork(int, int);
+/*! \brief Set parameters for the mutation and crossover functions. Arguments must add to 1.
  * \param double probability of mutating an enzyme (default = 0.2) 
  * \param double probability of mutating a rate constant (default = 0.5) 
  * \param double probability of remove a reaction during mutation. This may also remove some species.
  * \param double probability of adding a reaction during mutation. This may also add species.
+ * \ingroup modifiedmassaction
+*/
+void setMutationRatesForEnzymeNetwork(double, double, double, double);
+/*! \brief Set crossover probabilty
  * \param double probability of crossover (default = 1.0, i.e. always)
  * \ingroup modifiedmassaction
 */
-void setMutationAndCrossoverRatesForEnzymeCatalyzedNetwork(double, double, double, double, double);
+void setCrossoverRateForEnzymeNetwork(double);
 /*! \brief Creates an array of randomized enzyme networks.
  * \return GAindividual* GApopulation of random networks
  * \ingroup modifiedmassaction
 */
-GApopulation randomEnzymeCatalyzedNetworks(int);
+GApopulation randomEnzymeNetworks(int);
 
 /*! \brief Make a new empty network
  * \param int number of species
  * \param int number of reactions
- * \return EnzymeCatalyzedNetwork* network
+ * \return EnzymeNetwork* network
  * \ingroup modifiedmassaction
 */
-EnzymeCatalyzedNetwork * newEnzymeCatalyzedNetwork(int,int);
+EnzymeNetwork * newEnzymeNetwork(int,int);
 
 #endif
 

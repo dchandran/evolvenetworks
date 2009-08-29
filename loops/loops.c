@@ -97,7 +97,7 @@ LoopsInformation getLoops(double * values, int n)
 		info.numLoops = numLoops;
 		info.loopTypes = (int*) malloc(numLoops * sizeof(int));
 		info.loopLengths = (int*) malloc(numLoops * sizeof(int));
-		info.nodes = (int*) malloc(numLoops * sizeof(int*));
+		info.nodes = (int**) malloc(numLoops * sizeof(int*));
 	}
 	
 	for (i=0; i < numLoops; ++i)  //for each loop in Loops
@@ -148,7 +148,7 @@ all the closed loops in that graph. Output is stored in global array Loops and n
 */
 void recursiveLoopSearch(int n, int index, int * path, double * values, int N, int * visited, int * temp)
 {
-	int i,j,k,s;
+	int i,k,s;
 	
 	if (path[n] > 0) //found a loop, i.e. current node has been visited
 	{

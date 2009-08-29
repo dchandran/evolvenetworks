@@ -32,8 +32,8 @@ Copyright (C) 2009 Deepak Chandran
 
 /*! \brief 
 Mass action network is defined using a set of reactions. 
-Each reaction has a maximum of two reactants (r1 and r2) 
-and a maximum of two products (p1 and p2). The r1 and r2
+Each reaction has a maximum of two reactants (reactant1 and reactant2) 
+and a maximum of two products (product1 and product2). The reactant1 and reactant2
 arrays store index values of the molecular species. The 
 index value can range from 0 to (species-1), where (species) is
 the number of molecules in this system. A value
@@ -45,10 +45,10 @@ the reactant concentrations.
 */
 typedef struct
 {
-	int * r1;    //first reactant (can be -1 if none)
-	int * r2;    //second reactant (can be -1 if none)
-	int * p1;    //first product (can be -1 if none)
-	int * p2;    //second product (can be -1 if none)
+	int * reactant1;    //first reactant (can be -1 if none)
+	int * reactant2;    //second reactant (can be -1 if none)
+	int * product1;    //first product (can be -1 if none)
+	int * product2;    //second product (can be -1 if none)
 	double * k;  //rate constant for each reaction
 	int reactions;    //number of reactions;
 	int species;    //number of species;
@@ -144,24 +144,32 @@ void setFixedSpeciesForMassActionNetwork(GAindividual, int,int);
  * \param double percent of initial reactions having two reactant and two product
  * \param double percent of initial reactions representing creation (i.e. no reactants)
  * \param double percent of initial reactions representing degradation (i.e. no products)
+ * \ingroup massaction
+*/
+void setDistributionOfMassActionNetwork(double uni_uni, double uni_bi, double bi_uni, double bi_bi, double no_reactant, double no_product);
+/*! \brief Set average reaction rate when randomly generating mass-action networks
  * \param double average rate constant
  * \ingroup massaction
 */
-void setParametersForMassActionNetwork(double uni_uni, double uni_bi, double bi_uni, double bi_bi, double no_reactant, double no_product, double avg_rate_constant);
+void setRateConstantForMassActionNetwork(double avg_rate_constant);
 /*! \brief Set parameters for randomly generating mass-action networks
  * \param int average number of species
  * \param int average number of reactions
  * \ingroup massaction
 */
 void setSizeForMassActionNetwork(int species,int reactions);
-/*! \brief Set parameters for the mutation and crossover functions
+/*! \brief Set parameters for the mutationr functions
  * \param double probability of mutating a coefficient (default = 0.5) 
  * \param double probability of remove a reaction during mutation. This may also remove some species.
  * \param double probability of adding a reaction during mutation. This may also add species.
+ * \ingroup massaction
+*/
+void setMutationRatesForMassActionNetwork(double prob_mutate_constants, double prob_mutate_remove_reaction, double prob_mutate_add_reaction);
+/*! \brief Set crossover probability
  * \param double probability of crossover (default = 1.0, i.e. always)
  * \ingroup massaction
 */
-void setMutationAndCrossoverRatesForMassActionNetwork(double prob_mutate_constants, double prob_mutate_remove_reaction, double prob_mutate_add_reaction, double crossover_prob);
+void setCrossoverRateForMassActionNetwork(double crossover_prob);
 /*! \brief Creates an array of randomized mass action networks.
  * \param int number of networks in population
  * \return GAindividual* GApopulation of random networks

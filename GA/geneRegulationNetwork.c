@@ -38,19 +38,21 @@ void setSizeForGeneRegulationNetwork(int n1, int n2)
 	AVG_NUM_REGULATIONS = n2;
 }
 
-
-void setMutationAndCrossoverRatesForGeneRegulationNetwork(double ka, double degrade, double complex, double add, double remove, double crossover)
+void setMutationRatesForGeneRegulationNetwork(double ka, double degrade, double complex, double add, double remove)
 {
 	double total;
 
 	total = ka + degrade + complex + add + remove;
 	
-	if (crossover > 1.0) crossover /= 100.0;
-	CROSSOVER_PROB = crossover;
 	MUTATE_KA = ka/total;
 	MUTATE_PRODUCTION = degrade/total;
 	MUTATE_COMPLEX = complex/total;
 	ADD_GENE = add/total;
+}
+
+void setCrossoverRateForGeneRegulationNetwork(double crossover)
+{
+	CROSSOVER_PROB = crossover;
 }
 
 /*******************************************************

@@ -28,8 +28,8 @@ FILE * lineageFile;
 /*main*/
 int main()
 {	
-	int i, N;
-	double * iv, * y;
+	int N;
+	double * y;
 	GApopulation pop;
 	GAindividual * best;
 	
@@ -37,17 +37,19 @@ int main()
 	setFitnessFunction( &fitness );  //set the fitness function	
 	
 	setNetworkType( MASS_ACTION_NETWORK );  //use this network type
-	setMutationAndCrossoverRatesForMassActionNetwork(0.5,0.2,0.2,0.0);
-	setParametersForMassActionNetwork(0.33,0.33,0.33,0.0,0.2,0.2,2.0);
+	setMutationRatesForMassActionNetwork(0.5,0.2,0.2);
+	setCrossoverRateForMassActionNetwork(0.0);
+	setDistributionOfMassActionNetwork(0.33,0.33,0.33,0.0,0.2,0.2);
+	setRateConstantForMassActionNetwork(2.0);
 	//setNetworkType( PROTEIN_INTERACTION_NETWORK );  //use this network type
 	//setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
 	
 	setInitialNetworkSize(8,12);  //network size
 	
-	printf("generation\tbest fitness\tnetwork size\n");
+	printf("generation\tbest fitness\tspecies\treactions\n");
 
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(500,200,4,&callback);  
+	pop = evolveNetworks(500,200,40,&callback);  
 	
 	best = pop[0]; //get the best network
 	
@@ -56,12 +58,9 @@ int main()
 	/******simulate the best network and write the result to a file************/
 	
 	N = getNumSpecies(best);    //number of variables in the network
-	iv = (double*)malloc( N * sizeof(double));  
-	for (i = 0; i < N; ++i) iv[i] = 0.0; //initial values
 	
-	y = simulateNetworkODE(best, iv, 500, 1); //simulate
-	free(iv);
-	
+	y = simulateNetworkODE(best, 500, 1); //simulate
+
 	writeToFile("dat.txt",y,500,N+1);  //print to file
 	
 	free(y);
@@ -127,17 +126,13 @@ void printLineage(GApopulation pop, int popSz, int num)
 double fitness(GAindividual net)
 {
 	int i, N;
-	double * y, * iv, time, f, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0;
+	double * y, time, f, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0;
 	
 	N = getNumSpecies(net);
 	
-	iv = (double*)malloc( N * sizeof(double));  //initial concentrations
-	for (i = 0; i < N; ++i) iv[i] = 0.0;
-
 	time = 500.0;
 
-	y = simulateNetworkODE(net,iv,time,1);  //simulate
-	free(iv);
+	y = simulateNetworkODE(net,time,1);  //simulate
 
 	f = 0;   //calculate correlation to sine wave
 	if (y != 0)
@@ -183,7 +178,7 @@ int callback(int iter,GApopulation pop,int popSz)
 		}
 	}*/
 	
-	printf("%i\t%lf\t%i\n",iter,f,getNumSpecies((ReactionNetwork*)(pop[0])));
+	printf("%i\t%lf\t%i\t%i\n",iter,f,getNumSpecies(pop[0]),getNumReactions(pop[0]));
 	printLineage(pop,popSz,200);
 
 	if (f >= 0.5) return 1;  //stop

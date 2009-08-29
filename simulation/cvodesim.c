@@ -323,7 +323,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 		return(0);
 	}
 
-	funcData = (double*) malloc( sizeof(UserFunction) );
+	funcData = (UserFunction*) malloc( sizeof(UserFunction) );
 	(*funcData).ODEfunc = odefnc;
 	(*funcData).userData = params;
 
