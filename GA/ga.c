@@ -310,7 +310,7 @@ static int partition(GApopulation population, double* a, int left, int right)
 		while (less(a[++i], a[right]))      // find item on left to swap
 			;                               // a[right] acts as sentinel
 		while (less(a[right], a[--j]))      // find item on right to swap
-			if (j == left) break;           // don't go out-of-bounds
+			if (j <= left) break;           // don't go out-of-bounds
 		if (i >= j) break;                  // check if pointers cross
 		exch(population, a, i, j);         // swap two elements into place
 	}
@@ -324,8 +324,10 @@ static void quicksort(GApopulation population, double* a, int left, int right)
 	int i = partition(population, a, left, right);
 
 	if (right <= left) return;
-	quicksort(population, a, left, i-1);
-	quicksort(population, a, i+1, right);
+	if (left < (i-1))
+		quicksort(population, a, left, i-1);
+	if ((i+1) < right)
+		quicksort(population, a, i+1, right);
 }
 
 //quicksort
@@ -333,14 +335,23 @@ void GAsort(GApopulation population, GAFitnessFnc fitness, int populationSz)
 {
 	double * a = (double*) malloc ( populationSz * sizeof(double) );
 	int i;
+	double biggest = -1.0;
+	GAindividual best = 0;
+
 	for (i=0; i < populationSz; ++i)
 	{
 		a[i] = fitness(population[i]);
+		if (a[i] > biggest || best == 0)
+		{
+			best = population[i];
+			biggest = a[i];
+		}
 	}
 	if (a != NULL)
 	{
 		quicksort(population, a, 0, populationSz - 1);
 		free(a);
 	}
+	population[0] = best;
 }
 
