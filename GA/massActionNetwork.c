@@ -13,19 +13,31 @@
 
 static double CROSSOVER_PROB = 1.0;
 static double MUTATE_COEFF_PROB = 0.5;
-static double PROB_NOTHING = 0.5;
-static double PROB_SECOND_REACTANT = 0.3;
-static double PROB_SECOND_PRODUCT = 0.3;
+static double MUTATE_REMOVE_REACTION = 0.25;
+static double PROB_UNI_UNI = 0.2;
+static double PROB_UNI_BI = 0.2;
+static double PROB_BI_UNI = 0.2;
+static double PROB_BI_BI = 0.2;
+static double PROB_NO_REACTANTS = 0.2;
+static double PROB_NO_PRODUCTS = 0.2;
 static double AVG_RATE_CONSTANT = 1.0;
 static int AVG_NUM_SPECIES = 1;
 static int AVG_NUM_REACTIONS = 1;
 
-void setParametersForMassActionNetwork(double prob1, double prob2, double empty, double k)
+void setParametersForMassActionNetwork(double uni_uni, double uni_bi, double bi_uni, double bi_bi, double no_reactant, double no_product, double avg_rate_constant)
 {
-	AVG_RATE_CONSTANT = k;
-	PROB_NOTHING = empty;
-	PROB_SECOND_REACTANT = prob1;
-	PROB_SECOND_PRODUCT = prob2;
+	double total = uni_uni + uni_bi + bi_uni + bi_bi + no_reactant + no_product;
+	if (avg_rate_constant > 0)
+		AVG_RATE_CONSTANT = avg_rate_constant;
+	
+	if (total <= 0) return;
+
+	PROB_UNI_UNI = uni_uni/total;
+	PROB_UNI_BI = uni_bi/total;
+	PROB_BI_UNI = bi_uni/total;
+	PROB_BI_BI = bi_bi/total;
+	PROB_NO_REACTANTS = no_reactant/total;
+	PROB_NO_PRODUCTS = no_product/total;
 }
 
 void setSizeForMassActionNetwork(int n, int s)
@@ -34,12 +46,26 @@ void setSizeForMassActionNetwork(int n, int s)
 	AVG_NUM_REACTIONS = s;
 }
 
-void setMutationAndCrossoverRatesForMassActionNetwork(double a, double b)
+void setMutationAndCrossoverRatesForMassActionNetwork(double mutatek, double remove, double add, double crossover)
 {
-	if (a > 1.0) a /= 100.0;
-	if (b > 1.0) b /= 100.0;
-	MUTATE_COEFF_PROB = a;
-	CROSSOVER_PROB = b;
+	double total;
+
+	if (mutatek < 0) mutatek = 0;
+	if (remove < 0) remove = 0;
+	if (add < 0) add = 0;
+		
+	total = mutatek + remove + add;
+	if (total == 0) 
+		mutatek = remove = 0.33333;
+	else
+	{
+		mutatek /= total;
+		remove /= total;
+	}
+	if (crossover > 1.0) crossover /= 100.0;
+	MUTATE_COEFF_PROB = mutatek;
+	MUTATE_REMOVE_REACTION = remove;
+	CROSSOVER_PROB = crossover;
 }
 
 /*******************************************************
@@ -163,9 +189,12 @@ GAindividual crossoverMassActionNetwork(GAindividual individualA, GAindividual i
 GAindividual mutateMassActionNetwork(GAindividual individual)
 {
 	int i,j,j2,m,n;
+	double r;
 	MassActionNetwork * net, * net2;
 	
 	net = (MassActionNetwork*)individual;
+
+	if (!net) return 0;
 
 	m = net->reactions;
 	n = net->species;
@@ -179,7 +208,7 @@ GAindividual mutateMassActionNetwork(GAindividual individual)
 	}
 	else              //add or remove a new reaction and/or species to the network
 	{
-		if (mtrand() < 0.5 && m > 2)     //remove a reaction
+		if (mtrand() < (MUTATE_COEFF_PROB/2.0 + MUTATE_REMOVE_REACTION) && m > 2)     //remove a reaction
 		{
 			net2 = newMassActionNetwork( n, (m - 1) );
 			for (j=0,j2=0; j < m; ++j)
@@ -208,52 +237,45 @@ GAindividual mutateMassActionNetwork(GAindividual individual)
 				net2->p1[j] = net->p1[j];
 				net2->p2[j] = net->p2[j];
 			}
-			net2->k[j] = 2.0 * mtrand();   //reaction rate constant
+			net2->k[j] = AVG_RATE_CONSTANT * mtrand();   //reaction rate constant
 			
-			if (mtrand() < 0.3) 
+			r = mtrand();
+
+			if (r < PROB_UNI_UNI)
 			{
-				net2->r1[j] = -1;
-				net2->r2[j] = (int)( (1 + net2->species) * mtrand());  //if r1 is empty, r2 must not be empty
-				if (net2->r2[j] >= net2->species)
-					net2->species = net2->r2[j] + 1;
+				net2->r1[j] = (int)(net2->species * mtrand());  //first reactant
+				net2->p1[j] = (int)(net2->species * mtrand());  //first product
+			}
+			else
+			if (r < (PROB_UNI_BI + PROB_UNI_UNI))
+			{
+				net2->r1[j] = (int)(net2->species * mtrand());  //first reactant
+				net2->p1[j] = (int)(net2->species * mtrand());  //first product
+				net2->p2[j] = (int)(net2->species * mtrand());  //second product
+			}
+			else
+			if (r < (PROB_BI_UNI + PROB_UNI_BI + PROB_UNI_UNI))
+			{
+				net2->r1[j] = (int)(net2->species * mtrand());  //first reactant
+				net2->r2[j] = (int)(net2->species * mtrand());  //second reactant
+				net2->p1[j] = (int)(net2->species * mtrand());  //second product
 			}
 			else
 			{
-				net2->r1[j] = (int)( (1 + net2->species) * mtrand());  //if r1 is not empty, r2 can be empty
-				if (mtrand() < 0.3) 
-					net2->r2[j] = -1;
-				else
-					net2->r2[j] = (int)( (1 + net2->species) * mtrand());
-				
-				if (net2->r1[j] >= net2->species)
-					net2->species = net2->r1[j] + 1;
-					
-				if (net2->r2[j] >= net2->species)
-					net2->species = net2->r2[j] + 1;
+				net2->r1[j] = (int)(net2->species * mtrand());  //first reactant
+				net2->r2[j] = (int)(net2->species * mtrand());  //second reactant
+				net2->p1[j] = (int)(net2->species * mtrand());  //first product
+				net2->p2[j] = (int)(net2->species * mtrand());  //second product
 			}
-			
-			if (mtrand() < 0.3) 
-			{
-				net2->p1[j] = -1;
-				net2->p2[j] = (int)( (1 + net2->species) * mtrand());
-				if (net2->p2[j] >= net2->species)
-					net2->species = net2->p2[j] + 1;
-			}
+
+			r = mtrand();
+
+			if (r < PROB_NO_REACTANTS)
+				net2->r1[j] = net2->r2[j] = -1;
 			else
-			{
-				net2->p1[j] = (int)( (1 + net2->species) * mtrand());
-				if (mtrand() < 0.3) 
-					net2->p2[j] = -1;
-				else
-					net2->p2[j] = (int)( (1 + net2->species) * mtrand());
-				
-				if (net2->p1[j] >= net2->species)
-					net2->species = net2->p1[j] + 1;
-				
-				if (net2->p2[j] >= net2->species)
-					net2->species = net2->p2[j] + 1;
-			}
-			
+			if (r < PROB_NO_PRODUCTS)
+				net2->p1[j] = net2->p2[j] = -1;
+
 			deleteMassActionNetwork(net);
 			return (GAindividual)(net2);
 		}
@@ -272,6 +294,8 @@ void ratesForMassActionNetwork(double time,double* u,double* rate,GAindividual p
 	MassActionNetwork * net;
 	
 	net = (MassActionNetwork*)(p);
+
+	if (!net) return;
 	
 	for (i=0; i < net->reactions; ++i)
 	{
@@ -280,7 +304,6 @@ void ratesForMassActionNetwork(double time,double* u,double* rate,GAindividual p
 		if (net->r2[i] > -1) rate[i] *= u[ net->r2[i] ];
 	}
 }
-
 
 double * stoichiometryForMassActionNetwork(GAindividual p)
 {
@@ -298,16 +321,16 @@ double * stoichiometryForMassActionNetwork(GAindividual p)
 			getValue(N,n,j,i) = 0;
 		
 		if ((net->r1[i] >= 0) && ((net->fixed[ net->r1[i] ]) == 0)) 
-			getValue(N,n,net->r1[i],i) = -1;
+			getValue(N,n,net->r1[i],i) -= 1;
 		
 		if ((net->r2[i] >= 0) && ((net->fixed[ net->r2[i] ]) == 0)) 
-			getValue(N,n,net->r2[i],i) = -1;
+			getValue(N,n,net->r2[i],i) -= 1;
 			
 		if ((net->p1[i] >= 0) && ((net->fixed[ net->p1[i] ]) == 0)) 
-			getValue(N,n,net->p1[i],i) = 1;
+			getValue(N,n,net->p1[i],i) += 1;
 		
 		if ((net->p2[i] >= 0) && ((net->fixed[ net->p2[i] ]) == 0)) 
-			getValue(N,n,net->p2[i],i) = 1;
+			getValue(N,n,net->p2[i],i) += 1;
 	}
 	return N;
 }
@@ -316,12 +339,14 @@ double * stoichiometryForMassActionNetwork(GAindividual p)
 int getNumSpeciesForMassActionNetwork(GAindividual individual)
 {
 	MassActionNetwork * net = (MassActionNetwork*)(individual);
+	if (!net) return 0;
 	return (net->species);
 }
 
 int getNumReactionsForMassActionNetwork(GAindividual individual)
 {
 	MassActionNetwork * net = (MassActionNetwork*)(individual);
+	if (!net) return 0;
 	return (net->reactions);
 }
 
@@ -332,7 +357,8 @@ void setFixedSpeciesForMassActionNetwork(GAindividual individual, int i, int val
 		net->fixed[i] = value;
 }
 
-void printMassActionNetwork(GAindividual individual)
+
+void printMassActionNetwork(FILE *stream, GAindividual individual)
 {
 	int i,fix;
 	MassActionNetwork * net;
@@ -349,28 +375,79 @@ void printMassActionNetwork(GAindividual individual)
 			break;
 		}
 	}
-	
+
 	if (fix)
 	{
-		printf("const s%i",fix);
+		fprintf(stream, "const s%i",fix);
 		for (i=0; i < net->species; ++i)
 		{
 			if (net->fixed[i])			
-				printf(", s%i",i+1);			
+				fprintf(stream, ", s%i",i+1);			
 		}
-		printf("\n");
+		fprintf(stream, "\n");
 	}
 	
 	for (i=0; i < net->reactions; ++i)
 	{
-		printf("s%i + s%i -> s%i + s%i;\tk%i * s%i * s%i;\n",net->r1[i]+1,net->r2[i]+1,net->p1[i]+1,net->p2[i]+1,i+1,net->r1[i]+1,net->r2[i]+1);
+		if (net->r1[i] > -1 && net->r2[i] > -1)
+			fprintf(stream, "s%i + s%i -> ",net->r1[i]+1,net->r2[i]+1);
+		else
+		{
+			if (net->r1[i] > -1 || net->r2[i] > -1)
+			{
+				if (net->r1[i] > -1)
+					fprintf(stream, "s%i ->",net->r1[i]+1);
+				else
+					fprintf(stream, "s%i ->",net->r2[i]+1);
+			}
+			else
+			{
+				fprintf(stream, "$x -> ");
+			}
+		}
+
+		if (net->p1[i] > -1 && net->p2[i] > -1)
+			fprintf(stream, "s%i + s%i; ",net->p1[i]+1,net->p2[i]+1);
+		else
+		{
+			if (net->p1[i] > -1 || net->p2[i] > -1)
+			{
+				if (net->p1[i] > -1)
+					fprintf(stream, "s%i; ",net->p1[i]+1);
+				else
+					fprintf(stream, "s%i; ",net->p2[i]+1);
+			}
+			else
+			{
+				fprintf(stream, "$x; ");
+			}
+		}
+		
+		//rate
+		if (net->r1[i] > -1 && net->r2[i] > -1)
+			fprintf(stream, "k%i * s%i * s%i ",i+1,net->r1[i]+1,net->r2[i]+1);
+		else
+		{
+			if (net->r1[i] > -1 || net->r2[i] > -1)
+			{
+				if (net->r1[i] > -1)
+					fprintf(stream, "k%i * s%i",i+1,net->r1[i]+1);
+				else
+					fprintf(stream, "k%i * s%i",i+1,net->r2[i]+1);
+			}
+			else
+			{
+				fprintf(stream, "k%i",i+1);
+			}
+		}
+		fprintf(stream, ";\n");
 	}
-	
-	printf("\n");
+
+	fprintf(stream, "\n");
 	
 	for (i=0; i < net->reactions; ++i)
 	{
-		printf("k%i = %lf;\n",i+1,net->k[i]);
+		fprintf(stream, "k%i = %lf;\n",i+1,net->k[i]);
 	}
 }
 
@@ -383,6 +460,7 @@ GApopulation randomMassActionNetworks(int num)
 	int s = AVG_NUM_SPECIES;
 	int r = AVG_NUM_REACTIONS;
 	int i,j,n;
+	double u;
 	MassActionNetwork * net;
 	MassActionNetwork ** array;
 	
@@ -398,24 +476,42 @@ GApopulation randomMassActionNetworks(int num)
 			net->k[j] = AVG_RATE_CONSTANT * 2.0 * mtrand();   //reaction rate constant
 			net->r1[j] = net->r2[j] = net->p1[j] = net->p2[j] = -1;
 
-			if (mtrand() < PROB_NOTHING)
-			{
-				if (mtrand() < 0.5) //no reactants
-					net->p1[j] = (int)(net->species * mtrand());  //first product
-				else  //no products
-					net->r1[j] = (int)(net->species * mtrand());  //first reactant
-			}
-			else  // at least one reactant and product
+			u = mtrand();
+
+			if (u < PROB_UNI_UNI)
 			{
 				net->r1[j] = (int)(net->species * mtrand());  //first reactant
 				net->p1[j] = (int)(net->species * mtrand());  //first product
 			}
+			else
+			if (u < (PROB_UNI_BI + PROB_UNI_UNI))
+			{
+				net->r1[j] = (int)(net->species * mtrand());  //first reactant
+				net->p1[j] = (int)(net->species * mtrand());  //first product
+				net->p2[j] = (int)(net->species * mtrand());  //second product
+			}
+			else
+			if (u < (PROB_BI_UNI + PROB_UNI_BI + PROB_UNI_UNI))
+			{
+				net->r1[j] = (int)(net->species * mtrand());  //first reactant
+				net->r2[j] = (int)(net->species * mtrand());  //second reactant
+				net->p1[j] = (int)(net->species * mtrand());  //second product
+			}
+			else
+			{
+				net->r1[j] = (int)(net->species * mtrand());  //first reactant
+				net->r2[j] = (int)(net->species * mtrand());  //second reactant
+				net->p1[j] = (int)(net->species * mtrand());  //first product
+				net->p2[j] = (int)(net->species * mtrand());  //second product
+			}
 			
-			if (net->r1[j] >=0 && (mtrand() < PROB_SECOND_REACTANT))
-				net->r2[j] = (int)(net->species * mtrand()); //second reactant
-				
-			if (net->p2[j] >= 0 && (mtrand() < PROB_SECOND_PRODUCT))
-				net->p2[j] = (int)(net->species * mtrand()); //second product
+			u = mtrand();
+
+			if (u < PROB_NO_REACTANTS)
+				net->r1[j] = net->r2[j] = -1;
+			else
+			if (u < PROB_NO_PRODUCTS)
+				net->p1[j] = net->p2[j] = -1;
 		}
 		
 		array[i] = net;
@@ -443,79 +539,11 @@ MassActionNetwork * newMassActionNetwork(int s,int r)
 	net->p1 = (int*) malloc(net->reactions * sizeof(int));
 	net->p2 = (int*) malloc(net->reactions * sizeof(int));
 	
+	for (i=0; i < r; ++i)
+	{
+		net->r1[i] = net->r2[i] = net->p1[i] = net->p2[i] = -1;
+		net->k[i] = 1.0;
+	}
+
 	return net;
 }
-
-/*
-int main()  //just for testing
-{
-	int i;
-	GApopulation pop = randomMassActionNetworks(5,2);
-	
-	for (i=0; i < 2; ++i)
-	{
-		printMassActionNetwork(pop[i]);
-		printf("\n");
-	}
-	
-	for (i=0; i < 100; ++i)
-	{
-		GAindividual net = crossoverMassActionNetwork(pop[0],pop[1]);
-		printMassActionNetwork(net);
-		net = mutateMassActionNetwork(net);
-		printf("\n");
-		deleteMassActionNetwork(net);
-	}
-	
-	for (i=0; i < 2; ++i)
-	{
-		deleteMassActionNetwork(pop[i]);
-	}
-}
-*/
-
-/*
-char* printMassActionNetwork(GAindividual individual)
-{
-	int i,j,k,sz1, sz2;
-	char * string, * s;
-	char temp[500];
-	MassActionNetwork * net;
-	
-	if (!individual) return;
-	net = (MassActionNetwork*)individual;
-	
-	sz1 = 100*net->reactions; //upper bound for size of string first
-	
-	string = (char*)malloc(sz1*sizeof(char));
-	
-	sz2 = 0;
-	k = 0;
-	for (i=0; i < net->reactions; ++i)
-	{
-		sprintf(temp, "s%i + s%i -> s%i + s%i;\t%0.3%lf*s%i*s%i;\n\0",net->r1[i]+1,net->r2[i]+1,net->p1[i]+1,net->p2[i]+1,net->k[i],net->r1[i]+1,net->r2[i]+1);
-		j = 0;
-		while (temp[j] != 0) ++k;
-		
-		if ((sz2+k) > sz1)
-		{
-			s = string;
-			string = malloc((sz2+k)*2*sizeof(char));
-			sz1 = (sz2+k)*2;
-			for (j=0; j < sz2; ++j)
-			{
-				string[j] = s[j];
-			}
-			free(s);
-		}
-		
-		for (j=0; j < k; ++j)
-		{
-			string[j+sz2] = temp[j];
-		}
-		
-		sz2 += k;
-	}
-	
-	return string;
-}*/

@@ -30,7 +30,17 @@ Copyright (C) 2009 Deepak Chandran
 #include "cvodesim.h"   //for ODE simulation
 #include "ssa.h"        //for stochastic simulation
 
-/*! \brief Mass action network
+/*! \brief 
+Mass action network is defined using a set of reactions. 
+Each reaction has a maximum of two reactants (r1 and r2) 
+and a maximum of two products (p1 and p2). The r1 and r2
+arrays store index values of the molecular species. The 
+index value can range from 0 to (species-1), where (species) is
+the number of molecules in this system. A value
+of -1 is used to indicate no reactant or no product.
+Each reaction also has a rate constant, k. The default reaction
+rate is determined by the product of the rate constant and
+the reactant concentrations. 
 * \ingroup massaction
 */
 typedef struct
@@ -97,10 +107,11 @@ void ratesForMassActionNetwork(double,double*,double*,GAindividual);
 double * stoichiometryForMassActionNetwork(GAindividual);
 
 /*! \brief Print a network
+ * \param FILE* output stream
  * \param GAindividual network
  * \ingroup massaction
 */
-void printMassActionNetwork(GAindividual);
+void printMassActionNetwork(FILE *, GAindividual);
 /*! \brief get the number of variables in the network.
     This is equal to the number of rows in the stoichiometry matrix
  \param MassActionNetwork network
@@ -127,25 +138,30 @@ void setFixedSpeciesForMassActionNetwork(GAindividual, int,int);
 ******************************************************/
 
 /*! \brief Set parameters for randomly generating mass-action networks
- * \param double percent of reactions having two reactants instead of one
- * \param double percent of reactions having two products instead of one
- * \param double percent of reactions representing creation or degradation (i.e. no products or reactants)
+ * \param double percent of initial reactions having one reactant and one product
+ * \param double percent of initial reactions having one reactant and two products
+ * \param double percent of initial reactions having two reactants and one product
+ * \param double percent of initial reactions having two reactant and two product
+ * \param double percent of initial reactions representing creation (i.e. no reactants)
+ * \param double percent of initial reactions representing degradation (i.e. no products)
  * \param double average rate constant
  * \ingroup massaction
 */
-void setParametersForMassActionNetwork(double , double , double, double );
+void setParametersForMassActionNetwork(double uni_uni, double uni_bi, double bi_uni, double bi_bi, double no_reactant, double no_product, double avg_rate_constant);
 /*! \brief Set parameters for randomly generating mass-action networks
  * \param int average number of species
  * \param int average number of reactions
  * \ingroup massaction
 */
-void setSizeForMassActionNetwork(int,int);
+void setSizeForMassActionNetwork(int species,int reactions);
 /*! \brief Set parameters for the mutation and crossover functions
- * \param double probability of mutating a coefficient (default = 0.5) vs. adding/removing a reaction
+ * \param double probability of mutating a coefficient (default = 0.5) 
+ * \param double probability of remove a reaction during mutation. This may also remove some species.
+ * \param double probability of adding a reaction during mutation. This may also add species.
  * \param double probability of crossover (default = 1.0, i.e. always)
  * \ingroup massaction
 */
-void setMutationAndCrossoverRatesForMassActionNetwork(double, double);
+void setMutationAndCrossoverRatesForMassActionNetwork(double prob_mutate_constants, double prob_mutate_remove_reaction, double prob_mutate_add_reaction, double crossover_prob);
 /*! \brief Creates an array of randomized mass action networks.
  * \param int number of networks in population
  * \return GAindividual* GApopulation of random networks
@@ -158,7 +174,7 @@ GApopulation randomMassActionNetworks(int);
  * \return MassActionNetwork* network
  * \ingroup massaction
 */
-MassActionNetwork * newMassActionNetwork(int,int);
+MassActionNetwork * newMassActionNetwork(int species,int reactions);
 
 #endif
 

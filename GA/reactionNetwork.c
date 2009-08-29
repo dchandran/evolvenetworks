@@ -76,7 +76,7 @@ static GetNumReactionsFunction getNumReactionsFunctions[] =
 	&getNumReactionsForGeneRegulationNetwork
 };
 
-typedef void (*PrintNetworkFunction)(GAindividual);
+typedef void (*PrintNetworkFunction)(FILE *, GAindividual);
 
 static PrintNetworkFunction printNetworkFunctions[] =
 {
@@ -304,19 +304,22 @@ void printNetwork(GAindividual individual)
 	
 	f = printNetworkFunctions[r->type];
 	
-	f(r->network);
+	f(stdout,r->network);
 }
 
-void printNetworkToFile(GAindividual individual, char * filename)
+void printNetworkToFile(char * filename, GAindividual individual)
 {
 	ReactionNetwork * r = (ReactionNetwork*)individual;
-	FILE *stream ;
-	if ((stream = freopen(filename, "w", stdout)) == 0)
-		return;
+	PrintNetworkFunction f;
+	FILE *stream = fopen(filename, "w");
 
-	printNetwork(r);
+	if (!stream || !r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return;
+
+	f = printNetworkFunctions[r->type];
+	f(stream,r);
 	
-	stream = freopen("CON", "w", stdout);
+
+
 }
 
 int getNumSpecies(GAindividual individual)
@@ -530,6 +533,9 @@ GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GACallbackFnc callbackF
 {
 	GApopulation P;
 	if (!GAgetFitnessFunction()) return 0;
+
+	if (!MTrandHasBeenInitialized())
+		initMTrand(); 
 
 	P = randomNetworks(sz0);
 

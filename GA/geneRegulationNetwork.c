@@ -484,7 +484,7 @@ double * stoichiometryForGeneRegulationNetwork(GAindividual p)
 	return N;
 }
 
-void printGeneRegulationNetwork(GAindividual individual)
+void printGeneRegulationNetwork(FILE *stream, GAindividual individual)
 {
 	int i,j,k,p,fix;
 	double num, denom;
@@ -506,18 +506,18 @@ void printGeneRegulationNetwork(GAindividual individual)
 	
 	if (fix)
 	{
-		printf("const s%i",fix);
+		fprintf(stream,"const s%i",fix);
 		for (i=0; i < net->species; ++i)
 		{
 			if (net->fixed[i])			
-				printf(", s%i",i+1);			
+				fprintf(stream,", s%i",i+1);			
 		}
-		printf("\n");
+		fprintf(stream,"\n");
 	}
 	
 	for (i=0; i < net->species; ++i)
 	{
-		printf("$X -> s%i; vmax%i * (",i+1,i+1);
+		fprintf(stream,"$X -> s%i; vmax%i * (",i+1,i+1);
 		num = denom = 0;
 		p = 0;
 		for (j=0; j < net->numComplexes; ++j)
@@ -525,54 +525,54 @@ void printGeneRegulationNetwork(GAindividual individual)
 			if (net->targetGene[j] == i && net->Ka[j] > 0)
 			{
 				if (p > 0)
-					printf("+");
+					fprintf(stream,"+");
 				++p;
-				printf("Ka%i",j+1);
+				fprintf(stream,"Ka%i",j+1);
 				for (k=0; k < net->complexes[j].size; ++k)
-					printf("*s%i",net->complexes[j].TFs[k]+1);
+					fprintf(stream,"*s%i",net->complexes[j].TFs[k]+1);
 			}
 		}
 		
 		if (p < 1) 
-			printf("1.0");
+			fprintf(stream,"1.0");
 		
-		printf(")/(1.0");
+		fprintf(stream,")/(1.0");
 		
 		p = 0;
 		for (j=0; j < net->numComplexes; ++j)
 		{
 			if (net->targetGene[j] == i)
 			{
-				printf("+");
+				fprintf(stream,"+");
 				++p;
 				if (net->Ka[j] != 0)
 				{
-					printf("Ka%i",j+1);
+					fprintf(stream,"Ka%i",j+1);
 					for (k=0; k < net->complexes[j].size; ++k)
-						printf("*s%i",net->complexes[j].TFs[k]+1);
+						fprintf(stream,"*s%i",net->complexes[j].TFs[k]+1);
 				}
 			}
 		}
 		
-		printf(");\n");
-		printf("s%i -> $X; deg%i*s%i;\n",i+1,i+1,i+1);
+		fprintf(stream,");\n");
+		fprintf(stream,"s%i -> $X; deg%i*s%i;\n",i+1,i+1,i+1);
 	}
 	
-	printf("\n");
+	fprintf(stream,"\n");
 	
 	for (i=0; i < net->species; ++i)
 	{
-		printf("vmax%i = %lf;\n",i+1, net->Vmax[i]);
-		printf("deg%i = %lf;\n",i+1,net->degradation[i]);
+		fprintf(stream,"vmax%i = %lf;\n",i+1, net->Vmax[i]);
+		fprintf(stream,"deg%i = %lf;\n",i+1,net->degradation[i]);
 	}
 	for (j=0; j < net->numComplexes; ++j)
 	{
 		if (net->Ka[j] != 0)
 		{
 			if (net->Ka[j] < 0)
-				printf("Ka%i = %lf;\n",j+1,-net->Ka[j]);
+				fprintf(stream,"Ka%i = %lf;\n",j+1,-net->Ka[j]);
 			else
-				printf("Ka%i = %lf;\n",j+1,net->Ka[j]);
+				fprintf(stream,"Ka%i = %lf;\n",j+1,net->Ka[j]);
 		}
 	}
 }
@@ -662,84 +662,3 @@ GeneRegulationNetwork * newGeneRegulationNetwork(int m,int n)
 	return net;
 }
 
-/*
-int main()  //just for testing
-{
-	int i,j,n = 10;
-	GApopulation pop = randomGeneRegulationNetworks(n,4,4);
-	
-	printf("generated networks\n");
-	
-	for (j=0; j < 50; ++j)
-		for (i=0; i < n; ++i)
-		{
-			printGeneRegulationNetwork(pop[i]);
-			pop[i] = mutateGeneRegulationNetwork(pop[i]);
-			printf("\n");
-			printGeneRegulationNetwork(pop[i]);
-			printf("\n\n");
-		}
-	
-	printf("mutation() test = ok\n\n");
-	
-	for (i=0; i < 50; ++i)
-	{
-		GAindividual net = crossoverGeneRegulationNetworks(pop[ (int)(mtrand()*n) ],pop[ (int)(mtrand()*n) ]);
-		printGeneRegulationNetwork(net);
-		net = mutateGeneRegulationNetwork(net);
-		deleteGeneRegulationNetwork(net);
-	}
-	
-	printf("crossover() test = ok\n\n");
-	
-	printf("deleting...\n");
-	
-	for (i=0; i < n; ++i)
-	{
-		deleteGeneRegulationNetwork(pop[i]);
-	}
-	
-	//testing simulation functions using ring oscillator
-	
-	GeneRegulationNetwork * net = newGeneRegulationNetwork(3,3);
-	
-	net->Vmax[0] = net->Vmax[1] = net->Vmax[2] = 2.0;
-	net->degradation[0] = net->degradation[1] = net->degradation[2] = 0.1;
-	
-	net->complexes[0].size = 3;
-	net->complexes[0].TFs = malloc(3*sizeof(int));
-	net->complexes[0].TFs[0] = net->complexes[0].TFs[1] = net->complexes[0].TFs[2] = 0;
-	net->Ka[0] = -1.0;
-	net->targetGene[0] = 1;
-	
-	net->complexes[1].size = 3;
-	net->complexes[1].TFs = malloc(3*sizeof(int));
-	net->complexes[1].TFs[0] = net->complexes[1].TFs[1] = net->complexes[1].TFs[2] = 1;
-	net->Ka[1] = -1.0;
-	net->targetGene[1] = 2;
-	
-	net->complexes[2].size = 3;
-	net->complexes[2].TFs = malloc(3*sizeof(int));
-	net->complexes[2].TFs[0] = net->complexes[2].TFs[1] = net->complexes[2].TFs[2] = 2;
-	net->Ka[2] = -1.0;
-	net->targetGene[2] = 0;
-	
-	double x0[] = { 1.0, 1.0, 10.0 };
-	
-	double * N = stoichiometryForGeneRegulationNetwork((GAindividual)net);
-	int sz;
-	
-	double * y = SSA(3, 6, N, &(SSAfunction), x0, 0,500,100000,&sz,net); //simulate
-	//double * y = ODEsim(3, x0, &(ODEfunction), 0, 500, 0.1, net);
-	
-	free(N);
-	if (y)
-	{
-		writeToFile("temp.tab",y,sz,4);
-		free(y);
-	}
-	
-	deleteGeneRegulationNetwork((GAindividual)net);
-	
-}
-*/

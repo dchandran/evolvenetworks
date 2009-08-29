@@ -95,17 +95,27 @@ The wrapper provides support for event functions and user defined structs as par
 
 /*! \defgroup geneticnetwork Evolve gene regulatory networks
    \brief 
-   	This file defines a chemical reaction network using fractional saturation rate laws. 
-	The 
+	Gene regulatory network is described by a set of complexes regulating
+	genes. Each complex is composed of one or more transcription factors. 
+	Each complex has a target gene that it regulated. The regulation is defined
+	using the parameter Ka. If Ka is negative, then it is a repression; if positive, 
+	then it is an activation. 
+	For each gene in the network, the maximum rate of production is defined by
+	the parameter Vmax. The degradation rate is determined by the parameter array
+	called degradation. 
+	The default rate law uses a fractional saturation model.
 	
+	This code is designed to work with the ReactionNetwork structure. Therefore, 
+	it defines all the functions needed by ReactionNetwork.
+
 	This file defines the following functions that are required in the GA:
 		1) a struct that represents an "individual"
 		2) a mutation function to randomly alter an individual
 		3) a crossover function to make a new individual from two individuals
 	
-	In addition, the file defines:
-		1) ODE function to simulate a network
-		2) Propensity function to simulate a network stochastically
+	In addition, the file defines functions for simulating a network:
+		1) Stoichiomety function
+		2) Rates function
 	
 	The program using this file must define:
 		1) a function that returns the fitness of a network
@@ -130,35 +140,49 @@ The wrapper provides support for event functions and user defined structs as par
 		1) a function that returns the fitness of a network
  */
 
-/*! \defgroup massaction Evolve bi-molecular network
+/*! \defgroup massaction Evolve mass-action networks
    \brief 
-   	This file defines a chemical reaction network using mass-action kinetics. The functions in this file
-	are designed to be used with the GA library that I have written. 
+   	Mass action network is defined using a set of reactions. 
+	Each reaction has a maximum of two reactants (r1 and r2) 
+	and a maximum of two products (p1 and p2). The r1 and r2
+	arrays store index values of the molecular species. The 
+	index value can range from 0 to (species-1), where (species) is
+	the number of molecules in this system. A value
+	of -1 is used to indicate no reactant or no product.
+	Each reaction also has a rate constant, k. The default reaction
+	rate is determined by the product of the rate constant and
+	the reactant concentrations. 
 	
+	This code is designed to work with the ReactionNetwork structure. Therefore, 
+	it defines all the functions needed by ReactionNetwork.
+
 	This file defines the following functions that are required in the GA:
 		1) a struct that represents an "individual"
 		2) a mutation function to randomly alter an individual
 		3) a crossover function to make a new individual from two individuals
 	
-	In addition, the file defines the following functions for simulating a network:
-		1) stoichiometry function 
-		2) rates function
+	In addition, the file defines functions for simulating a network:
+		1) Stoichiomety function
+		2) Rates function
 	
 	The program using this file must define:
 		1) a function that returns the fitness of a network
  */
  
- /*! \defgroup genericNetwork Evolve any of the other networks tyes
+ /*! \defgroup genericNetwork Evolve Reaction Networks
    \brief 
-   	This file defines a generic reaction network using either of the other network architectures. 
-	The functions in this file are designed to be used with the GA library that I have written. 
-	
-	This file defines the following functions that are required in the GA:
-		1) a struct that represents an "individual"
-		2) numerous functions that utilize the existing networks
+   	This file defines a generic reaction network using either of the other network architectures, 
+	as long as those network architectures define the following functions:
 
-	The program using this file must define:
-		1) a function that returns the fitness of a network
+	1) deallocation function (see ga.h)
+	2) clone function (see ga.h)
+	3) mutation function (see ga.h)
+	4) crossover function (see ga.h)
+	5) rates function (see cvodesim.h)
+	6) function for getting stoichiometry matrix:  double * f(GAindividual)
+	7) function to get number of molecules in the network (number of rows in stoichiometry matrix): int f(GAindividual)
+	8) function to get number of reactions in the network (number of columns in stoichiometry matrix): int f(GAindividual)
+	9) print function to stdout: void f(GAindividual)
 
 	Any of the functions in the library can be replaced using the setXXX functions
  */

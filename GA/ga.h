@@ -31,10 +31,10 @@ contact: dchandran1@gmail.com
 #include <math.h>
 #include "mtrand.h"
 
-/*! \brief An individual is represented by a user struct (void*) */
+/*! \brief An individual is represented by a user defined struct (void*) */
 typedef void* GAindividual;
 
-/*! \brief GApopulation of individuals -- an individual is represented by a user struct (void*) */
+/*! \brief GApopulation array of individuals, where an individual is represented by a user defined struct (void*) */
 typedef GAindividual* GApopulation;
 
 /***********************************************************
@@ -45,20 +45,20 @@ typedef GAindividual* GApopulation;
 
 /*! \brief
  * Free an individual from memory
- * \param a single individual
+ * \param GAindividual a single individual
  * \ingroup ga
 */
 typedef void (*GADeleteFnc)(GAindividual);
 /*! \brief
  * Make a copy of an individual and return the memory pointer
- * \param target individual
+ * \param GAindividual target individual
  * \ingroup ga
 */
 typedef GAindividual (*GACloneFnc)(GAindividual);
 /*! \brief
  * Compute fitness of an individual. Fitness must be positive if default selection function is used
- * \param target individual
- * \return fitness (double) of the individual (MUST BE POSITIVE if default selection function is used)
+ * \param GAindividual target individual
+ * \return double fitness of the individual (MUST BE POSITIVE if default selection function is used)
  * \ingroup ga
 */
 typedef double(*GAFitnessFnc)(GAindividual);
@@ -71,16 +71,17 @@ typedef double(*GAFitnessFnc)(GAindividual);
 
 /*! \brief
  * combine two individuals to generate a new individual. The function must not delete the parent individuals.
- * \param parent individual 1
- * \param parent individual 2
+ * \param GAindividual parent individual 1. DO NOT DELETE parents
+ * \param GAindividual parent individual 2. DO NOT DELETE parents
  * \return pointer to an individual (can be the same as one of the parents)
  * \ingroup ga
 */
 typedef GAindividual (*GACrossoverFnc)(GAindividual, GAindividual);
 /*! \brief
  * Change an individual randomly. If a new individual is created, then this function must delete (free) the old one.
- * \param parent individual
- * \return pointer to an individual (can be the same as the parent)
+ * \param GAindividual parent individual
+ * \return GAindividual pointer to the same individual or a new one. If a new individual is created, 
+        the original individual must be deleted inside the mutation function
  * \ingroup ga
 */
 typedef GAindividual (*GAMutateFnc)(GAindividual);
@@ -95,21 +96,21 @@ typedef GAindividual (*GAMutateFnc)(GAindividual);
 
 /*! \brief
  * Selection function. If null, then a default selection function is provided that linearly converts fitness values to probabilities
- * \param GApopulation of individuals
- * \param array of fitness values for the individuals
- * \param total fitness (sum of all fitness values)
- * \param number of individuals in the population
- * \return index (in population vector) of the individual to select
+ * \param GApopulation individuals
+ * \param GApopulation array of fitness values for the individuals
+ * \param double total fitness (sum of all fitness values)
+ * \param int number of individuals in the population
+ * \return int index (in population vector) of the individual to select
  * \ingroup ga
 */
 typedef int(*GASelectionFnc)(GApopulation , double * , double , int );
 /*! \brief
  * Callback function. If not null, then this function is called during each iteration of the GA. 
  * This function can be used to terminate the GA at any step
- * \param iteration
+ * \param int current generation (iteration)
  * \param GApopulation of individuals
- * \param number of individuals in the population
- * \return 0 = continue GA, 1 = stop GA. This can be used to stop the GA before it reaches max iterations
+ * \param int number of individuals in the population
+ * \return int 0 = continue GA, 1 = stop GA. This can be used to stop the GA before it reaches max iterations
  * \ingroup ga
 */
 typedef int(*GACallbackFnc)(int iter,GApopulation,int popSz);
@@ -120,23 +121,24 @@ typedef int(*GACallbackFnc)(int iter,GApopulation,int popSz);
 ************************************************************/
 
 /*! \brief Initialize the GA. This function MUST be called before GArun
- * \param cloning function (cannot be 0)
- * \param deletion function (cannot be 0)
- * \param fitness function pointer (cannot be 0)
- * \param crossover function pointer (can be 0, but not recommended)
- * \param mutation function pointer (can be 0, but not recommended)
- * \param selection function pointer (can be 0)
+ * \param GADeleteFnc deletion function (cannot be 0)
+ * \param GACloneFnc cloning function (cannot be 0) 
+ * \param GAFitnessFnc fitness function pointer (cannot be 0)
+ * \param GACrossoverFnc crossover function pointer (can be 0, but not recommended)
+ * \param GAMutateFnc mutation function pointer (can be 0, but not recommended)
+ * \param GASelectionFnc selection function pointer (can be 0)
  * \ingroup ga
 */
 void GAinit(GADeleteFnc, GACloneFnc ,GAFitnessFnc, GACrossoverFnc, GAMutateFnc, GASelectionFnc);
 
 /*! \brief The main GA loop. Must call GAinit before calling GArun. Uses GAnextGen to make new generation of individuals.
- * \param initial population (array of individuals)
- * \param number of individuals in the initial population
- * \param number of individuals to be kept in the successive populations (will affect speed of GA)
- * \param total number of generations
- * \param callback function pointer (can be 0)
- * \return final array of individuals (sorted by fitness)
+ * \param GApopulation initial population (array of individuals)
+ * \param int number of individuals in the initial population
+ * \param int number of individuals to be kept in the successive populations (will affect speed of GA)
+ * \param int maximum number of generations (iterations). Callback can be used to stop the GA at any iteration.
+ * \param GACallbackFnc callback function (use 0 for none). 
+         This function can be used to monitor the GA progress or stopping the GA before reaching maximum iterations.
+ * \return GApopulation null terminated array of individuals (sorted by increasing fitness)
  * \ingroup ga
 */
 GApopulation GArun(GApopulation,int sz0,int sz1,int maxIter, GACallbackFnc);
@@ -146,26 +148,26 @@ GApopulation GArun(GApopulation,int sz0,int sz1,int maxIter, GACallbackFnc);
 ************************************************************/
 
 /*! \brief Selects an individual at random, with probability of selection ~ fitness
- * \param array of individuals
- * \param array of corresponding fitness values
- * \param sum of all fitness values
- * \param number of individual
+ * \param GApopulation array of individuals
+ * \param GApopulation array of corresponding fitness values
+ * \param double sum of all fitness values
+ * \param int number of individual
  * \ingroup ga
 */
 int GArouletteWheelSelection(GApopulation , double * , double , int );
 /*! \brief Selects the best of two random individuals
- * \param array of individuals
- * \param array of corresponding fitness values
- * \param sum of all fitness values
- * \param number of individual
+ * \param GApopulation array of individuals
+ * \param GApopulation array of corresponding fitness values
+ * \param double sum of all fitness values
+ * \param int number of individual
  * \ingroup ga
 */
 int GAtournamentSelection(GApopulation , double * , double , int );
 /*! \brief Selects the individual with highest fitness
- * \param array of individuals
- * \param array of corresponding fitness values
- * \param sum of all fitness values
- * \param number of individual
+ * \param GApopulation array of individuals
+ * \param GApopulation array of corresponding fitness values
+ * \param double sum of all fitness values
+ * \param int number of individual
  * \ingroup ga
 */
 int GAeliteSelection(GApopulation , double * , double , int );
@@ -226,29 +228,40 @@ GAMutateFnc GAgetMutationFunction();
 GASelectionFnc GAgetSelectionFunction();
 
 /***********************************************************
-  @name Helper functions used by GArun
+  @name Helper functions used by GArun.
 ************************************************************/
 
 /*! \brief Generates the next population from current population
- * \param array of individuals
- * \param number of individual in population currently
- * \param number of individual in the new population (returned array)
- * \param 0 = delete old population, 1 = keep old population (warning: user must delete it later)
- * \return new array of individual (size = 3rd parameter)
+ * \param GApopulation array of individuals
+ * \param int number of individual in population currently
+ * \param int number of individual in the new population (returned array)
+ * \param int 0 = delete old population, 1 = keep old population (warning: user must delete it later)
+ * \return int new array of individual (size = 3rd parameter)
  * \ingroup ga
 */
 GApopulation GAnextGen(GApopulation,int,int,short);
 
 /*! \brief sort (Quicksort) a population by its fitness (used at the end of GArun)
- * \param population to sort
- * \param fitness function
- * \param size of population
+ * \param GApopulation population to sort
+ * \param GAFitnessFnc fitness function
+ * \param int size of population
  * \return void
  * \ingroup ga
 */
 void GAsort(GApopulation, GAFitnessFnc, int);
 
+/***********************************************************
+  @name Convenience functions
+************************************************************/
 
+/*! \brief deallocate a population of individuals. 
+	All populations returned by GArun will be null terminated. 
+	The population is ASSUMED to be null terminated.
+ * \return void
+ * \ingroup ga
+*/
+
+void GAfree(GApopulation population);
 
 #endif
 

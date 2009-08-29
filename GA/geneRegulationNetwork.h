@@ -40,7 +40,16 @@ typedef struct
 }
 TFComplex;
 
-/*! \brief Gene regulatory network
+/*! \brief 
+Gene regulatory network is described by a set of complexes regulating
+genes. Each complex is composed of one or more transcription factors. 
+Each complex has a target gene that it regulated. The regulation is defined
+using the parameter Ka. If Ka is negative, then it is a repression; if positive, 
+then it is an activation. 
+For each gene in the network, the maximum rate of production is defined by
+the parameter Vmax. The degradation rate is determined by the parameter array
+called degradation. 
+The default rate law uses a fractional saturation model.
 	\ingroup geneticnetwork
 */
 typedef struct
@@ -112,12 +121,12 @@ void ratesForGeneRegulationNetwork(double,double*,double*,GAindividual);
  * \ingroup geneticnetwork
 */
 double * stoichiometryForGeneRegulationNetwork(GAindividual);
-/*! \brief
- * Print a network
+/*! \brief Print a network
+ * \param FILE* output stream
  * \param GAindividual network
- * \ingroup geneticnetwork
+ * \ingroup massaction
 */
-void printGeneRegulationNetwork(GAindividual);
+void printGeneRegulationNetwork(FILE *, GAindividual);
 /*! \brief get the number of variables in the network.
     This is equal to the number of rows in the stoichiometry matrix
  \param GeneRegulationNetwork network

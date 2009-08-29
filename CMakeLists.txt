@@ -133,6 +133,7 @@ ADD_LIBRARY( netga
   STATIC
   ${NETWORKEVOLUTION_SOURCE_DIR}/GA/massActionNetwork.c
   ${NETWORKEVOLUTION_SOURCE_DIR}/GA/proteinInteractionNetwork.c
+  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/enzymeNetwork.c
   ${NETWORKEVOLUTION_SOURCE_DIR}/GA/geneRegulationNetwork.c
   ${NETWORKEVOLUTION_SOURCE_DIR}/GA/reactionNetwork.c
 )

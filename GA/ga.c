@@ -130,10 +130,10 @@ int GAeliteSelection(GApopulation population, double * fitnessValues, double sum
 }
 /*
 * Get next population from current population
-* @param: array of individuals
-* @param: number of individual in population currently
-* @param: number of individual in the new population (returned array)
-* @param: 0 = delete old population, 1 = keep old population (warning: user must delete it later)
+* \param: array of individuals
+* \param: number of individual in population currently
+* \param: number of individual in the new population (returned array)
+* \param: 0 = delete old population, 1 = keep old population (warning: user must delete it later)
 * @ret: new array of individual (size = 3rd parameter)
 */
 GApopulation GAnextGen(GApopulation currentGApopulation, int oldPopSz, int newPopSz,
@@ -142,8 +142,13 @@ GApopulation GAnextGen(GApopulation currentGApopulation, int oldPopSz, int newPo
 	int i,k,best,k2;
 	void * x1 = NULL, * x2 = NULL;
 	double * fitnessArray, totalFitness;
+	GApopulation nextGApopulation;
+
 	//allocate memory for next generation
-	GApopulation nextGApopulation = (void*)malloc( newPopSz * sizeof(void*) );
+
+	nextGApopulation = (void*)malloc( (1+newPopSz) * sizeof(void*) );
+	nextGApopulation[newPopSz] = 0;
+
 	if (nextGApopulation == NULL) 
 	{
 		return (0);
@@ -215,13 +220,12 @@ GApopulation GAnextGen(GApopulation currentGApopulation, int oldPopSz, int newPo
 
 /*
 * Initialize the GA. This function MUST be called before GArun
-* @param: cloning function (cannot be 0)
-* @param: deletion function (cannot be 0)
-* @param: fitness function pointer (cannot be 0)
-* @param: crossover function pointer (can be 0, but not recommended)
-* @param: mutation function pointer (can bt 0, but not recommended)
-* @param: selection function pointer (can be 0)
-* @ret: final array of individuals (sorted by fitness)
+* \param: cloning function (cannot be 0)
+* \param: deletion function (cannot be 0)
+* \param: fitness function pointer (cannot be 0)
+* \param: crossover function pointer (can be 0, but not recommended)
+* \param: mutation function pointer (can bt 0, but not recommended)
+* \param: selection function pointer (can be 0)
 */
 void GAinit(GADeleteFnc deleteGAindividualPtr, GACloneFnc clonePtr,GAFitnessFnc fitnessPtr, GACrossoverFnc crossoverPtr, GAMutateFnc mutatePtr, GASelectionFnc selectionPtr)
 {
@@ -238,11 +242,11 @@ void GAinit(GADeleteFnc deleteGAindividualPtr, GACloneFnc clonePtr,GAFitnessFnc 
 
 /*
 * The main GA loop
-* @param: array of individuals
-* @param: number of individual initially
-* @param: number of individual in successive populations
-* @param: total number of generations
-* @param: callback function pointer
+* \param: array of individuals
+* \param: number of individual initially
+* \param: number of individual in successive populations
+* \param: total number of generations
+* \param: callback function pointer
 * @ret: final array of individuals (sorted)
 */
 GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, int numGenerations,
@@ -256,7 +260,8 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 	/*function pointers*/
 	if (!deleteGAindividual || !clone || !fitness || (!crossover && !mutate) || !selection) return 0;
 
-	initMTrand(); /*initialize seeds for MT random number generator*/
+	if (!MTrandHasBeenInitialized())
+		initMTrand(); /*initialize seeds for MT random number generator*/
 
 	while (stop == 0) //keep going until max iterations or until callback function signals a stop
 	{ 
@@ -273,8 +278,24 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 	}
 	GAsort(population,fitness,popSz);  //sort by fitness (Quicksort)
 
+	if (population[popSz-1])
+	{
+		deleteGAindividual(population[popSz-1]);
+		population[popSz-1] = 0;  //null terminate
+	}
+
 	fclose(errfile);
 	return (population);
+}
+
+void GAfree(GApopulation pop)
+{
+	int i=0;
+	while (pop[i]) 
+	{
+		deleteGAindividual(pop[i]);
+		++i;
+	}
 }
 
 /***********************************************************************

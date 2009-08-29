@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include "mtrand.h"
 
+static int HAS_BEEN_INITIALIZED = 0;
+
 /* initializes mt[NN] with a seed */
 void init_genrand64(unsigned long long seed)
 {
@@ -107,19 +109,28 @@ unsigned long long * getMTseeds(void)
 	init[4] = 0x45678ULL * time(0);
 
 	init_by_array64(init, length);
+	HAS_BEEN_INITIALIZED = 1;
+
 	return init;
+}
+
+int MTrandHasBeenInitialized() 
+{
+	return HAS_BEEN_INITIALIZED; 
 }
 
 void initMTrand(void)
 {
 	unsigned long long init[4] = {0x12345ULL * time(0), 0x23456ULL * time(0), 0x34567ULL * time(0), 0x45678ULL * time(0)}, length=4;
 	init_by_array64(init, length);
+	HAS_BEEN_INITIALIZED = 1;
 }
 
 void setMTseeds(unsigned long long * init)
 {
 	unsigned long long length = 4;
 	init_by_array64(init, length);
+	HAS_BEEN_INITIALIZED = 1;
 }
 
 /* generates a random number on [0,1)-real-interval */

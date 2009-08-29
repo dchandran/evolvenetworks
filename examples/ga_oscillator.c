@@ -37,25 +37,27 @@ int main()
 	setFitnessFunction( &fitness );  //set the fitness function	
 	
 	setNetworkType( MASS_ACTION_NETWORK );  //use this network type
+	setMutationAndCrossoverRatesForMassActionNetwork(0.5,0.2,0.2,0.0);
+	setParametersForMassActionNetwork(0.33,0.33,0.33,0.0,0.2,0.2,2.0);
 	//setNetworkType( PROTEIN_INTERACTION_NETWORK );  //use this network type
 	//setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
 	
-	setInitialNetworkSize(6,12);  //network size
+	setInitialNetworkSize(8,12);  //network size
 	
 	printf("generation\tbest fitness\tnetwork size\n");
 
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(500,200,40,&callback);  
+	pop = evolveNetworks(500,200,4,&callback);  
 	
 	best = pop[0]; //get the best network
 	
-	printNetworkToFile(best,"network.txt"); //print the best network
+	printNetworkToFile("network.txt",best); //print the best network
 	
 	/******simulate the best network and write the result to a file************/
 	
 	N = getNumSpecies(best);    //number of variables in the network
 	iv = (double*)malloc( N * sizeof(double));  
-	for (i = 0; i < N; ++i) iv[i] = 2.0; //initial values
+	for (i = 0; i < N; ++i) iv[i] = 0.0; //initial values
 	
 	y = simulateNetworkODE(best, iv, 500, 1); //simulate
 	free(iv);
@@ -65,10 +67,12 @@ int main()
 	free(y);
 	
 	/****** free all the networks returned by the genetic algorithm ************/
-	for (i=0; i < 50; ++i)
-		deleteNetwork(pop[i]);
+	GAfree(pop);
 	
 	fclose(lineageFile);
+
+	printf("press a key to exit\n");
+	getchar();
 
 	return 0; //done
 }
@@ -120,16 +124,15 @@ void printLineage(GApopulation pop, int popSz, int num)
 }
 
 /* fitness function that tests for oscillations by using correlation to a sine wave */
-double fitness(GAindividual p)
+double fitness(GAindividual net)
 {
 	int i, N;
 	double * y, * iv, time, f, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0;
-	ReactionNetwork * net = (ReactionNetwork*)p;  //get the network
 	
 	N = getNumSpecies(net);
 	
 	iv = (double*)malloc( N * sizeof(double));  //initial concentrations
-	for (i = 0; i < N; ++i) iv[i] = 2.0;
+	for (i = 0; i < N; ++i) iv[i] = 0.0;
 
 	time = 500.0;
 

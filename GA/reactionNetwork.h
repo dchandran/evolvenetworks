@@ -54,21 +54,21 @@ ReactionNetwork;
   @name Get network information
 ************************************************************/
 
-/*! \brief print the reaction network. 
-    This function simply calls the print functions of one 
+/*! \brief print the reaction network to stdout.
+    This function calls the print functions of one 
 	of the individual networks.
  \param ReactionNetwork network
  \ingroup genericNetwork
 */
 void printNetwork(GAindividual);
 /*! \brief print the reaction network to a file. 
-    This function simply calls the print functions of one 
+    This function calls the print functions of one 
 	of the individual networks.
  \param ReactionNetwork network
  \param char* file name
  \ingroup genericNetwork
 */
-void printNetworkToFile(GAindividual, char * filename);
+void printNetworkToFile( char * filename, GAindividual);
 /*! \brief get the number of variables (e.g. genes, molecular species, etc.) in the network.
     This is equal to the number of rows in the stoichiometry matrix
  \param ReactionNetwork network
