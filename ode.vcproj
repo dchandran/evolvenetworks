@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="ode"
-	ProjectGUID="{C009FE44-BD37-488E-8041-0B9433F430C7}"
+	ProjectGUID="{421A79A4-FAD2-4AC6-BA92-152AAAB85491}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

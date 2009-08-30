@@ -10,26 +10,26 @@
 	
 	gcc mtrand.c ga.c cvodesim.c ssa.c reactionNetwork.c ga_oscillator.c -lm -lcvode
 	
-	Uncomment one of the following pairs:
+	Uncomment one of the following pairs (which pairs?):
 ****************************************************/
 
 #include "reactionNetwork.h"
 
 /****************************************************/
 
-/* fitness function that tests for oscillations by using correlation to a sine wave */
+/* Fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(GAindividual p);
 
-/* print the number of each generation and the fitness of the best network */
+/* Print the number of each generation and the fitness of the best network */
 int callback(int iter,GApopulation pop,int popSz);
 
 FILE * lineageFile;
 
 #define INITIAL_POPULATION_SIZE 800
-#define SUCCESSIVE_POPULATION_SIZE 200
-#define NUM_GENERATIONS 40
+#define SUCCESSIVE_POPULATION_SIZE 100
+#define NUM_GENERATIONS 4
 
-/*main*/
+/* main */
 int main()
 {	
 	int N;
@@ -38,35 +38,37 @@ int main()
 	GAindividual * best;
 	
 	lineageFile = fopen("lineage.txt","w");
-	setFitnessFunction( &fitness );  //set the fitness function	
+	setFitnessFunction( &fitness );    // Set the fitness function	
 	
-	setNetworkType( ENZYME_NETWORK );  //use this network type
+	setNetworkType( ENZYME_NETWORK );  // Use this network type
 	setMutationRatesForMassActionNetwork(0.5,0.2,0.2);
 	setCrossoverRate(1.0);
 	setDistributionOfMassActionNetwork(0.33,0.33,0.33,0.0,0.2,0.2);
 	setRateConstantForMassActionNetwork(2.0);
 	
-	setInitialNetworkSize(8,12);  //network size
+	setInitialNetworkSize(8,12);       // Network size
 	
-	printf("generation\tbest fitness\tspecies\treactions\n");
+	printf ("Oscillator Evolution\n\n");
+	printf("Generation\tBest fitness\tSpecies\t\tReactions\n");
+	printf("----------\t------------\t-------\t\t---------\n");
 
-	/* evolve using INITIAL_POPULATION_SIZE initial networks, 
+	/* Evolve using INITIAL_POPULATION_SIZE initial networks, 
 	  SUCCESSIVE_POPULATION_SIZE neworks during each successive generation, 
 	  for NUM_GENERATIONS generations*/
 
 	pop = evolveNetworks(INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, &callback);  
 	
-	best = pop[0]; //get the best network
+	best = pop[0]; // Get the best network
 	
-	printNetworkToFile("network.txt",best); //print the best network
+	printNetworkToFile("network.txt",best); // Save the best network
 	
 	/******simulate the best network and write the result to a file************/
 	
-	N = getNumSpecies(best);    //number of variables in the network
+	N = getNumSpecies(best);                // Number of variables in the network
 	
-	y = simulateNetworkODE(best, 500, 1); //simulate
+	y = simulateNetworkODE(best, 500, 1);   // Simulate
 
-	writeToFile("dat.txt",y,500,N+1);  //print to file
+	writeToFile("dat.txt",y,500,N+1);       // Save to file
 	
 	free(y);
 	
@@ -75,10 +77,10 @@ int main()
 	
 	fclose(lineageFile);
 
-	printf("press a key to exit\n");
+	printf("Press a key to exit\n");
 	getchar();
 
-	return 0; //done
+	return 0; // Done
 }
 
 void printLineage(GApopulation pop, int popSz, int num)
@@ -127,7 +129,7 @@ void printLineage(GApopulation pop, int popSz, int num)
 	free(ids2);
 }
 
-/* fitness function that tests for oscillations by using correlation to a sine wave */
+/* Fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(GAindividual net)
 {
 	int i, N;
@@ -139,7 +141,7 @@ double fitness(GAindividual net)
 
 	y = simulateNetworkODE(net,time,1);  //simulate
 
-	f = 0;   //calculate correlation to sine wave
+	f = 0;   // Calculate correlation to sine wave
 	if (y != 0)
 	{
 		mXY = mX = mY = mX2 = mY2 = 0;
@@ -162,18 +164,18 @@ double fitness(GAindividual net)
 			f = 0.0;
 		else
 		{
-			f = ( (mXY - mX*mY)/(sqrt(mX2 - mX*mX)*sqrt(mY2 - mY*mY)) );   //correlation formula
-			if (f < 0) f = -f; //negative correlation is just as good as positive (for oscillations)
+			f = ( (mXY - mX*mY)/(sqrt(mX2 - mX*mX)*sqrt(mY2 - mY*mY)) );   // Correlation formula
+			if (f < 0) f = -f; // Negative correlation is just as good as positive (for oscillations)
 		}
 		free(y);
 	}
 
-	if(getNumSpecies(net) > 30)        //disallow large networks
+	if(getNumSpecies(net) > 30)        // Disallow large networks
 	  return (0);
 	return (f);
 }
 
-/* print the number of each generation and the fitness of the best network */
+/* Print the number of each generation and the fitness of the best network */
 int callback(int iter,GApopulation pop,int popSz)
 {
 	double f = fitness(pop[0]);
@@ -188,10 +190,10 @@ int callback(int iter,GApopulation pop,int popSz)
 		}
 	}*/
 	
-	printf("%i\t%lf\t%i\t%i\n",iter,f,getNumSpecies(pop[0]),getNumReactions(pop[0]));
+	printf("%i\t\t%lf\t%i\t\t%i\n",iter,f,getNumSpecies(pop[0]),getNumReactions(pop[0]));
 	printLineage(pop,popSz,INITIAL_POPULATION_SIZE);
 
-	if (f >= 0.5) return 1;  //stop
+	if (f >= 0.5) return 1;  // Stop
 	
 	return 0;
 }

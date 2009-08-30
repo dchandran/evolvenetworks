@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="evolveNoiseDamper"
-	ProjectGUID="{43084DAE-3375-4BBD-8C91-4A6B9282F2A4}"
+	ProjectGUID="{0726C82C-5A2E-4D89-A2E8-354E53C3B1D7}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

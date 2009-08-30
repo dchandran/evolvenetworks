@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="loops"
-	ProjectGUID="{B34C699E-216F-41F8-8CC0-DFA8BB6E93E8}"
+	ProjectGUID="{46C1895B-6FC2-4209-8597-78EEC2E16EF9}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="evolveChemotaxis"
-	ProjectGUID="{3E09CF33-D97A-48E1-AFB7-E8BF78046C12}"
+	ProjectGUID="{66571B23-5156-42E0-8A43-C8BE8F19CFA6}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

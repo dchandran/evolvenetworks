@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="cells_ssa"
-	ProjectGUID="{19F610B4-AE38-447E-BB6E-8B87C4196755}"
+	ProjectGUID="{1C4E9B59-5E3B-411E-A87D-EA97AF26C310}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

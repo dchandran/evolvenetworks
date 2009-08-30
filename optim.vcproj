@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="optim"
-	ProjectGUID="{D82873F8-D5D5-4561-B8BC-86950A38BEC6}"
+	ProjectGUID="{9C5FB997-CFB9-468B-B510-EC9B94BAA229}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

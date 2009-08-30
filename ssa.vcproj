@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="ssa"
-	ProjectGUID="{930655BE-8A43-4B62-8271-AB5C6DE316FF}"
+	ProjectGUID="{5947DA2A-DE49-4BB1-B5F4-63FB6F6C3A87}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

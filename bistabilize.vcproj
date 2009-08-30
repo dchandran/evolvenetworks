@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="bistabilize"
-	ProjectGUID="{02F8F80D-DC27-4FEC-B557-E398A2B5939F}"
+	ProjectGUID="{0FF01DD0-C5F6-4B41-BE32-B0BA6C4651AC}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="findLoops"
-	ProjectGUID="{4BD11175-189B-4FA1-B748-7C15F715C694}"
+	ProjectGUID="{F112F0CA-D58E-4974-A983-8E4655893C01}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

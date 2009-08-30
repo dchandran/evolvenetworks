@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="evolveOscillator"
-	ProjectGUID="{665D422A-DFFD-4FCD-8DE9-18EF9EB357A8}"
+	ProjectGUID="{D4FC3CAA-B78D-4A5A-B615-49D93C2AD391}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

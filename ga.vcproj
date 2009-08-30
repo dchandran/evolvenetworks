@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="ga"
-	ProjectGUID="{FA950093-2D9F-485C-8989-A45C04293DF1}"
+	ProjectGUID="{E7557BF3-6277-4344-99E4-F1D4AFEB519B}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

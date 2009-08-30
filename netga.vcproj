@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="netga"
-	ProjectGUID="{1777E044-EFEC-4F88-93B6-55957235C597}"
+	ProjectGUID="{E3BABA54-201F-4254-8EE5-9964367B9670}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
@@ -266,6 +266,9 @@
 			</File>
 			<File
 				RelativePath="C:\Documents and Settings\hsauro\My Documents\CMakeProjects\inSilicoEvolve\GA\proteinInteractionNetwork.c">
+			</File>
+			<File
+				RelativePath="C:\Documents and Settings\hsauro\My Documents\CMakeProjects\inSilicoEvolve\GA\enzymeNetwork.c">
 			</File>
 			<File
 				RelativePath="C:\Documents and Settings\hsauro\My Documents\CMakeProjects\inSilicoEvolve\GA\geneRegulationNetwork.c">

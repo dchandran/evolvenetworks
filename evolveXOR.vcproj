@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="evolveXOR"
-	ProjectGUID="{53CC2C00-88B7-4B63-9D4C-C1C6BF3E67CE}"
+	ProjectGUID="{6A8ECB68-F219-4CCC-9FBB-1E8888DE626E}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform

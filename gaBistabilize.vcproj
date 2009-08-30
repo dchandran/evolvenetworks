@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="9.00"
 	Name="gaBistabilize"
-	ProjectGUID="{CC0A9391-D40E-4D54-9BF7-5DE0CA9C242F}"
+	ProjectGUID="{CE521616-8864-4605-A1D5-21EA3B2CABB3}"
 	Keyword="Win32Proj">
 	<Platforms>
 		<Platform
