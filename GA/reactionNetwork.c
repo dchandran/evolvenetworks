@@ -131,7 +131,20 @@ static SetFixedSpeciesFunction setFixedSpeciesFunctions[] =
 	&setFixedSpeciesForProteinInteractionNetwork
 };
 
-/***********************************************************/
+/***********************************************************
+
+    The following functions need to be modified
+	when adding a new network type
+
+************************************************************/
+
+void setInitialNetworkSize(int a,int b)
+{
+	setSizeForMassActionNetwork(a,b);
+	setSizeForEnzymeNetwork(a,b);
+	setSizeForProteinInteractionNetwork(a,b);
+	setSizeForGeneRegulationNetwork(a,b);
+}
 
 GApopulation randomNetworks(int sz0)
 {
@@ -231,9 +244,10 @@ GApopulation randomNetworks(int sz0)
 
 /*******************************************************************
 
-The following functions rely entirely on 
-the array of function pointers defined at 
-the beginning of this file
+	The following functions rely entirely on 
+	the array of function pointers defined at 
+	the beginning of this file. They do NOT need
+	to be modified when adding a new network type
 
 ********************************************************************/
 
@@ -645,13 +659,6 @@ GAindividual cloneNetwork(GAindividual p)
 void setFitnessFunction(GAFitnessFnc f)
 {
 	GAsetFitnessFunction(f);
-}
-
-void setInitialNetworkSize(int a,int b)
-{
-	setSizeForMassActionNetwork(a,b);
-	setSizeForProteinInteractionNetwork(a,b);
-	setSizeForGeneRegulationNetwork(a,b);
 }
 
 GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GACallbackFnc callbackFunc)
