@@ -11,6 +11,12 @@ static double MUTATE_INIT_VALUE_PROB = 1.0;
 static double AVG_INIT_VALUES = 2.0;
 static int TRACK_NETWORK_PARENTS = 1;
 static int NUMBER_OF_NETWORK_TYPES = 4;
+static double CROSSOVER_PROB = 1.0;
+
+void setCrossoverRate(double d)
+{
+	CROSSOVER_PROB = d;
+}
 
 void setAverageInitialValue(double d)
 {
@@ -145,7 +151,7 @@ GApopulation randomNetworks(int sz0)
 			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
 			rnet->type = MASS_ACTION_NETWORK;
 			rnet->network = P0[i];
-			rnet->id = i;
+			rnet->id = i+total;
 			rnet->parents = 0;
 			n = getNumSpecies(rnet);
 			rnet->initialValues = (double*)malloc(n*sizeof(double));
@@ -167,7 +173,7 @@ GApopulation randomNetworks(int sz0)
 			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
 			rnet->type = ENZYME_NETWORK;
 			rnet->network = P0[i];
-			rnet->id = i;
+			rnet->id = i+total;
 			rnet->parents = 0;
 			n = getNumSpecies(rnet);
 			rnet->initialValues = (double*)malloc(n*sizeof(double));
@@ -480,9 +486,13 @@ GAindividual mutateNetwork(GAindividual p)
 	{
 		net = f(r->network);
 		r->network = net;
-		
+		if (mtrand() < MUTATE_INIT_VALUE_PROB) 
+		{
+			r->initialValues[ (int)(mtrand() * getNumSpecies(r)) ] *= 2.0 * mtrand();
+		}	
 		return r;
 	}
+
 	return 0;
 }
 
@@ -495,7 +505,7 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 	ReactionNetwork * r;
 	int i,j,k,sz1,sz2;
 
-	if (r1->type != r2->type || r2->type < 0 || r2->type >= NUMBER_OF_NETWORK_TYPES)
+	if (mtrand() > CROSSOVER_PROB || r1->type != r2->type || r2->type < 0 || r2->type >= NUMBER_OF_NETWORK_TYPES)
 		return mutateNetwork(p1);
 
 	f = crossoverFunctions[r2->type];

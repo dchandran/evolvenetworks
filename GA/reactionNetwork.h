@@ -260,7 +260,7 @@ void setInitialNetworkSize(int,int);
 GApopulation evolveNetworks(int,int,int,GACallbackFnc);
 
 /***********************************************************
-  @name functions for allocating and deallocating networks
+  @name functions for creating and removing networks
 ************************************************************/
 
 /*! \brief get a random set of networks (used inside evolveNetworks)
@@ -282,6 +282,29 @@ void deleteNetwork(GAindividual);
 	\ingroup genericNetwork
 */
 GAindividual cloneNetwork(GAindividual);
+
+/***********************************************************
+  @name functions related to mutation and crossover
+************************************************************/
+
+/*! \brief set the probability of crossover (default = 1.0, i.e. always)
+	\param double value between 0 and 1
+	\ingroup genericNetwork
+*/
+void setCrossoverRate(double);
+
+/*! \brief set the average initial value for the variables in a network. 
+		The initial values are used to initialize a simulation.
+	\param double positive real
+	\ingroup genericNetwork
+*/
+void setAverageInitialValue(double);
+
+/*! \brief set the probability of mutating the initial values
+	\param double value between 0 - 1 ( default = 0.2 )
+	\ingroup genericNetwork
+*/
+void setMutationRateOfInitialValues(double);
 
 /*! \brief mutate the network
 	\param GAindividual must be a ReactionNetwork* casted as GAindividual

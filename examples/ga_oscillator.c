@@ -25,6 +25,10 @@ int callback(int iter,GApopulation pop,int popSz);
 
 FILE * lineageFile;
 
+#define INITIAL_POPULATION_SIZE 800
+#define SUCCESSIVE_POPULATION_SIZE 200
+#define NUM_GENERATIONS 40
+
 /*main*/
 int main()
 {	
@@ -38,7 +42,7 @@ int main()
 	
 	setNetworkType( ENZYME_NETWORK );  //use this network type
 	setMutationRatesForMassActionNetwork(0.5,0.2,0.2);
-	setCrossoverRateForMassActionNetwork(0.0);
+	setCrossoverRate(1.0);
 	setDistributionOfMassActionNetwork(0.33,0.33,0.33,0.0,0.2,0.2);
 	setRateConstantForMassActionNetwork(2.0);
 	
@@ -46,8 +50,11 @@ int main()
 	
 	printf("generation\tbest fitness\tspecies\treactions\n");
 
-	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(500,200,40,&callback);  
+	/* evolve using INITIAL_POPULATION_SIZE initial networks, 
+	  SUCCESSIVE_POPULATION_SIZE neworks during each successive generation, 
+	  for NUM_GENERATIONS generations*/
+
+	pop = evolveNetworks(INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, &callback);  
 	
 	best = pop[0]; //get the best network
 	
@@ -151,8 +158,13 @@ double fitness(GAindividual net)
 		mX2 /= time;
 		mY2 /= time;
 
-		f = ( (mXY - mX*mY)/( 0.01 + sqrt(mX2 - mX*mX)*sqrt(mY2 - mY*mY)) );   //correlation formula
-		if (f < 0) f = -f; //negative correlation is just as good as positive (for oscillations)
+		if (((mXY - mX*mY) < 0.01) || ((mY2 - mY*mY)) < 0.01)
+			f = 0.0;
+		else
+		{
+			f = ( (mXY - mX*mY)/(sqrt(mX2 - mX*mX)*sqrt(mY2 - mY*mY)) );   //correlation formula
+			if (f < 0) f = -f; //negative correlation is just as good as positive (for oscillations)
+		}
 		free(y);
 	}
 
@@ -177,7 +189,7 @@ int callback(int iter,GApopulation pop,int popSz)
 	}*/
 	
 	printf("%i\t%lf\t%i\t%i\n",iter,f,getNumSpecies(pop[0]),getNumReactions(pop[0]));
-	printLineage(pop,popSz,200);
+	printLineage(pop,popSz,INITIAL_POPULATION_SIZE);
 
 	if (f >= 0.5) return 1;  //stop
 	

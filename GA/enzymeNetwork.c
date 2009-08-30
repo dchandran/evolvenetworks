@@ -140,6 +140,12 @@ GAindividual crossoverEnzymeNetwork(GAindividual individualA, GAindividual indiv
 
 	//get some set of enzymes from one parent and some from the other
 
+	for (i=0; i < net3->massActionNetwork->reactions; ++i)
+	{
+		net3->enzymes[i] = (int)(mtrand() * net3->massActionNetwork->species);
+		net3->Km[i] = KM_RANGE * mtrand();
+	}
+
 	j = (int)(mtrand() * net3->massActionNetwork->reactions);
 	for (i=0; i < j && i < net1->massActionNetwork->reactions && i < net3->massActionNetwork->reactions; ++i)
 	{
@@ -155,13 +161,6 @@ GAindividual crossoverEnzymeNetwork(GAindividual individualA, GAindividual indiv
 		net3->Km[i+j] = net2->Km[i];
 		if (net3->enzymes[i+j] >= net3->massActionNetwork->species)
 			net3->enzymes[i+j] = (int)(mtrand() * net3->massActionNetwork->species);
-	}
-
-	//still leftover?
-	for (; i < net3->massActionNetwork->reactions; ++i)
-	{
-		net3->enzymes[i] = (int)(mtrand() * net3->massActionNetwork->species);
-		net3->Km[i] = KM_RANGE * mtrand();
 	}
 	
 	return (GAindividual)(net3);
