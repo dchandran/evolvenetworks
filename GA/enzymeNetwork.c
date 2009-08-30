@@ -378,7 +378,7 @@ void printEnzymeNetwork(FILE * stream,GAindividual individual)
 					if ((net->product1[i] == -1 && net->product2[i] > -1) ||  //uni-uni
 						(net->product1[i] > -1 && net->product2[i] == -1))
 					{
-						fprintf(stream, "k%i * s%i * s%i/ (km%i + s%i)",i+1,enet->enzymes[i]+1,net->reactant1[i]+1,i+1,net->reactant1[i]);
+						fprintf(stream, "k%i * s%i * s%i/ (km%i + s%i)",i+1,enet->enzymes[i]+1,net->reactant1[i]+1,i+1,net->reactant1[i]+1);
 					}
 					else
 						fprintf(stream, "k%i * s%i",i+1,net->reactant1[i]+1);
@@ -388,7 +388,7 @@ void printEnzymeNetwork(FILE * stream,GAindividual individual)
 					if ((net->product1[i] == -1 && net->product2[i] > -1) ||  //uni-uni
 						(net->product1[i] > -1 && net->product2[i] == -1))
 					{
-						fprintf(stream, "k%i * s%i * s%i/ (km%i + s%i)",i+1,enet->enzymes[i]+1,net->reactant2[i]+1,i+1,net->reactant2[i]);
+						fprintf(stream, "k%i * s%i * s%i/ (km%i + s%i)",i+1,enet->enzymes[i]+1,net->reactant2[i]+1,i+1,net->reactant2[i]+1);
 					}
 					else
 						fprintf(stream, "k%i * s%i",i+1,net->reactant2[i]+1);
