@@ -158,8 +158,7 @@ GAindividual crossoverEnzymeNetwork(GAindividual individualA, GAindividual indiv
 	}
 
 	//still leftover?
-	j=i;
-	for (i=j; i < net3->massActionNetwork->reactions; ++i)
+	for (; i < net3->massActionNetwork->reactions; ++i)
 	{
 		net3->enzymes[i] = (int)(mtrand() * net3->massActionNetwork->species);
 		net3->Km[i] = KM_RANGE * mtrand();
@@ -170,8 +169,9 @@ GAindividual crossoverEnzymeNetwork(GAindividual individualA, GAindividual indiv
 
 GAindividual mutateEnzymeNetwork(GAindividual individual)
 {
-	int i;
-	double r;
+	int i,n;
+	double r, *k;
+	int * e;
 	EnzymeNetwork * net;
 
 	if (!individual) return individual;
@@ -184,6 +184,7 @@ GAindividual mutateEnzymeNetwork(GAindividual individual)
 	{
 		i = (int)(mtrand() * net->massActionNetwork->reactions);
 		net->Km[i] *= 2.0 * mtrand();
+		return (GAindividual)(net);
 	}
 	else
 	if (r < (MUTATE_KM_PROB+MUTATE_ENZYME_PROB))   //mutate enzyme
@@ -193,7 +194,30 @@ GAindividual mutateEnzymeNetwork(GAindividual individual)
 		return (GAindividual)(net);
 	}
 	
+	n = net->massActionNetwork->reactions;
 	net->massActionNetwork = mutateMassActionNetwork(net->massActionNetwork);
+	if (net->massActionNetwork->reactions != n)
+	{
+		e = net->enzymes;
+		k = net->Km;
+		net->enzymes = (int*)malloc(net->massActionNetwork->reactions * sizeof(int));
+		net->Km = (double*)malloc(net->massActionNetwork->reactions * sizeof(double));
+		for (i=0; i < n && i < net->massActionNetwork->reactions; ++i)
+		{
+			net->enzymes[i] = e[i];
+			net->Km[i] = k[i];
+		}
+		if (net->massActionNetwork->reactions > n)
+		{
+			for (i=n; i < net->massActionNetwork->reactions; ++i)
+			{
+				net->enzymes[i] = (int)(mtrand() * net->massActionNetwork->species);
+				net->Km[i] = (mtrand() * KM_RANGE);
+			}
+		}
+		free(e);
+		free(k);
+	}
 	
     return (GAindividual)(net);
 }

@@ -131,7 +131,7 @@ GApopulation randomNetworks(int sz0)
 {
 	int i, j, r, k, n, total = 0;
 	ReactionNetwork * rnet;
-	GApopulation P1 = 0, P2 = 0, P3 = 0, P;
+	GApopulation P0 = 0, P;
 
 	P = (GAindividual*) malloc( sz0 * sizeof (GAindividual) );
 
@@ -139,12 +139,34 @@ GApopulation randomNetworks(int sz0)
 	
 	if (r > 0 && r <= sz0)
 	{
-		P1 = randomMassActionNetworks(r);
+		P0 = randomMassActionNetworks(r);
 		for (i=0; i < r; ++i)
 		{
 			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
 			rnet->type = MASS_ACTION_NETWORK;
-			rnet->network = P1[i];
+			rnet->network = P0[i];
+			rnet->id = i;
+			rnet->parents = 0;
+			n = getNumSpecies(rnet);
+			rnet->initialValues = (double*)malloc(n*sizeof(double));
+			for (j=0; j < n; ++j)
+				rnet->initialValues[j] = AVG_INIT_VALUES * mtrand();
+
+			P[i] = rnet;
+		}
+		total += r;
+	}
+
+	r = (int)(networkProbs[ENZYME_NETWORK] * sz0);
+	
+	if (r > 0 && r <= sz0)
+	{
+		P0 = randomEnzymeNetworks(r);
+		for (i=0; i < r; ++i)
+		{
+			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
+			rnet->type = ENZYME_NETWORK;
+			rnet->network = P0[i];
 			rnet->id = i;
 			rnet->parents = 0;
 			n = getNumSpecies(rnet);
@@ -160,12 +182,12 @@ GApopulation randomNetworks(int sz0)
 	r = (int)(networkProbs[PROTEIN_INTERACTION_NETWORK] * sz0);
 	if (r > 0 && r <= sz0)
 	{
-		P2 = randomProteinInteractionNetworks(r);
+		P0 = randomProteinInteractionNetworks(r);
 		for (i=0; i < r; ++i)
 		{
 			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
 			rnet->type = PROTEIN_INTERACTION_NETWORK;
-			rnet->network = P2[i];
+			rnet->network = P0[i];
 			rnet->parents = 0;
 			n = getNumSpecies(rnet);
 			rnet->initialValues = (double*)malloc(n*sizeof(double));
@@ -181,12 +203,12 @@ GApopulation randomNetworks(int sz0)
 	if (total < sz0)
 	{
 		k = sz0 - total;
-		P3 = randomGeneRegulationNetworks(k);
+		P0 = randomGeneRegulationNetworks(k);
 		for (i=0; i < k; ++i)
 		{
 			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
 			rnet->type = GENE_REGULATION_NETWORK;
-			rnet->network = P3[i];
+			rnet->network = P0[i];
 			rnet->parents = 0;
 			n = getNumSpecies(rnet);
 			rnet->initialValues = (double*)malloc(n*sizeof(double));

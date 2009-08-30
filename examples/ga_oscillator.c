@@ -36,13 +36,11 @@ int main()
 	lineageFile = fopen("lineage.txt","w");
 	setFitnessFunction( &fitness );  //set the fitness function	
 	
-	setNetworkType( MASS_ACTION_NETWORK );  //use this network type
+	setNetworkType( ENZYME_NETWORK );  //use this network type
 	setMutationRatesForMassActionNetwork(0.5,0.2,0.2);
 	setCrossoverRateForMassActionNetwork(0.0);
 	setDistributionOfMassActionNetwork(0.33,0.33,0.33,0.0,0.2,0.2);
 	setRateConstantForMassActionNetwork(2.0);
-	//setNetworkType( PROTEIN_INTERACTION_NETWORK );  //use this network type
-	//setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
 	
 	setInitialNetworkSize(8,12);  //network size
 	
