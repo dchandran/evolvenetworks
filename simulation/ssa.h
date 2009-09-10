@@ -1,8 +1,9 @@
-/*!
-  \file    ssa.h
-  \author: Deepak Chandran (dchandran1@gmail.com)
-  \brief   Stochastic simulation using Gillespie algorithm (Dan Gillespie, 1977)
- */
+/****************************************************************************
+ **
+ ** Copyright (C) 2008 Deepak Chandran
+ ** Contact: Deepak Chandran (dchandran1@gmail.com)
+ **
+ ****************************************************************************/
 
 #ifndef DEEPAK_GILLESPIE_IMPLEMENTATION
 #define DEEPAK_GILLESPIE_IMPLEMENTATION
@@ -46,5 +47,6 @@ double * SSA(int, int, double *, void (*f)(double,double*,double*,void*), double
 * \ingroup gillespie
 */
 double * getRatesFromSimulatedData(double* data, int rows, int cols1, int cols2, int skip, void (*f)(double,double*,double*,void*), void* param);
+
 
 #endif
