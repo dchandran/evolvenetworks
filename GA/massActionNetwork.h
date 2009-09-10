@@ -1,4 +1,7 @@
-/********************************************************************************************************
+/*!
+  \file    massActionNetwork.h
+  \author: Deepak Chandran (dchandran1@gmail.com)
+  \brief   evolve mass action networks
 
 Copyright (C) 2009 Deepak Chandran
 
@@ -17,7 +20,7 @@ Copyright (C) 2009 Deepak Chandran
 	The program using this file must define:
 		1) a function that returns the fitness of a network
 		
-*********************************************************************************************************/
+*/
 
 #ifndef MASS_ACTION_FOR_GA
 #define MASS_ACTION_FOR_GA
@@ -56,9 +59,10 @@ typedef struct
 } 
 MassActionNetwork;
 
-/*****************************************************
-   @name  Functions needed by GA
-******************************************************/
+/*!
+   \name  Functions needed by GA
+   \{
+*/
 
 /*! \brief Free an individual from memory
  * \param GAindividual a single individual
@@ -87,9 +91,11 @@ GAindividual crossoverMassActionNetwork(GAindividual individualA, GAindividual i
 */
 GAindividual mutateMassActionNetwork(GAindividual individual);
 
-/*****************************************************
-   @name  Functions for simulating and printing the network defined above
-******************************************************/
+/*!
+   \}
+   \name  Functions for simulating and printing the network defined above
+   \{
+*/
 /*! \brief Propensity function to be used by the SSA function (see ssa.h)
  * \param double time
  * \param double* values for variables in the system
@@ -133,9 +139,9 @@ int getNumReactionsForMassActionNetwork(GAindividual);
 void setFixedSpeciesForMassActionNetwork(GAindividual, int,int);
 
 
-/*****************************************************
+/*! \}
     @name Functions for initializing a GA
-******************************************************/
+\{*/
 
 /*! \brief Set parameters for randomly generating mass-action networks
  * \param double percent of initial reactions having one reactant and one product
@@ -148,10 +154,10 @@ void setFixedSpeciesForMassActionNetwork(GAindividual, int,int);
 */
 void setDistributionOfMassActionNetwork(double uni_uni, double uni_bi, double bi_uni, double bi_bi, double no_reactant, double no_product);
 /*! \brief Set average reaction rate when randomly generating mass-action networks
- * \param double average rate constant
+ * \param double max rate constant
  * \ingroup massaction
 */
-void setRateConstantForMassActionNetwork(double avg_rate_constant);
+void setRateConstantForMassActionNetwork(double max_rate_constant);
 /*! \brief Set parameters for randomly generating mass-action networks
  * \param int average number of species
  * \param int average number of reactions
@@ -183,6 +189,8 @@ GApopulation randomMassActionNetworks(int);
  * \ingroup massaction
 */
 MassActionNetwork * newMassActionNetwork(int species,int reactions);
+
+/*!\}*/
 
 #endif
 

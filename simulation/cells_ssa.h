@@ -1,11 +1,8 @@
-/****************************************************************************
- **
- ** Copyright (C) 2008 Deepak Chandran
- ** Contact: Deepak Chandran (dchandran1@gmail.com)
- **
- **
-    Defines a simulator that performs a multi-cell stochastic simulation using 
-	a slight variant of the Gillespie algorithm. 
+/*!
+  \file    cells_ssa.h
+  \author: Deepak Chandran (dchandran1@gmail.com)
+  \brief   Ssimulator that performs a multi-cell stochastic simulation using 
+			a variant of the Gillespie algorithm. 
 	
 	The algorithm has two levels of events (or reactions):
 	

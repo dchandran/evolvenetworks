@@ -1,4 +1,7 @@
-/*******************************************************
+/*!
+  \file    reactionNetwork.h
+  \author: Deepak Chandran (dchandran1@gmail.com)
+  \brief    evolve any of the other biological networks
 
 	Copyright (C) 2009 Deepak Chandran
 	
@@ -6,6 +9,7 @@
 	
 	massActionNetwork.h
 	proteinInteractionNetwork.h
+	enzymeNetwork.h
 	geneRegulationNetwork.h
 	
 	Each file above contains the function needed for running 
@@ -18,6 +22,9 @@
 	functions for this combined network.
 
 ********************************************************/
+
+#ifndef GENERIC_REACTION_NETWORK_GA_WRAPPER_H
+#define GENERIC_REACTION_NETWORK_GA_WRAPPER_H
 
 #include "ga.h"
 #include "massActionNetwork.h"
@@ -58,9 +65,10 @@ typedef struct
 }
 ReactionNetwork;
 
-/***********************************************************
-  @name Get network information
-************************************************************/
+/*!
+  \name Get network information
+  \{
+*/
 
 /*! \brief print the reaction network to stdout.
     This function calls the print functions of one 
@@ -103,9 +111,11 @@ double* getStoichiometryMatrix(GAindividual);
 */
 double* getReactionRates(GAindividual, double*);
 
-/************************************
+/*!
+  \}
   @name Related to lineage tracking
-*************************************/
+  \{
+*/
 /*! \brief turn on lineage tracking. This will track the parents of each individual when crossover occurs
  \ingroup genericNetwork
 */
@@ -139,9 +149,11 @@ int getID(GAindividual);
 */
 int* getParentIDs(GAindividual);
 
-/***********************************************************
+/*!
+  \}
   @name Simulation functions
-************************************************************/
+  \{
+*/
 
 /*! \brief set the rates calculating function for the given type of network
  \param int type of the network
@@ -197,9 +209,11 @@ double * networkSteadyState( GAindividual );
 */
 double * simulateNetworkStochastically( GAindividual, double, int* );
 
-/**************************************
+/*!
+  \}
   @name Functions for GA
-***************************************/
+  \{
+*/
 
 /*! \brief set the fitness function for the GA. Use before calling evolveNetworks.
 	IMPORTANT: higher fitness = better. If you want to minimize a function, simple invert
@@ -259,9 +273,11 @@ void setInitialNetworkSize(int,int);
 */
 GApopulation evolveNetworks(int,int,int,GACallbackFnc);
 
-/***********************************************************
+/*!
+  \}
   @name functions for creating and removing networks
-************************************************************/
+  \{
+*/
 
 /*! \brief get a random set of networks (used inside evolveNetworks)
 	\param int number of networks
@@ -283,9 +299,11 @@ void deleteNetwork(GAindividual);
 */
 GAindividual cloneNetwork(GAindividual);
 
-/***********************************************************
+/*!
+  \}
   @name functions related to mutation and crossover
-************************************************************/
+  \{
+*/
 
 /*! \brief set the probability of crossover (default = 1.0, i.e. always)
 	\param double value between 0 and 1
@@ -323,9 +341,11 @@ GAindividual mutateNetwork(GAindividual);
 */
 GAindividual crossoverNetwork(GAindividual, GAindividual);
 
-/***********************************************************
-  @name Premade fitness functions
-************************************************************/
+/*!
+  \}
+  \name Premade fitness functions
+  \{
+*/
 
 /*! \brief compares the steady state values of the network to an input/output table provided. 
            Sets the first n input species as fixed species, and compares the output
@@ -347,3 +367,6 @@ GAindividual crossoverNetwork(GAindividual, GAindividual);
 	\ingroup genericNetwork
 */
 double compareSteadyStates(GAindividual, double **, int , int, int, int, double ** );
+/*!\}*/
+
+#endif

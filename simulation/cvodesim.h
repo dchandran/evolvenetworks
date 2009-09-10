@@ -1,4 +1,7 @@
-/*****************************************************************
+/*!
+  \file    cvodesim.h
+  \author: Deepak Chandran (dchandran1@gmail.com)
+  \brief   simulation functions that use CVODE to integrate differential equations
 
 A wrapper for the Sundials CVODE numerical integration library
 The wrapper is only for initial value problems. 

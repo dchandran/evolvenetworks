@@ -1,9 +1,8 @@
-/****************************************************************************
- **
- ** Copyright (C) 2008 Deepak Chandran
- ** Contact: Deepak Chandran (dchandran1@gmail.com)
- **
- ****************************************************************************/
+/*!
+  \file    ssa.h
+  \author: Deepak Chandran (dchandran1@gmail.com)
+  \brief   Stochastic simulation using Gillespie algorithm (Dan Gillespie, 1977)
+ */
 
 #ifndef DEEPAK_GILLESPIE_IMPLEMENTATION
 #define DEEPAK_GILLESPIE_IMPLEMENTATION

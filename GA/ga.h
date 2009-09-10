@@ -1,7 +1,7 @@
-/********************************************************************************************************
-
-Copyright (C) 2008 Deepak Chandran
-contact: dchandran1@gmail.com
+ /*!
+  \file    ga.h
+  \author: Deepak Chandran (dchandran1@gmail.com)
+  \brief   A genetic genetic algorithm
 
 	This library provides the basic functions for running a Genetic Algorithm (GA), but
 	the user is required to setup the fitness function and related functions.
@@ -22,7 +22,7 @@ contact: dchandran1@gmail.com
 		
 	The main functions are: GAinit and GArun
 	
-*********************************************************************************************************/
+**/
 #ifndef GA_MAIN_LOOP
 #define GA_MAIN_LOOP
 
@@ -37,11 +37,12 @@ typedef void* GAindividual;
 /*! \brief GApopulation array of individuals, where an individual is represented by a user defined struct (void*) */
 typedef GAindividual* GApopulation;
 
-/***********************************************************
-    @name Required externally defined functions
+/*!
+    \name Required externally defined functions
     The following functions MUST be defined somewhere
 	use initGA to initialize the GA with the functions
-************************************************************/
+	\{
+*/
 
 /*! \brief
  * Free an individual from memory
@@ -63,11 +64,12 @@ typedef GAindividual (*GACloneFnc)(GAindividual);
 */
 typedef double(*GAFitnessFnc)(GAindividual);
 
-/***********************************************************
-    @name Mutation and crossover functions
+/*! \}
+    \name Mutation and crossover functions
     At least ONE of the following two functions SHOULD
 	be defined, otherwise the GA will run, but nothing will evolve.
-************************************************************/
+	\{
+*/
 
 /*! \brief
  * combine two individuals to generate a new individual. The function must not delete the parent individuals.
@@ -86,13 +88,15 @@ typedef GAindividual (*GACrossoverFnc)(GAindividual, GAindividual);
 */
 typedef GAindividual (*GAMutateFnc)(GAindividual);
 
-/***********************************************************
-  @name Optional functions
+/*!
+  \}
+  \name Optional functions
   The following two functions are entirely optional. 
   The GA library provides default Selection Function, 
   which can be overwritten
   They may or may not affect the GA performance 
-*************************************************************/
+  \{
+*/
 
 /*! \brief
  * Selection function. If null, then a default selection function is provided that linearly converts fitness values to probabilities
@@ -115,10 +119,11 @@ typedef int(*GASelectionFnc)(GApopulation , double * , double , int );
 */
 typedef int(*GACallbackFnc)(int iter,GApopulation,int popSz);
 
-/***********************************************************
-  @name The main GA functions
+/*! \}
+  \name The main GA functions
   The central functions defined in this genetic algorithm library
-************************************************************/
+  \{
+*/
 
 /*! \brief Initialize the GA. This function MUST be called before GArun
  * \param GADeleteFnc deletion function (cannot be 0)
@@ -143,9 +148,10 @@ void GAinit(GADeleteFnc, GACloneFnc ,GAFitnessFnc, GACrossoverFnc, GAMutateFnc, 
 */
 GApopulation GArun(GApopulation,int sz0,int sz1,int maxIter, GACallbackFnc);
 
-/***********************************************************
-  @name Available selection functions
-************************************************************/
+/*! \}
+  \name Available selection functions
+  \{
+*/
 
 /*! \brief Selects an individual at random, with probability of selection ~ fitness
  * \param GApopulation array of individuals
@@ -172,9 +178,10 @@ int GAtournamentSelection(GApopulation , double * , double , int );
 */
 int GAeliteSelection(GApopulation , double * , double , int );
 
-/***********************************************************
-  @name Convenience functions -- substitute for GAinit
-************************************************************/
+/*! \}
+  \name Convenience functions -- substitute for GAinit
+  \{
+*/
 /*! \brief Initialize how to create and remove the struct defining an "individual"
  * \param GADeleteFnc function pointer (cannot be 0)
  * \param GACloneFnc function pointer (cannot be 0)
@@ -202,9 +209,10 @@ void GAsetMutationFunction(GAMutateFnc);
 */
 void setSelectionFunction(GASelectionFnc);
 
-/***********************************************************
-  @name functions that are being used by the GA
-************************************************************/
+/*! \}
+  \name functions that are being used by the GA
+  \{
+*/
 
 /*! \brief get the fitness function for the GA
  * \return GAFitnessFnc function pointer
@@ -227,9 +235,10 @@ GAMutateFnc GAgetMutationFunction();
 */
 GASelectionFnc GAgetSelectionFunction();
 
-/***********************************************************
-  @name Helper functions used by GArun.
-************************************************************/
+/*! \}
+  \name Helper functions used by GArun.
+  \{
+*/
 
 /*! \brief Generates the next population from current population
  * \param GApopulation array of individuals
@@ -250,9 +259,10 @@ GApopulation GAnextGen(GApopulation,int,int,short);
 */
 void GAsort(GApopulation, GAFitnessFnc, int);
 
-/***********************************************************
-  @name Convenience functions
-************************************************************/
+/*! \}
+  \name Convenience functions
+  \{
+*/
 
 /*! \brief deallocate a population of individuals. 
 	All populations returned by GArun will be null terminated. 

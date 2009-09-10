@@ -20,7 +20,8 @@ void setCrossoverRate(double d)
 
 void setAverageInitialValue(double d)
 {
-	AVG_INIT_VALUES = d;
+	if (d > 0.0)
+		AVG_INIT_VALUES = d;
 }
 
 void setMutationRateOfInitialValues(double d)

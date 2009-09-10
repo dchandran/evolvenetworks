@@ -1,6 +1,7 @@
-/********************************************************************************************************
-
-Copyright (C) 2009 Deepak Chandran
+/*!
+  \file    ga.h
+  \author: Deepak Chandran (dchandran1@gmail.com)
+  \brief    evolve gene regulatory networks
 
 	This file defines a gene regulatory network using fractional saturation models for the kinetics. 
 	The functions in this file are designed to be used with the GA library that I have written. 
@@ -17,7 +18,7 @@ Copyright (C) 2009 Deepak Chandran
 	The program using this file must define:
 		1) a function that returns the fitness of a network
 		
-*********************************************************************************************************/
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -68,9 +69,10 @@ typedef struct
 } 
 GeneRegulationNetwork;
 
-/*****************************************************
-   @name  Functions needed by GA
-******************************************************/
+/*!
+   \name  Functions needed by GA
+   \{
+*/
 
 /*! \brief Free an individual from memory
  * \param GAindividual a single individual
@@ -102,9 +104,10 @@ GAindividual crossoverGeneRegulationNetwork(GAindividual individualA, GAindividu
 */
 GAindividual mutateGeneRegulationNetwork(GAindividual individual);
 
-/*****************************************************
-   @name Functions for simulating and printing the network defined above
-******************************************************/
+/*! \}
+   \name Functions for simulating and printing the network defined above
+   \{
+*/
 /*! \brief
  * Propensity function to be used by the SSA function (see ssa.h)
  * \param double time
@@ -147,9 +150,10 @@ int getNumReactionsForGeneRegulationNetwork(GAindividual);
 */
 void setFixedSpeciesForGeneRegulationNetwork(GAindividual, int, int);
 
-/*****************************************************
-   @name Functions for initializing a GA
-******************************************************/
+/*! \}
+   \name Functions for initializing a GA
+   \{
+*/
 /*! \brief Set the initial parameters for generating random networks.
  * \param int maximum number of transcription factors in a complex (i.e. 2 means that only monomers or dimers allowed)
  * \param double the average Ka value for random networks
@@ -198,6 +202,8 @@ GApopulation randomGeneRegulationNetworks(int);
  * \ingroup geneticnetwork
 */
 GeneRegulationNetwork * newGeneRegulationNetwork(int,int);
+
+/*!\}*/
 
 #endif
 

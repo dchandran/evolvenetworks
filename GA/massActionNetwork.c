@@ -24,10 +24,10 @@ static double AVG_RATE_CONSTANT = 1.0;
 static int AVG_NUM_SPECIES = 1;
 static int AVG_NUM_REACTIONS = 1;
 
-void setRateConstantForMassActionNetwork(double avg_rate_constant)
+void setRateConstantForMassActionNetwork(double max_rate_constant)
 {
-	if (avg_rate_constant > 0)
-		AVG_RATE_CONSTANT = avg_rate_constant;
+	if (max_rate_constant > 0)
+		AVG_RATE_CONSTANT = max_rate_constant;
 }
 
 void setDistributionOfMassActionNetwork(double uni_uni, double uni_bi, double bi_uni, double bi_bi, double no_reactant, double no_product)

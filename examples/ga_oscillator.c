@@ -27,7 +27,7 @@ FILE * lineageFile;
 
 #define INITIAL_POPULATION_SIZE 800
 #define SUCCESSIVE_POPULATION_SIZE 100
-#define NUM_GENERATIONS 4
+#define NUM_GENERATIONS 50
 
 /* main */
 int main()
@@ -40,13 +40,13 @@ int main()
 	lineageFile = fopen("lineage.txt","w");
 	setFitnessFunction( &fitness );    // Set the fitness function	
 	
-	setNetworkType( ENZYME_NETWORK );  // Use this network type
+	setNetworkType( MASS_ACTION_NETWORK );  // Use this network type
 	setMutationRatesForMassActionNetwork(0.5,0.2,0.2);
 	setCrossoverRate(1.0);
-	setDistributionOfMassActionNetwork(0.33,0.33,0.33,0.0,0.2,0.2);
+	setDistributionOfMassActionNetwork(0.5,0.25,0.25,0.0,0.1,0.1);
 	setRateConstantForMassActionNetwork(2.0);
 	
-	setInitialNetworkSize(8,12);       // Network size
+	setInitialNetworkSize(5,8);       // Network size
 	
 	printf ("Oscillator Evolution\n\n");
 	printf("Generation\tBest fitness\tSpecies\t\tReactions\n");

@@ -379,6 +379,13 @@ void ratesForProteinInteractionNetwork(double time,double* u,double* rate,GAindi
 	net = (ProteinInteractionNetwork*)(individual);
 	n = net->species;
 	
+	//this is cheating!...but safeguards against bad initial conditions
+	//should be a one-time issue, generally
+	for (i=0; i < n; ++i)
+	{
+		if (u[i] > net->totals[i])
+			net->totals[i] += u[i];
+	}
 	for (i=0; i < n; ++i)
 	{
 		tot = net->totals[i]; //total concentration of u[i]
@@ -424,11 +431,13 @@ double * stoichiometryForProteinInteractionNetwork(GAindividual p)
 		N[i] = 0.0;
 	}
 	for (i=0; i < n; ++i)
+	{
 		if (net->fixed[i] == 0)
 		{
 			getValue(N,(2*n),i,i*2) = -1.0;
 			getValue(N,(2*n),i,i*2+1) = 1.0;
 		}
+	}
 	return N;
 }
 

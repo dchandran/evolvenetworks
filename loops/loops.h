@@ -1,7 +1,7 @@
-/********************************************************************************************************
-
-Copyright (C) 2008 Deepak Chandran
-contact: dchandran1@gmail.com
+/*!
+  \file    loops.h
+  \author: Deepak Chandran (dchandran1@gmail.com)
+  \brief   Find loops in an interaction graph (e.g. Jacobian)
 
 	This file contains an algorithm for finding loops in an adjacency matrix. 
 	The edges can be negative or positive, such as in a Jacobian matrix. 
@@ -15,6 +15,7 @@ contact: dchandran1@gmail.com
 	
 	
 *********************************************************************************************************/
+
 #ifndef FIND_LOOPS_IN_SQUARE_ADJ_MATRIX
 #define FIND_LOOPS_IN_SQUARE_ADJ_MATRIX
 

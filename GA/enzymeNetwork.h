@@ -1,15 +1,20 @@
-/********************************************************************************************************
+/*!
+  \file    enzymeNetwork.h
+  \author: Deepak Chandran (dchandran1@gmail.com)
+  \brief   evolve networks with enzymatic reactions
 
 Copyright (C) 2009 Deepak Chandran
 
 	This file defines a chemical reaction network that is very similar to mass-action network ,except
 	that it contains an additional enzyme for each reaction with a single reactant and product. 
-	For such reactions, the rate expression used is Michaeilis-Menten rather than mass-action.
+	For such reactions, the rate expression used is a reversible Hill equation 	(from 
+	"The reversible Hill equation: how to incorporate cooperative enzymes into metabolic models" by
+	Jan-Hendrik S. Hofmeyr and Athel Cornish-Bowden)
 
 	The struct defined in this file build on the MassActionNetwork struct and functions.
 
 	Example reaction:
-		A --> B;  rate = vmax1 * A * E / (Km1 + A)
+		A --> B;  rate = kcat * E * (A - B/A/Keq) * (A/A_half + B/B_half) / (1 + (A/A_half + B/B_half))
 		
 *********************************************************************************************************/
 
@@ -23,25 +28,36 @@ Copyright (C) 2009 Deepak Chandran
 
 /*! \brief 
 Enzyme catalyzed network is defined using a MassActionNetwork struct
-and an array of enzymes. The enzymes array stores a set of indices
-corresponding to the enzyme for that reaction. The default rate expression
-and stoichiometry is the same as that for MassActionNetwork. However, for
-reaction with a single reactant, the rate expression becomes Michaelis-Menten, 
-i.e. hyperbolic in the reactant. All the functions build on the existing
-functions of MassActionNetwork. 
-	\ingroup modifiedmassaction
+and additional arrays for specifying enzyme kinetics. The default rate expression
+and stoichiometry is the same as that for MassActionNetwork, except for
+reactions with a single reactant and product. In those cases, the rate expression 
+used is a reversible Hill equation (from "The reversible Hill equation: how to
+incorporate cooperative enzymes into metabolic models" by
+Jan-Hendrik S. Hofmeyr and Athel Cornish-Bowden)
+\ingroup modifiedmassaction
 */
 typedef struct
 {
 	MassActionNetwork * massActionNetwork;
+	/*! \brief enzymes (index values) for each uni-uni reaction*/
 	int * enzymes;
-	double * Km;
+	/*! \brief enzyme[i] is an activator if alpha[i] > 1 or an inhibitor if alpha[i] < 1*/
+	double * alpha;
+	/*! \brief equilibrium ratio of product to substrate*/
+	double * Keq;
+	/*! \brief half saturation point for substrate*/
+	double * S_half;
+	/*! \brief half saturation point for product*/
+	double * P_half;
+	/*! \brief number of modification sites*/
+	double * h;
 }
 EnzymeNetwork;
 
-/*****************************************************
-   @name  Functions needed by GA
-******************************************************/
+/*!
+   \name  Functions needed by GA
+   \{
+*/
 
 /*! \brief Free an individual from memory
  * \param GAindividual a single individual
@@ -70,9 +86,10 @@ GAindividual crossoverEnzymeNetwork(GAindividual individualA, GAindividual indiv
 */
 GAindividual mutateEnzymeNetwork(GAindividual individual);
 
-/*****************************************************
-   @name Functions for simulating and printing the network defined above
-******************************************************/
+/*! \}
+    \name Functions for simulating and printing the network defined above
+	\{
+*/
 
 /*! \brief Propensity function to be used by the SSA function (see ssa.h)
  * \param double time
@@ -114,9 +131,10 @@ int getNumReactionsForEnzymeNetwork(GAindividual);
 */
 void setFixedSpeciesForEnzymeNetwork(GAindividual, int, int);
 
-/*****************************************************
-   @name Functions for initializing a GA
-******************************************************/
+/*! \}
+   \name Functions for initializing a GA
+   \{
+*/
 /*! \brief Set the initial (average) parameters for generating random networks.
  * \param double percent of initial reactions having one reactant and one product
  * \param double percent of initial reactions having one reactant and two products
@@ -128,11 +146,14 @@ void setFixedSpeciesForEnzymeNetwork(GAindividual, int, int);
 */
 void setDistributionOfEnzymeNetwork(double uni_uni, double uni_bi, double bi_uni, double bi_bi, double no_reactant, double no_product);
 /*! \brief Set the initial (average) parameters for generating random networks.
- * \param double average rate constant (Vmax for enzymatic reactions)
- * \param double average half-saturation point for enzyme reactions (Km)
+ * \param double max rate constant (Vmax for enzymatic reactions)
+ * \param double max equilibrium point (Keq) in log scale
+ * \param double max number of modification sites for an enzyme (h)
+ * \param double max half-saturation point for substrate
+ * \param double max half-saturation point for product
  * \ingroup modifiedmassaction
 */
-void setRateConstantsForEnzymeNetwork(double avg_rate_constant, double avg_km);
+void setRateConstantsForEnzymeNetwork(double max_kcat, double max_log_keq, double max_alpha, double max_h, double max_s_half, double max_p_half);
 
 /*! \brief Set the initial (average) parameters for generating random networks.
  * \param int average number of species
@@ -141,13 +162,26 @@ void setRateConstantsForEnzymeNetwork(double avg_rate_constant, double avg_km);
 */
 void setSizeForEnzymeNetwork(int, int);
 /*! \brief Set parameters for the mutation and crossover functions. Arguments must add to 1.
- * \param double probability of mutating an enzyme (default = 0.2) 
- * \param double probability of mutating a rate constant (default = 0.5) 
+ * \param double probability of mutating an enzyme
+ * \param double probability of mutating a rate constant (vmax for enzyme reaction)
+ * \param double probability of mutating an equilibrium ratio
+ * \param double probability of mutating the activation and inhibition profile
+ * \param double probability of mutating the number of modification sites on an enzyme
+ * \param double probability of mutating the substrate half saturation point
+ * \param double probability of mutating the product half saturation point
  * \param double probability of remove a reaction during mutation. This may also remove some species.
  * \param double probability of adding a reaction during mutation. This may also add species.
  * \ingroup modifiedmassaction
 */
-void setMutationRatesForEnzymeNetwork(double, double, double, double);
+void setMutationRatesForEnzymeNetwork(double enzyme, 
+									  double k_cat, 
+									  double k_eq, 
+									  double alpha,
+									  double h, 
+									  double s_half, 
+									  double p_half, 
+									  double remove, 
+									  double add);
 /*! \brief Set crossover probabilty
  * \param double probability of crossover (default = 1.0, i.e. always)
  * \ingroup modifiedmassaction
@@ -169,3 +203,4 @@ EnzymeNetwork * newEnzymeNetwork(int,int);
 
 #endif
 
+/*!\}*/

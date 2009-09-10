@@ -1,4 +1,7 @@
-/********************************************************************************************************
+/*!
+  \file    proteinNetwork.h
+  \author: Deepak Chandran (dchandran1@gmail.com)
+  \brief    evolve gene regulatory networks
 
 Copyright (C) 2009 Deepak Chandran
 
@@ -60,9 +63,9 @@ typedef struct
 } 
 ProteinInteractionNetwork;
 
-/*****************************************************
-   @name  Functions needed by GA
-******************************************************/
+/*!
+   \name  Functions needed by GA
+\{*/
 
 /*! \brief Free an individual from memory
  * \param GAindividual a single individual
@@ -91,9 +94,9 @@ GAindividual crossoverProteinInteractionNetwork(GAindividual individualA, GAindi
 */
 GAindividual mutateProteinInteractionNetwork(GAindividual individual);
 
-/*****************************************************
-   @name Functions for simulating and printing the network defined above
-******************************************************/
+/*!\}
+   \name Functions for simulating and printing the network defined above
+\{*/
 
 /*! \brief Propensity function to be used by the SSA function (see ssa.h)
  * \param double time
@@ -135,9 +138,9 @@ int getNumReactionsForProteinInteractionNetwork(GAindividual);
 */
 void setFixedSpeciesForProteinInteractionNetwork(GAindividual, int, int);
 
-/*****************************************************
+/*!\}
    @name Functions for initializing a GA
-******************************************************/
+\{*/
 /*! \brief Set the initial (average) parameters for generating random networks.
  * \param double the average Ka value for random networks
  * \param double the average Vmax value for random networks
@@ -170,6 +173,6 @@ void setCrossoverRateForProteinInteractionNetwork(double);
 */
 GApopulation randomProteinInteractionNetworks(int);
 
-
+/*!\}*/
 #endif
 
