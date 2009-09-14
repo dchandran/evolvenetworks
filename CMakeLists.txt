@@ -130,7 +130,10 @@ ADD_LIBRARY( ga
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/mtrand.c
 )
 
-#Evolve network library
+
+#---------------------------------------------------------------------------
+# Evolve network library (using GA)
+#---------------------------------------------------------------------------
 
 ADD_LIBRARY( netga
   STATIC
@@ -144,6 +147,25 @@ ADD_LIBRARY( netga
 
 TARGET_LINK_LIBRARIES( netga
   netga
+  ga
+  ode
+  ssa
+)
+
+#shared (for Python)
+
+ADD_LIBRARY( evolvenet
+  SHARED
+  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/massActionNetwork.c
+  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/proteinInteractionNetwork.c
+  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/enzymeNetwork.c
+  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/geneRegulationNetwork.c
+  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/reactionNetwork.c
+  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/GAfileio.c
+)
+
+TARGET_LINK_LIBRARIES( evolvenet
+  evolvenet
   ga
   ode
   ssa
