@@ -176,16 +176,7 @@ QMainWindow::separator {
      border-bottom-color: #C2C7CB; /* same as pane color */
  }
  
-  QToolTip {
-     background: #DFF7DD;
-     border: 2px solid #98A7FF;
-     padding: 5px;
-     border-radius: 3px;
-     opacity: 255;
- } 
- 
- 
-QDockWidget {
+ QDockWidget {
      border: 2px solid #C4C5C6;
  }
 
