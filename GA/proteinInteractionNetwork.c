@@ -21,7 +21,7 @@ static double MUTATE_TOTAL_CONC = 0.15;
 static double CROSSOVER_PROB = 1.0;
 static int AVG_NUM_SPECIES = 10;
 
-void setParametersForProteinInteractionNetwork(double ka, double vmax, double total)
+void setRateConstantsForProteinInteractionNetwork(double ka, double vmax, double total)
 {
 	KM_RANGE = ka;
 	VMAX_RANGE = vmax;

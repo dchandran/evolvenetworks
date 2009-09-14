@@ -149,6 +149,14 @@ int getNumReactionsForGeneRegulationNetwork(GAindividual);
  \ingroup geneticnetwork
 */
 void setFixedSpeciesForGeneRegulationNetwork(GAindividual, int, int);
+/*! \brief Use this function to set a cost to protein production. Use 0 to disable.
+		Each protein will consume a set amount of resources, and the system will receive
+		a set amount of resources from the external environment. 
+ \param double the amount of resources (e.g. amino acids) flowing in to the cell
+ \param double the amount of resources (e.g. amino acids) consumed by each protein
+ \ingroup geneticnetwork
+*/
+void setResourceRestriction(double inflow, double cost_per_protein);
 
 /*! \}
    \name Functions for initializing a GA
@@ -161,7 +169,7 @@ void setFixedSpeciesForGeneRegulationNetwork(GAindividual, int, int);
  * \param double the average degradation rate constant for a gene product
  * \ingroup geneticnetwork
 */
-void setParametersForGeneRegulationNetwork(int, double, double, double);
+void setRateConstantsForGeneRegulationNetwork(int max_complex_size, double Ka, double Vmax, double degradation);
 
 /*! \brief Set the initial parameters for generating random networks.
  * \param int average number of genes in the networks
@@ -178,7 +186,7 @@ void setSizeForGeneRegulationNetwork(int,int);
  * \param double probability of removing a gene
  * \ingroup geneticnetwork
 */
-void setMutationRatesForGeneRegulationNetwork(double, double, double, double, double);
+void setMutationRatesForGeneRegulationNetwork(double Ka, double Vmax, double complex, double add_gene, double remove_gene);
 
 /*! \brief Set crossover probability
  * \param double probability of crossover

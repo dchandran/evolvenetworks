@@ -37,10 +37,13 @@ INCLUDE_DIRECTORIES( BEFORE
 	${NETWORKEVOLUTION_SOURCE_DIR}/chemotaxis
 	${NETWORKEVOLUTION_SOURCE_DIR}/lib
 	${NETWORKEVOLUTION_SOURCE_DIR}/bin
+	${NETWORKEVOLUTION_SOURCE_DIR}/GUI
 )
 LINK_DIRECTORIES(
 	${NETWORKEVOLUTION_SOURCE_DIR}/lib
 	${NETWORKEVOLUTION_SOURCE_DIR}/bin
+	${NETWORKEVOLUTION_SOURCE_DIR}/GUI
+	${NETWORKEVOLUTION_SOURCE_DIR}
 )
 
 #---------------------------------------------------------------------------
@@ -201,3 +204,31 @@ TARGET_LINK_LIBRARIES( evolveXOR netga )
 
 ADD_EXECUTABLE( findLoops ${NETWORKEVOLUTION_SOURCE_DIR}/loops/test_loops.c )
 TARGET_LINK_LIBRARIES( findLoops loops )
+
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
+# GUI using QT
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
+
+FIND_PACKAGE( Qt4 )
+IF( QT4_FOUND )
+
+  INCLUDE_DIRECTORIES( BEFORE ${QT_INCLUDES} )
+
+  OPTION( BUILD_GUI_APP
+    "Built the GUI for the evolution program. Qt Toolkit must be installed and configured properly." 
+    OFF )
+
+  IF ( BUILD_GUI_APP )
+    IF( QT_USE_FILE )
+	  SET( QT_USE_QTCORE TRUE )
+	  SET( QT_USE_QTGUI TRUE )
+      INCLUDE( ${QT_USE_FILE} )
+    ELSE( QT_USE_FILE )
+      SET( QT_LIBRARIES ${QT_QT_LIBRARY} )
+    ENDIF( QT_USE_FILE )
+    ADD_SUBDIRECTORY( GUI )
+
+  ENDIF ( BUILD_GUI_APP )
+ENDIF( QT4_FOUND )

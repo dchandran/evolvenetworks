@@ -147,7 +147,7 @@ void setFixedSpeciesForProteinInteractionNetwork(GAindividual, int, int);
  * \param double the average Total (conservation law) for random networks
  * \ingroup proteinnetwork
 */
-void setParametersForProteinInteractionNetwork(double, double , double );
+void setRateConstantsForProteinInteractionNetwork(double ka, double vmax, double total);
 /*! \brief Set the initial (average) parameters for generating random networks.
  * \param int average number of species in the networks
  * \param int regulations per species
@@ -161,7 +161,7 @@ void setSizeForProteinInteractionNetwork(int, int);
  * \param double probability of adding/removing a node during mutation
  * \ingroup proteinnetwork
 */
-void setMutationRatesForProteinInteractionNetwork(double, double, double, double);
+void setMutationRatesForProteinInteractionNetwork(double rewire, double parameter, double total, double addremove);
 /*! \brief Set crossover probability.
  * \param double probability of crossover
  * \ingroup proteinnetwork

@@ -24,7 +24,16 @@ static double MUTATE_PRODUCTION = 0.2;
 static double MUTATE_COMPLEX = 0.2;
 static double ADD_GENE = 0.2;
 
-void setParametersForGeneRegulationNetwork(int tfs, double ka, double vmax, double deg)
+static double RESOURCE_INFLUX = 0.0;
+static double RESOURCE_COST_PER_GENE = 0.0;
+
+void setResourceRestriction(double influx, double cost)
+{
+	if (influx >= 0.0) RESOURCE_INFLUX = influx;
+	if (cost >= 0.0) RESOURCE_COST_PER_GENE = cost;
+}
+
+void setRateConstantsForGeneRegulationNetwork(int tfs, double ka, double vmax, double deg)
 {
 	KA_RANGE = ka;
 	TF_RANGE = tfs;
@@ -408,12 +417,16 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 int getNumSpeciesForGeneRegulationNetwork(GAindividual individual)
 {
 	GeneRegulationNetwork * net = (GeneRegulationNetwork*)(individual);
+	if (RESOURCE_INFLUX > 0 && RESOURCE_COST_PER_GENE > 0)
+		return (1 + net->species);
 	return (net->species);
 }
 
 int getNumReactionsForGeneRegulationNetwork(GAindividual individual)
 {
 	GeneRegulationNetwork * net = (GeneRegulationNetwork*)(individual);
+	if (RESOURCE_INFLUX > 0 && RESOURCE_COST_PER_GENE > 0)
+		return (1 + (2 * net->species));
 	return (2 * net->species);
 }
 
@@ -427,10 +440,20 @@ void setFixedSpeciesForGeneRegulationNetwork(GAindividual individual, int i, int
 void ratesForGeneRegulationNetwork(double time,double* u,double* rate,GAindividual p)
 {
 	int i,j,k;
-	double prod, num, denom;
+	double prod, num, denom, resources;
 	GeneRegulationNetwork * net;
 	
 	net = (GeneRegulationNetwork*)(p);
+	
+	if (RESOURCE_INFLUX > 0 && RESOURCE_COST_PER_GENE > 0)
+	{
+		resources = u[ net->species ];
+		rate[ 2*net->species ] = RESOURCE_INFLUX;
+	}
+	else
+	{
+		resources = 1.0;
+	}
 	
 	for (i=0; i < net->species; ++i)
 	{
@@ -455,7 +478,7 @@ void ratesForGeneRegulationNetwork(double time,double* u,double* rate,GAindividu
 			}
 		}
 		if (num == 0) num = 1.0;
-		rate[i] = net->Vmax[i] *  num/(1+denom);
+		rate[i] = resources * net->Vmax[i] *  num/(1.0+denom);
 		rate[ i + net->species ] = net->degradation[i] * u[i];
 	}
 }
@@ -470,8 +493,13 @@ double * stoichiometryForGeneRegulationNetwork(GAindividual p)
 	net = (GeneRegulationNetwork*)(p);
 	
 	m = net->species;
+	
 	n = 2 * m;
-	N = (double*) malloc(m * n * sizeof(double));
+	
+	if (RESOURCE_INFLUX > 0 && RESOURCE_COST_PER_GENE > 0)  //influx
+		N = (double*) malloc(m * (1+n) * sizeof(double));
+	else
+		N = (double*) malloc(m * n * sizeof(double));
 	
 	for (i=0; i < m; ++i)
 		for (j=0; j < n; ++j)
@@ -483,6 +511,16 @@ double * stoichiometryForGeneRegulationNetwork(GAindividual p)
 			getValue(N,n,i,i) = 1.0;
 			getValue(N,n,i,i+m) = -1.0;
 		}
+	
+	if (RESOURCE_INFLUX > 0 && RESOURCE_COST_PER_GENE > 0)
+	{
+		for (i=0; i < m; ++i)
+		{
+			getValue(N,n,i,i) = -RESOURCE_COST_PER_GENE;
+		}
+		getValue(N,n,m,n) = 1.0; //influx
+	}
+	
 	return N;
 }
 

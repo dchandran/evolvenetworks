@@ -52,7 +52,7 @@ double ** cells_ssa(int m, int n, double * N, void (*propensity)(double, double*
 		cells[i] = 0.0;
 	}
 	
-	concs = (double*) malloc( numCells * sizeof(double*) );   //species concentrations in each cell
+	concs = (double**) malloc( numCells * sizeof(double*) );   //species concentrations in each cell
 	concs2 = 0;
 	growthRates = (double*) malloc(numCells * sizeof(double));
 	growthRates2 = 0;
@@ -100,7 +100,7 @@ double ** cells_ssa(int m, int n, double * N, void (*propensity)(double, double*
 		if (mtrand() < v1) //cell growth event
 		{
 			concs2 = concs;
-			concs = (double*) malloc( (1+numCells) * sizeof(double*) );
+			concs = (double**) malloc( (1+numCells) * sizeof(double*) );
 			for (i=0; i < numCells; ++i)
 			{
 				concs[i] = (double*) malloc( m * sizeof(double) );
@@ -145,7 +145,7 @@ double ** cells_ssa(int m, int n, double * N, void (*propensity)(double, double*
 			--numCells;
 			
 			concs2 = concs;
-			concs = (double*) malloc( (numCells) * sizeof(double*) );
+			concs = (double**) malloc( (numCells) * sizeof(double*) );
 			for (i=0; i < numCells; ++i) //copy concentrations
 			{
 				concs[i] = (double*) malloc( m * sizeof(double) );

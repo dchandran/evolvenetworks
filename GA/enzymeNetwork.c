@@ -15,7 +15,7 @@ static double MUTATE_KEQ_PROB = 0.1;
 static double KEQ_LN_RANGE = 4.0;
 
 static double MUTATE_ALPHA_PROB = 0.1;
-static double ALPHA_RANGE = 4.0;
+static double ALPHA_LN_RANGE = 2.0;
 
 static double MUTATE_H_PROB = 0.1;
 static double H_RANGE = 2.0;
@@ -40,7 +40,7 @@ void setRateConstantsForEnzymeNetwork(double max_kcat, double max_log_keq, doubl
 	if (max_log_keq > 0)
 		KEQ_LN_RANGE = max_log_keq;
 	if (max_alpha > 0)
-		ALPHA_RANGE = max_alpha;
+		ALPHA_LN_RANGE = max_alpha;
 	if (max_s_half > 0)
 		S_HALF_RANGE = max_s_half;
 	if (max_p_half > 0)
@@ -210,9 +210,9 @@ GAindividual crossoverEnzymeNetwork(GAindividual individualA, GAindividual indiv
 	for (i=0; i < n; ++i)
 	{
 		net3->enzymes[i] = (int)(mtrand() * net3->massActionNetwork->species);
-		net3->Keq[i] = mtrand() * pow(2, (KEQ_LN_RANGE * mtrand()));
+		net3->Keq[i] = mtrand() * pow(2, (KEQ_LN_RANGE * (2.0 * mtrand() - 1)));
 		net3->h[i] = 2.0 + H_RANGE * mtrand();
-		net3->alpha[i] = ALPHA_RANGE * mtrand();
+		net3->alpha[i] = mtrand() * pow(2, (ALPHA_LN_RANGE * (2.0 * mtrand() - 1)));
 		net3->S_half[i] = S_HALF_RANGE * mtrand();
 		net3->P_half[i] = P_HALF_RANGE * mtrand();
 	}
@@ -357,9 +357,9 @@ GAindividual mutateEnzymeNetwork(GAindividual individual)
 		for (i=0; i < mnet->reactions; ++i)
 		{
 			net2->enzymes[i] = (int)(mtrand() * mnet->species);
-			net2->Keq[i] = mtrand() * pow(2, (KEQ_LN_RANGE * mtrand()));
+			net2->Keq[i] = mtrand() * pow(2, (KEQ_LN_RANGE * (2.0 * mtrand() - 1)));
 			net2->h[i] = 2.0 + (mtrand() * H_RANGE);
-			net2->alpha[i] = (mtrand() * ALPHA_RANGE);
+			net2->alpha[i] = mtrand() * pow(2, (ALPHA_LN_RANGE * (2.0 * mtrand() - 1)));
 			net2->P_half[i] = (mtrand() * P_HALF_RANGE);
 			net2->S_half[i] = (mtrand() * S_HALF_RANGE);
 		}
@@ -619,8 +619,8 @@ GApopulation randomEnzymeNetworks(int num)
 		for (j=0; j < mnet->reactions; ++j)
 		{
 			enet->enzymes[j] = (int)(mtrand() * mnet->species);
-			enet->Keq[j] = mtrand() * pow(2, (KEQ_LN_RANGE * mtrand()));
-			enet->alpha[j] = ALPHA_RANGE * mtrand();
+			enet->Keq[j] = mtrand() * pow(2, (KEQ_LN_RANGE * (2.0 * mtrand() - 1)));
+			enet->alpha[j] = mtrand() * pow(2, (ALPHA_LN_RANGE * (2.0 * mtrand() - 1)));
 			enet->h[j] = H_RANGE * mtrand();
 			enet->S_half[j] = S_HALF_RANGE * mtrand();
 			enet->P_half[j] = P_HALF_RANGE * mtrand();
