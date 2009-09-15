@@ -59,7 +59,7 @@ namespace NetworkEvolutionLib
 		QString appDir = QCoreApplication::applicationDirPath();
 		QProcess proc;
 		proc.setWorkingDirectory(appDir);
-		
+		proc.setProcessChannelMode(QProcess::ForwardedChannels);
 		
 #ifdef Q_WS_WIN
 		proc.start(tr("win32\\tcc -r -Iwin32\\include -Isource\\include -Isource -Lwin32\\lib source\\*.c -o netga.o"));
@@ -92,12 +92,14 @@ namespace NetworkEvolutionLib
 		QHBoxLayout * saveclearLayout = new QHBoxLayout;
 		button = new QPushButton;
 		button->setText("Save");
+		button->setIcon(QIcon(":/save.png"));
 		button->setMaximumWidth(100);
 		connect(button,SIGNAL(pressed()),this,SLOT(save()));
 		saveclearLayout->addWidget(button, Qt::AlignLeft);
 		
 		button = new QPushButton;
-		button->setText("Clear");
+		button->setText("New");
+		button->setIcon(QIcon(":/new.png"));
 		button->setMaximumWidth(100);
 		connect(button,SIGNAL(pressed()),this,SLOT(clear()));
 		saveclearLayout->addWidget(button, Qt::AlignLeft);
@@ -119,15 +121,20 @@ namespace NetworkEvolutionLib
 		
 		button = new QPushButton(toolbar);
 		button->setText("RUN");
+		button->setIcon(QIcon(":/play.png"));
 		connect(button,SIGNAL(pressed()),this,SLOT(run()));
 		toolbar->addWidget(button);
 		
 		button = new QPushButton(toolbar);
-		button->setText("Reset");
+		button->setText("Quit");
+		button->setIcon(QIcon(":/exit.png"));
+		connect(button,SIGNAL(pressed()),this,SLOT(reset()));
+		connect(button,SIGNAL(pressed()),this,SLOT(close()));
 		toolbar->addWidget(button);
 		
 		button = new QPushButton(toolbar);
-		button->setText("Quit");
+		button->setText("Save and Quit ");
+		button->setIcon(QIcon(":/exit.png"));
 		connect(button,SIGNAL(pressed()),this,SLOT(close()));
 		toolbar->addWidget(button);
 		
@@ -412,7 +419,7 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
 		doubleSpinBox->setValue(enzyme_init_max_s_half);
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_(double)));
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_init_max_s_half(double)));
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"S-half range");
@@ -927,10 +934,10 @@ namespace NetworkEvolutionLib
 				tr("#include \"reactionNetwork.h\"\n\n")
 				+ tr("void init()\n")
 				+ tr("{\n")
-				+ tr("    setNetworkProb(0,") + QString::number(mass_action_prob) + tr(");\n")
-				+ tr("    setNetworkProb(1,") + QString::number(enzyme_prob) + tr(");\n")
-				+ tr("    setNetworkProb(2,") + QString::number(protein_net_prob) + tr(");\n")
-				+ tr("    setNetworkProb(3,") + QString::number(grn_prob) + tr(");\n\n")
+				+ tr("    setNetworkTypeProbability(0,") + QString::number(mass_action_prob) + tr(");\n")
+				+ tr("    setNetworkTypeProbability(1,") + QString::number(enzyme_prob) + tr(");\n")
+				+ tr("    setNetworkTypeProbability(2,") + QString::number(protein_net_prob) + tr(");\n")
+				+ tr("    setNetworkTypeProbability(3,") + QString::number(grn_prob) + tr(");\n\n")
 				+ tr("    setDistributionOfMassActionNetwork(")
 				+ QString::number(uni_uni) + tr(",")
 				+ QString::number(uni_bi) + tr(",")
@@ -1026,7 +1033,7 @@ namespace NetworkEvolutionLib
 	
 	QString MainWindow::callbackFunction()
 	{
-		QString s = tr("int callback(int iter, GAPopulation P, int popSz)\n")
+		QString s = tr("int callback(int iter, GApopulation P, int popSz)\n")
 			+ tr("{\n")
 			+ tr("    return 0;\n}\n");
 		
@@ -1038,9 +1045,9 @@ namespace NetworkEvolutionLib
 		QString s = tr("int main()\n")
 			+ tr("{\n")
 			+ tr("    int runs = ") + QString::number(runs) + tr(";\n")
-			+ tr("    int genations = ") + QString::number(generations) + tr(";\n")
+			+ tr("    int generations = ") + QString::number(generations) + tr(";\n")
 			+ tr("    int popSz = ") + QString::number(popSz) + tr(";\n")
-			+ tr("    GAPopulation P;\n")
+			+ tr("    GApopulation P;\n")
 			+ tr("    int i,j;\n\n")
 			+ tr("    setFitnessFunction(&fitness);\n")
 			+ tr("    init();\n")
@@ -1069,6 +1076,23 @@ namespace NetworkEvolutionLib
 			mainFunction();
 
 		qfile.close();
+		
+		QProcess proc;
+		proc.setWorkingDirectory(appDir);
+		proc.setProcessChannelMode(QProcess::ForwardedChannels);
+		
+#ifdef Q_WS_WIN
+		proc.start(tr("win32\\tcc -Iwin32\\include -Isource\\include -Isource -Lwin32\\lib netga.o -run ") + codeFile);
+		proc.waitForFinished();
+		proc.start(tr("echo \"done\""));
+		proc.waitForFinished();
+#else
+		proc.start(tr("gcc -Isource/include -Isource ") + codeFile + tr(" -L./ -lnetga -o a.out"));
+		proc.waitForFinished();
+		proc.start(tr("./a.out"));
+		proc.waitForFinished();
+#endif
+
 	}
 	
 	void MainWindow::reset()
