@@ -1243,7 +1243,7 @@ namespace NetworkEvolutionLib
 		
 		QString fileName =
 					QFileDialog::getSaveFileName(this, tr("Save Current Model"),
-						appDir + tr("/FitnessFunctions/my_func.c"),
+						appDir + tr("/FitnessFunctions/"),
 						tr("C Files (*.c)"));
 		if (fileName.isEmpty())
 			return;
@@ -1251,7 +1251,7 @@ namespace NetworkEvolutionLib
 		QFile file(fileName);
 		if (file.open(QFile::WriteOnly | QFile::Text))
 		{
-			fitnessComboBox->addItem(file.fileName());
+			fitnessComboBox->addItem(QFileInfo(file).baseName());
 			file.write( codeEditor->toPlainText().toAscii() );
 			file.close();
 		}
