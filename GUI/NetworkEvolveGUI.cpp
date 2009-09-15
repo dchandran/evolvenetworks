@@ -71,7 +71,7 @@ namespace NetworkEvolutionLib
 		proc.waitForFinished();
 #endif
 
-		QLineEdit * compile = new QLineEdit(tr("win32\\tcc -r -Iwin32\\include -Isource\\include -Isource -Lwin32\\lib source\\*.c -o netga.o"));
+		QLineEdit * compile = new QLineEdit(compileCommand);
 		layoutC->addWidget(compile);
 		
 		groupC->setLayout(layoutC);
@@ -82,11 +82,27 @@ namespace NetworkEvolutionLib
 		splitter2->addWidget(groupC);
 		
 		firstCol->addWidget(splitter2);
+		QPushButton * button;
 		
 		QVBoxLayout * layout3 = new QVBoxLayout;
 		QGroupBox * group3 = new QGroupBox;
 		group3->setTitle(" Fitness Function ");
 		layout3->addWidget(setupEditor());
+		
+		QHBoxLayout * saveclearLayout = new QHBoxLayout;
+		button = new QPushButton;
+		button->setText("Save");
+		button->setMaximumWidth(100);
+		connect(button,SIGNAL(pressed()),this,SLOT(save()));
+		saveclearLayout->addWidget(button, Qt::AlignLeft);
+		
+		button = new QPushButton;
+		button->setText("Clear");
+		button->setMaximumWidth(100);
+		connect(button,SIGNAL(pressed()),this,SLOT(clear()));
+		saveclearLayout->addWidget(button, Qt::AlignLeft);
+		
+		layout3->addLayout(saveclearLayout);
 		group3->setLayout(layout3);
 		
 		twoCols->addWidget(firstCol);
@@ -100,8 +116,6 @@ namespace NetworkEvolutionLib
 		twoCols->setStyleSheet("background-color: transparent");
 		
 		QToolBar * toolbar = new QToolBar(this);
-		
-		QPushButton * button;
 		
 		button = new QPushButton(toolbar);
 		button->setText("RUN");
@@ -884,8 +898,8 @@ namespace NetworkEvolutionLib
 	
 	QWidget * MainWindow::setupEditor()
 	{
-		QComboBox * comboBox = new QComboBox;
-		comboBox->addItems( QStringList() << "oscillation" << "noise" );
+		fitnessComboBox = comboBox();
+		connect(fitnessComboBox,SIGNAL(activated(const QString&)),this,SLOT(fitnessSelected(const QString&)));
 		
 		codeEditor = new Tinkercell::CodeEditor;
 		codeEditor->setStyleSheet("background-color: #F9F7E4");
@@ -893,7 +907,7 @@ namespace NetworkEvolutionLib
 		CSyntaxHighlighter * syntaxHighlighter = new CSyntaxHighlighter(codeEditor->document());
 		
 		QVBoxLayout * layout = new QVBoxLayout;
-		layout->addWidget(comboBox);
+		layout->addWidget(fitnessComboBox);
 		layout->addWidget(codeEditor);
 		
 		QWidget * widget = new QWidget;
@@ -910,7 +924,8 @@ namespace NetworkEvolutionLib
 	QString MainWindow::init()
 	{	
 		QString s =	
-				tr("void init()\n")
+				tr("#include \"reactionNetwork.h\"\n\n")
+				+ tr("void init()\n")
 				+ tr("{\n")
 				+ tr("    setNetworkProb(0,") + QString::number(mass_action_prob) + tr(");\n")
 				+ tr("    setNetworkProb(1,") + QString::number(enzyme_prob) + tr(");\n")
@@ -1027,9 +1042,13 @@ namespace NetworkEvolutionLib
 			+ tr("    int popSz = ") + QString::number(popSz) + tr(";\n")
 			+ tr("    GAPopulation P;\n")
 			+ tr("    int i,j;\n\n")
+			+ tr("    setFitnessFunction(&fitness);\n")
 			+ tr("    init();\n")
 			+ tr("    for (i=0; i < runs; ++i)\n")
+			+ tr("    {\n")
 			+ tr("       P = evolveNetworks(popSz*5,popSz,generations,&callback);\n")
+			+ tr("       GAfree(P);\n")
+			+ tr("    }\n")
 			+ tr("    return 0;\n}\n");
 		
 		return s;
@@ -1098,9 +1117,9 @@ namespace NetworkEvolutionLib
 		lineageTracking = true;
 
 #ifdef Q_WS_WIN
-		compileCommand = tr("win32\\tcc -Iwin32\\include -Lwin32\\lib netga.o ") + codeFile;
+		compileCommand = tr("win32\\tcc -Iwin32\\include -Isource -Lwin32\\lib netga.o ") + codeFile;
 #else
-		compileCommand = tr("gcc -L./ -lm -lnetga ") + codeFile;
+		compileCommand = tr("gcc -Isource -L./ -lm -lnetga ") + codeFile;
 #endif
 
 		/***********************/
@@ -1176,6 +1195,66 @@ namespace NetworkEvolutionLib
 		//compileCommand = settings.value("compileCommand",compileCommand).toString();
 		
 		settings.endGroup();
+	}
+	
+	
+	QComboBox* MainWindow::comboBox()
+	{
+		QComboBox * comboBox = new QComboBox;
+		
+		QString appDir = QCoreApplication::applicationDirPath();
+		
+		QDir dir(appDir + tr("/FitnessFunctions/"));
+		dir.setNameFilters (QStringList() << "*.c");
+		dir.setSorting(QDir::Name);
+
+		QFileInfoList list = dir.entryInfoList();
+		 
+		for (int i = 0; i < list.size(); ++i) 
+		{
+			QFileInfo fileInfo = list.at(i);
+			comboBox->addItem(fileInfo.baseName());
+		}
+		
+		return comboBox;
+	}
+	
+	void MainWindow::fitnessSelected(const QString& s)
+	{
+		QString appDir = QCoreApplication::applicationDirPath();
+		QFile file(appDir + tr("/FitnessFunctions/") + s + tr(".c"));
+	
+		if (file.open(QFile::ReadOnly | QFile::Text))
+		{
+			codeEditor->setPlainText(QString(file.readAll()));
+			file.close();
+		}
+	}
+	
+	void MainWindow::clear()
+	{
+		QString s = tr("double fitness(GAindividual x)\n{\n    return mtrand();\n }\n");
+		codeEditor->setPlainText(s);
+	}
+	
+	void MainWindow::save()
+	{
+		QString appDir = QCoreApplication::applicationDirPath();
+		
+		QString fileName =
+					QFileDialog::getSaveFileName(this, tr("Save Current Model"),
+						appDir + tr("/FitnessFunctions/my_func.c"),
+						tr("C Files (*.c)"));
+		if (fileName.isEmpty())
+			return;
+		
+		QFile file(fileName);
+		if (file.open(QFile::WriteOnly | QFile::Text))
+		{
+			fitnessComboBox->addItem(file.fileName());
+			file.write( codeEditor->toPlainText().toAscii() );
+			file.close();
+		}
 	}
 	
 }

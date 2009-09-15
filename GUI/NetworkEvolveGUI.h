@@ -27,6 +27,9 @@
 #include <QFile>
 #include <QProcess>
 #include <QTextStream>
+#include <QFileInfo>
+#include <QDir>
+#include <QFileDialog>
 #include "CodeEditor.h"
 #include "SyntaxHighlighter.h"
 
@@ -43,6 +46,7 @@ namespace NetworkEvolutionLib
 		
 	private:
 	
+		QComboBox * fitnessComboBox;
 		Tinkercell::CodeEditor * codeEditor;
 		QWidget * setupNetworkOptions();
 		void setupMassActionNetwork(QTreeWidget*);
@@ -55,6 +59,7 @@ namespace NetworkEvolutionLib
 		QString init();
 		QString mainFunction();
 		QString callbackFunction();
+		QComboBox* comboBox();
 		
 		/*params to fill in*/
 		
@@ -129,8 +134,11 @@ namespace NetworkEvolutionLib
 		*/
 	private slots:
 	
+		void clear();
+		void save();
 		void run();
 		void reset();
+		void fitnessSelected(const QString&);
 		
 		void useMassAction(bool use) { mass_action_prob = 1.0 * (int)use; }
 		void useEnzyme(bool use) { enzyme_prob = 1.0 * (int)use; }
