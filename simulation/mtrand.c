@@ -113,12 +113,12 @@ int MTrandHasBeenInitialized()
 
 void initMTrand(void)
 {
-	init[0] = 0x12345ULL * time(0);
-	init[1] = 0x23456ULL * time(0);
-	init[2] = 0x34567ULL * time(0);
-	init[3] =  0x45678ULL * time(0);
+	INIT_SEEDS[0] = 0x12345ULL * time(0);
+	INIT_SEEDS[1] = 0x23456ULL * time(0);
+	INIT_SEEDS[2] = 0x34567ULL * time(0);
+	INIT_SEEDS[3] =  0x45678ULL * time(0);
 	unsigned long long length=4;
-	init_by_array64(init, length);
+	init_by_array64(INIT_SEEDS, length);
 	HAS_BEEN_INITIALIZED = 1;
 }
 
