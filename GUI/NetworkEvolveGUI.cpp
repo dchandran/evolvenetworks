@@ -907,7 +907,7 @@ namespace NetworkEvolutionLib
 	QString MainWindow::callbackFunction()
 	{
 		QString s = tr("int callback(int iter, GAPopulation P, int popSz)\n")
-			+ tr("{\n ")
+			+ tr("{\n")
 			+ tr("    return 0;\n}\n");
 		
 		return s;
@@ -916,7 +916,7 @@ namespace NetworkEvolutionLib
 	QString MainWindow::mainFunction()
 	{
 		QString s = tr("int main()\n")
-			+ tr("{\n ")
+			+ tr("{\n")
 			+ tr("    int runs = ") + QString::number(runs) + tr(";\n")
 			+ tr("    int genations = ") + QString::number(generations) + tr(";\n")
 			+ tr("    int popSz = ") + QString::number(popSz) + tr(";\n")
