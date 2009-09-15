@@ -26,6 +26,9 @@
 #include <QToolBar>
 #include <QFile>
 #include <QProcess>
+#include <QTextStream>
+#include "CodeEditor.h"
+#include "SyntaxHighlighter.h"
 
 namespace NetworkEvolutionLib
 {
@@ -40,6 +43,7 @@ namespace NetworkEvolutionLib
 		
 	private:
 	
+		Tinkercell::CodeEditor * codeEditor;
 		QWidget * setupNetworkOptions();
 		void setupMassActionNetwork(QTreeWidget*);
 		void setupEnzymeNetwork(QTreeWidget*);
@@ -49,6 +53,8 @@ namespace NetworkEvolutionLib
 		QWidget * setupGAOptions();
 		QWidget * setupEditor();
 		QString init();
+		QString mainFunction();
+		QString callbackFunction();
 		
 		/*params to fill in*/
 		
@@ -71,7 +77,8 @@ namespace NetworkEvolutionLib
 				enzyme_mutate_add;
 	
 		double grn_init_inflow, grn_init_cost_per_protein;
-		int grn_init_max_complex_size, grn_init_Ka, grn_init_Vmax, grn_init_degradation;
+		int grn_init_max_complex_size;
+		double grn_init_Ka, grn_init_Vmax, grn_init_degradation;
 		double grn_mutate_Ka, grn_mutate_Vmax, grn_mutate_complex, grn_mutate_add_gene, grn_mutate_remove_gene;
 
 		int species, reactions;
@@ -81,6 +88,10 @@ namespace NetworkEvolutionLib
 		bool lineageTracking;
 		
 		double mass_action_prob, enzyme_prob, protein_net_prob, grn_prob;
+		
+		QString codeFile, logFile;
+		int runs, generations, popSz;
+		QString seed;
 		
 		/*
 		void setDistributionOfMassActionNetwork(double uni_uni, double uni_bi, double bi_uni, double bi_bi, double no_reactant, double no_product);
@@ -160,7 +171,42 @@ namespace NetworkEvolutionLib
 		void set_enzyme_mutate_remove(double value) { enzyme_mutate_remove = value; }
 		void set_enzyme_mutate_add(double value) { enzyme_mutate_add = value; }
 		
+		void set_prot_init_ka(double value) { prot_init_ka = value; }
+		void set_prot_init_vmax(double value) { prot_init_vmax = value; }
+		void set_prot_init_total(double value) { prot_init_total = value; }
+		void set_prot_mutate_rewire(double value) { prot_mutate_rewire = value; }
+		void set_prot_mutate_parameter(double value) { prot_mutate_parameter = value; }
+		void set_prot_mutate_total(double value) { prot_mutate_total = value; }
+		void set_prot_mutate_addremove(double value) { prot_mutate_addremove = value; }
 		
+		void set_grn_init_inflow(double value) { grn_init_inflow = value; }
+		void set_grn_init_cost_per_protein(double value) { grn_init_cost_per_protein = value; }
+		void set_grn_init_max_complex_size(int value) { grn_init_max_complex_size = value; }
+		void set_grn_init_Ka(double value) { grn_init_Ka = value; }
+		void set_grn_init_Vmax(double value) { grn_init_Vmax = value; }
+		void set_grn_init_degradation(double value) { grn_init_degradation = value; }
+		void set_grn_mutate_Ka(double value) { grn_mutate_Ka = value; }
+		void set_grn_mutate_Vmax(double value) { grn_mutate_Vmax = value; }
+		void set_grn_mutate_complex(double value) { grn_mutate_complex = value; }
+		void set_grn_mutate_add_gene(double value) { grn_mutate_add_gene = value; }
+		void set_grn_mutate_remove_gene(double value) { grn_mutate_remove_gene = value; }
+		
+		void setCodeFile(const QString& file) { codeFile = file; }
+		void setLogFile(const QString& file) { logFile = file; }
+		void setSeed(const QString& s) { seed = s; }
+		void setRuns(int i) { runs = i; }
+		void setGenerations(int i) { generations = i; }
+		void setPopSz(int i) { popSz = i; }
+		
+		void set_species(int value) { species = value; }
+		void set_reactions(int value) { reactions = value; }
+		void set_crossover_rate(double value) { crossover_rate = value; }
+		void set_init_iv(double value) { init_iv = value; }
+		void set_mutate_iv(double value) { mutate_iv = value; }
+		void set_lineageTracking(bool value) { lineageTracking = value; }
+
+		//unsigned long long * getMTseeds(void);
+		//void setMTseeds(unsigned long long *);
 	};
 }
 
