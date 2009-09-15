@@ -91,7 +91,8 @@ namespace NetworkEvolutionLib
 		
 		QString codeFile, logFile;
 		int runs, generations, popSz;
-		QString seed;
+		QString seeds;
+		QString compileCommand;
 		
 		/*
 		void setDistributionOfMassActionNetwork(double uni_uni, double uni_bi, double bi_uni, double bi_bi, double no_reactant, double no_product);
@@ -130,7 +131,6 @@ namespace NetworkEvolutionLib
 	
 		void run();
 		void reset();
-		void quit();
 		
 		void useMassAction(bool use) { mass_action_prob = 1.0 * (int)use; }
 		void useEnzyme(bool use) { enzyme_prob = 1.0 * (int)use; }
@@ -193,7 +193,7 @@ namespace NetworkEvolutionLib
 		
 		void setCodeFile(const QString& file) { codeFile = file; }
 		void setLogFile(const QString& file) { logFile = file; }
-		void setSeed(const QString& s) { seed = s; }
+		void setSeed(const QString& s) { seeds = s; }
 		void setRuns(int i) { runs = i; }
 		void setGenerations(int i) { generations = i; }
 		void setPopSz(int i) { popSz = i; }
@@ -204,9 +204,8 @@ namespace NetworkEvolutionLib
 		void set_init_iv(double value) { init_iv = value; }
 		void set_mutate_iv(double value) { mutate_iv = value; }
 		void set_lineageTracking(bool value) { lineageTracking = value; }
-
-		//unsigned long long * getMTseeds(void);
-		//void setMTseeds(unsigned long long *);
+		
+		void setCompileCommand(const QString& s) { compileCommand = s; }
 	};
 }
 

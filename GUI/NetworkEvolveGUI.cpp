@@ -30,6 +30,8 @@ namespace NetworkEvolutionLib
 {	
 	MainWindow::MainWindow()
 	{
+		reset();
+		
 		QSplitter * twoCols = new QSplitter;
 		twoCols->setOrientation ( Qt::Horizontal );
 		
@@ -42,14 +44,44 @@ namespace NetworkEvolutionLib
 		layout1->addWidget(setupNetworkOptions());
 		group1->setLayout(layout1);
 		
+		firstCol->addWidget(group1);
+		
 		QVBoxLayout * layout2 = new QVBoxLayout;
 		QGroupBox * group2 = new QGroupBox;
 		group2->setTitle(" Configure Runs ");
 		layout2->addWidget(setupGAOptions());
 		group2->setLayout(layout2);
 		
-		firstCol->addWidget(group1);
-		firstCol->addWidget(group2);
+		QVBoxLayout * layoutC = new QVBoxLayout;
+		QGroupBox * groupC = new QGroupBox;
+		groupC->setTitle(" Compile command ");
+		
+		QString appDir = QCoreApplication::applicationDirPath();
+		QProcess proc;
+		proc.setWorkingDirectory(appDir);
+		
+		
+#ifdef Q_WS_WIN
+		proc.start(tr("win32\\tcc -r -Iwin32\\include -Isource\\include -Isource -Lwin32\\lib source\\*.c -o netga.o"));
+		proc.waitForFinished();
+#else
+		proc.start(tr("gcc -Isource/include -Isource source/*.c"));
+		proc.waitForFinished();
+		proc.start(tr("ar -r libnetga.a *.o"));
+		proc.waitForFinished();
+#endif
+
+		QLineEdit * compile = new QLineEdit(tr("win32\\tcc -r -Iwin32\\include -Isource\\include -Isource -Lwin32\\lib source\\*.c -o netga.o"));
+		layoutC->addWidget(compile);
+		
+		groupC->setLayout(layoutC);
+		
+		QSplitter * splitter2 = new QSplitter;
+		splitter2->setOrientation ( Qt::Vertical );
+		splitter2->addWidget(group2);
+		splitter2->addWidget(groupC);
+		
+		firstCol->addWidget(splitter2);
 		
 		QVBoxLayout * layout3 = new QVBoxLayout;
 		QGroupBox * group3 = new QGroupBox;
@@ -94,6 +126,77 @@ namespace NetworkEvolutionLib
 	
 	MainWindow::~MainWindow()
 	{
+		QSettings settings("UWashington","NetworkEvolutionLib");
+		settings.beginGroup("parameters");
+		
+		settings.setValue("uni_uni",uni_uni);
+		settings.setValue("uni_bi",uni_bi);
+		settings.setValue("bi_uni",bi_uni);
+		settings.setValue("bi_bi",bi_bi);
+		settings.setValue("no_reactant",no_reactant);
+		settings.setValue("no_product",no_product);
+		settings.setValue("ma_init_max_constant",ma_init_max_constant);
+		settings.setValue("ma_mutate_constants",ma_mutate_constants);
+		settings.setValue("ma_mutate_remove_reaction",ma_mutate_remove_reaction);
+		settings.setValue("ma_mutate_add_reaction",ma_mutate_add_reaction);
+		
+		settings.setValue("prot_init_ka",prot_init_ka);
+		settings.setValue("prot_init_vmax",prot_init_vmax);
+		settings.setValue("prot_init_total",prot_init_total);
+		settings.setValue("prot_mutate_rewire",prot_mutate_rewire);
+		settings.setValue("prot_mutate_parameter",prot_mutate_parameter);
+		settings.setValue("prot_mutate_total",prot_mutate_total);
+		settings.setValue("prot_mutate_addremove",prot_mutate_addremove);
+		
+		settings.setValue("enzyme_init_max_kcat",enzyme_init_max_kcat);
+		settings.setValue("enzyme_init_max_log_keq",enzyme_init_max_log_keq);
+		settings.setValue("enzyme_init_max_alpha",enzyme_init_max_alpha);
+		settings.setValue("enzyme_init_max_h",enzyme_init_max_h);
+		settings.setValue("enzyme_init_max_s_half",enzyme_init_max_s_half);
+		settings.setValue("enzyme_init_max_p_half",enzyme_init_max_p_half);
+		
+		settings.setValue("enzyme_mutate_enzyme",enzyme_mutate_enzyme);
+		settings.setValue("enzyme_mutate_k_cat",enzyme_mutate_k_cat);
+		settings.setValue("enzyme_mutate_k_eq",enzyme_mutate_k_eq);
+		settings.setValue("enzyme_mutate_h",enzyme_mutate_h);
+		settings.setValue("enzyme_mutate_s_half",enzyme_mutate_s_half);
+		settings.setValue("enzyme_mutate_p_half",enzyme_mutate_p_half);
+		settings.setValue("enzyme_mutate_remove",enzyme_mutate_remove);
+		settings.setValue("enzyme_mutate_add",enzyme_mutate_add);
+		
+		settings.setValue("grn_init_inflow",grn_init_inflow);
+		settings.setValue("grn_init_cost_per_protein",grn_init_cost_per_protein);
+		settings.setValue("grn_init_max_complex_size",grn_init_max_complex_size);
+		settings.setValue("grn_init_Ka",grn_init_Ka);
+		settings.setValue("grn_init_Vmax",grn_init_Vmax);
+		settings.setValue("grn_init_degradation",grn_init_degradation);
+		
+		settings.setValue("grn_mutate_Ka",grn_mutate_Ka);
+		settings.setValue("grn_mutate_Vmax",grn_mutate_Vmax);
+		settings.setValue("grn_mutate_complex",grn_mutate_complex);
+		settings.setValue("grn_mutate_add_gene",grn_mutate_add_gene);
+		settings.setValue("grn_mutate_remove_gene",grn_mutate_remove_gene);
+		
+		settings.setValue("species",species);
+		settings.setValue("reactions",reactions);
+		settings.setValue("crossover_rate",crossover_rate);
+		settings.setValue("init_iv",init_iv);
+		settings.setValue("mutate_iv",mutate_iv);
+		settings.setValue("lineageTracking",lineageTracking);
+		
+		settings.setValue("mass_action_prob",mass_action_prob);
+		settings.setValue("enzyme_prob",enzyme_prob);
+		settings.setValue("protein_net_prob",protein_net_prob);
+		settings.setValue("grn_prob",grn_prob);
+		
+		settings.setValue("codeFile",codeFile);
+		settings.setValue("logFile",logFile);
+		settings.setValue("runs",runs);
+		settings.setValue("generations",generations);
+		settings.setValue("popSz",popSz);
+		settings.setValue("compileCommand",compileCommand);
+		
+		settings.endGroup();
 	}
 	
 	void MainWindow::setupMassActionNetwork(QTreeWidget* treeWidget)
@@ -105,6 +208,7 @@ namespace NetworkEvolutionLib
 		
 		QCheckBox * checkBox;
 		treeWidget->setItemWidget(massaction,1,checkBox = new QCheckBox);
+		checkBox->setChecked(mass_action_prob > 0.0);
 		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(useMassAction(bool)));		
 		
 		QDoubleSpinBox * doubleSpinBox;
@@ -116,9 +220,9 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
-		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(mass_action_prob);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setMassActionProb(double)));
-		doubleSpinBox->setValue(0.0);
 		
 		massaction->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Percent Uni-Uni");
@@ -126,9 +230,9 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
-		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(uni_uni);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setUniUni(double)));
-		doubleSpinBox->setValue(0.2);
 		
 		massaction->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Percent Uni-Bi");
@@ -137,8 +241,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setUniBi(double)));
-		doubleSpinBox->setValue(0.2);
+		doubleSpinBox->setValue(uni_bi);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setUniBi(double)));		
 		
 		massaction->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Percent Bi-Uni");
@@ -147,8 +251,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setBiUni(double)));
-		doubleSpinBox->setValue(0.2);
+		doubleSpinBox->setValue(bi_uni);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setBiUni(double)));		
 		
 		massaction->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Percent Bi-Bi");
@@ -157,8 +261,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(bi_bi);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setBiBi(double)));
-		doubleSpinBox->setValue(0.2);
 		
 		massaction->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Percent No reactants");
@@ -167,8 +271,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(no_reactant);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setNoReactant(double)));
-		doubleSpinBox->setValue(0.2);
 		
 		massaction->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Percent No products");
@@ -176,9 +280,9 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
-		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(no_product);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setNoProduct(double)));
-		doubleSpinBox->setValue(0.2);
 		
 		massaction->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Avg. rate constant");
@@ -186,9 +290,9 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,1000.0);
 		doubleSpinBox->setDecimals(3);
-		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(ma_init_max_constant);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_ma_init_max_constant(double)));
-		doubleSpinBox->setValue(1.0);
 		
 		massaction->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate rate constant");
@@ -197,8 +301,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(ma_mutate_constants);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_ma_mutate_constants(double)));
-		doubleSpinBox->setValue(0.5);
 		
 		massaction->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate remove reaction");
@@ -207,8 +311,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(ma_mutate_remove_reaction);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_ma_mutate_remove_reaction(double)));
-		doubleSpinBox->setValue(0.25);
 		
 		massaction->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate add reaction");
@@ -217,8 +321,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(ma_mutate_add_reaction);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_ma_mutate_add_reaction(double)));
-		doubleSpinBox->setValue(0.25);
 	}
 	
 	void MainWindow::setupEnzymeNetwork(QTreeWidget* treeWidget)
@@ -233,6 +337,7 @@ namespace NetworkEvolutionLib
 		QTreeWidgetItem * child;
 		
 		treeWidget->setItemWidget(enzyme,1,checkBox = new QCheckBox);
+		checkBox->setChecked(enzyme_prob > 0.0);
 		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(useEnzyme(bool)));
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
@@ -241,9 +346,9 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
-		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(enzyme_prob);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setEnzymeProb(double)));
-		doubleSpinBox->setValue(0.0);
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Kcat range");
@@ -251,9 +356,9 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,10000.0);
 		doubleSpinBox->setDecimals(3);
-		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(enzyme_init_max_kcat);	
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_init_max_kcat(double)));
-		doubleSpinBox->setValue(4.0);
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Keq range (log)");
@@ -261,9 +366,9 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,32.0);
 		doubleSpinBox->setDecimals(3);
-		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(enzyme_init_max_log_keq);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_init_max_log_keq(double)));
-		doubleSpinBox->setValue(4.0);
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Alpha range (log)");
@@ -272,118 +377,108 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,32.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_init_max_alpha(double)));
-		doubleSpinBox->setValue(2.0);
+		doubleSpinBox->setValue(enzyme_init_max_alpha);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_init_max_alpha(double)));		
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Hill range");
 		child->setToolTip(0,"Initial range for the Hill coefficient");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
-		doubleSpinBox->setValue(enzyme_init_max_h);
 		doubleSpinBox->setRange(0.0,100.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_init_max_h(double)));
-		doubleSpinBox->setValue(4.0);
+		doubleSpinBox->setValue(enzyme_init_max_h);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_init_max_h(double)));		
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"S-half range");
 		child->setToolTip(0,"Initial range for the substrate half saturation value");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
-		doubleSpinBox->setValue(enzyme_init_max_s_half);
 		doubleSpinBox->setRange(0.0,1000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_init_max_s_half(double)));
-		doubleSpinBox->setValue(20.0);
+		doubleSpinBox->setValue(enzyme_init_max_s_half);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_(double)));
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"S-half range");
 		child->setToolTip(0,"Initial range for the substrate half saturation value");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
-		doubleSpinBox->setValue(enzyme_init_max_p_half);
 		doubleSpinBox->setRange(0.0,100.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(enzyme_init_max_p_half);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_init_max_p_half(double)));
-		doubleSpinBox->setValue(20.0);
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate enzyme");
 		child->setToolTip(0,"Probability of swapping an enzyme during a mutation event");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
-		doubleSpinBox->setValue(enzyme_init_max_p_half);
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
-		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(enzyme_mutate_enzyme);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_mutate_enzyme(double)));
-		doubleSpinBox->setValue(0.1);
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate Kcat");
 		child->setToolTip(0,"Probability of mutating a Kcat (catalytic constant) during a mutation event");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
-		doubleSpinBox->setValue(enzyme_init_max_p_half);
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_mutate_k_cat(double)));
-		doubleSpinBox->setValue(0.1);
+		doubleSpinBox->setValue(enzyme_mutate_k_cat);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_mutate_k_cat(double)));		
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate Keq");
 		child->setToolTip(0,"Probability of mutating the equilibrium constant during a mutation event");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
-		doubleSpinBox->setValue(enzyme_init_max_p_half);
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(enzyme_mutate_k_eq);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_mutate_k_eq(double)));
-		doubleSpinBox->setValue(0.1);
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate Alpha");
 		child->setToolTip(0,"Probability of mutating the Alpha value during a mutation event");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
-		doubleSpinBox->setValue(enzyme_init_max_p_half);
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(enzyme_mutate_alpha);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_mutate_alpha(double)));
-		doubleSpinBox->setValue(0.1);
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate Hill");
 		child->setToolTip(0,"Probability of mutating the Hill coefficient during a mutation event");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
-		doubleSpinBox->setValue(enzyme_init_max_p_half);
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(enzyme_mutate_h);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_mutate_h(double)));
-		doubleSpinBox->setValue(0.1);
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate S-half");
 		child->setToolTip(0,"Probability of mutating the substrate half-saturation point during a mutation event");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
-		doubleSpinBox->setValue(enzyme_init_max_p_half);
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(enzyme_mutate_s_half);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_mutate_s_half(double)));
-		doubleSpinBox->setValue(0.1);
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate P-half");
 		child->setToolTip(0,"Probability of mutating the product half-saturation point during a mutation event");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
-		doubleSpinBox->setValue(enzyme_init_max_p_half);
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(enzyme_mutate_p_half);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_mutate_p_half(double)));
-		doubleSpinBox->setValue(0.1);
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate remove reaction");
@@ -392,8 +487,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(enzyme_mutate_remove);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_mutate_remove(double)));
-		doubleSpinBox->setValue(0.1);
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate add reaction");
@@ -402,8 +497,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(enzyme_mutate_add);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_mutate_add(double)));
-		doubleSpinBox->setValue(0.1);
 	}
 	
 	void MainWindow::setupProteinNetwork(QTreeWidget* treeWidget)
@@ -418,6 +513,7 @@ namespace NetworkEvolutionLib
 		QTreeWidgetItem * child;
 		
 		treeWidget->setItemWidget(protein,1,checkBox = new QCheckBox);
+		checkBox->setChecked(protein_net_prob > 0.0);
 		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(useProtein(bool)));
 		
 		protein->addChild(child = new QTreeWidgetItem);
@@ -427,8 +523,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(protein_net_prob);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setProteinProb(double)));
-		doubleSpinBox->setValue(0.0);
 		
 		protein->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Avg. Km");
@@ -437,8 +533,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,10000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(prot_init_ka);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_init_ka(double)));
-		doubleSpinBox->setValue(10.0);
 		
 		protein->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Avg. Vmax");
@@ -447,8 +543,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,10000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(prot_init_vmax);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_init_vmax(double)));
-		doubleSpinBox->setValue(10.0);
 		
 		protein->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Avg. total");
@@ -457,8 +553,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,100000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_init_total(double)));
-		doubleSpinBox->setValue(10.0);
+		doubleSpinBox->setValue(prot_init_total);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_init_total(double)));		
 		
 		protein->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate regulation");
@@ -467,8 +563,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(prot_mutate_rewire);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_mutate_rewire(double)));
-		doubleSpinBox->setValue(0.2);
 		
 		protein->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate parameter");
@@ -477,8 +573,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(prot_mutate_parameter);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_mutate_parameter(double)));
-		doubleSpinBox->setValue(0.4);
 		
 		protein->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate total");
@@ -487,8 +583,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(prot_mutate_total);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_mutate_total(double)));
-		doubleSpinBox->setValue(0.2);
 		
 		protein->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Add/remove proteins");
@@ -497,8 +593,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(prot_mutate_addremove);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_mutate_addremove(double)));
-		doubleSpinBox->setValue(0.2);
 	}
 	
 	void MainWindow::setupGeneticNetwork(QTreeWidget* treeWidget)
@@ -514,6 +610,7 @@ namespace NetworkEvolutionLib
 		QTreeWidgetItem * child;
 		
 		treeWidget->setItemWidget(grn,1,checkBox = new QCheckBox);
+		checkBox->setChecked(grn_prob > 0.0);
 		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(useGRN(bool)));
 		
 		grn->addChild(child = new QTreeWidgetItem);
@@ -522,9 +619,9 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
-		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setSingleStep(0.01);
+		doubleSpinBox->setValue(grn_prob);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setGRNProb(double)));
-		doubleSpinBox->setValue(1.0);
 		
 		grn->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Resouce inflow");
@@ -532,10 +629,9 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,100000.0);
 		doubleSpinBox->setDecimals(3);
-		doubleSpinBox->setSingleStep(0.01);		
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_init_inflow(double)));
-		set_grn_init_inflow(0.0);
-		doubleSpinBox->setValue(0.0);
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(grn_init_inflow);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_init_inflow(double)));		
 		
 		grn->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Resouce consumption");
@@ -544,9 +640,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,100000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(grn_init_cost_per_protein);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_init_cost_per_protein(double)));
-		set_grn_init_cost_per_protein(0.0);
-		doubleSpinBox->setValue(0.0);
 		
 		grn->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Max. complex size");
@@ -554,8 +649,8 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(child,1,intSpinBox = new QSpinBox);
 		intSpinBox->setRange(0,10);
 		intSpinBox->setSingleStep(1);		
+		intSpinBox->setValue(grn_init_max_complex_size);
 		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(set_grn_init_max_complex_size(int)));
-		intSpinBox->setValue(4);
 		
 		grn->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Avg. Ka");
@@ -564,8 +659,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,10000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(grn_init_Ka);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_init_Ka(double)));
-		doubleSpinBox->setValue(10.0);
 		
 		grn->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Avg. Vmax");
@@ -573,9 +668,9 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,10000.0);
 		doubleSpinBox->setDecimals(3);
-		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(grn_init_Vmax);	
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_init_Vmax(double)));
-		doubleSpinBox->setValue(10.0);
 		
 		grn->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Avg. degradation");
@@ -584,8 +679,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,10000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_init_degradation(double)));
-		doubleSpinBox->setValue(2.0);
+		doubleSpinBox->setValue(grn_init_degradation);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_init_degradation(double)));		
 		
 		grn->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate Ka");
@@ -594,8 +689,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(grn_mutate_Ka);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_mutate_Ka(double)));
-		doubleSpinBox->setValue(0.2);
 		
 		grn->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate Vmax");
@@ -604,8 +699,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(grn_mutate_Vmax);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_mutate_Vmax(double)));
-		doubleSpinBox->setValue(0.2);
 		
 		grn->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate Complex");
@@ -614,8 +709,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(grn_mutate_complex);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_mutate_complex(double)));
-		doubleSpinBox->setValue(0.2);
 		
 		grn->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Add genes");
@@ -624,8 +719,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(grn_mutate_add_gene);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_mutate_add_gene(double)));
-		doubleSpinBox->setValue(0.2);
 		
 		grn->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Remove genes");
@@ -634,8 +729,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(grn_mutate_remove_gene);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_mutate_remove_gene(double)));
-		doubleSpinBox->setValue(0.2);
 	}
 	
 	
@@ -663,9 +758,9 @@ namespace NetworkEvolutionLib
 		treeWidget->addTopLevelItem(option);
 		treeWidget->setItemWidget(option,1,intSpinBox = new QSpinBox);
 		intSpinBox->setRange(0,100000);
-		intSpinBox->setSingleStep(1);		
+		intSpinBox->setSingleStep(1);	
+		intSpinBox->setValue(species);	
 		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(set_species(int)));
-		intSpinBox->setValue(8);
 		
 		option = new QTreeWidgetItem;
 		option->setText(0,"Avg. Num. Reactions");
@@ -674,8 +769,8 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(option,1,intSpinBox = new QSpinBox);
 		intSpinBox->setRange(0,100000);
 		intSpinBox->setSingleStep(1);		
+		intSpinBox->setValue(reactions);
 		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(set_reactions(int)));
-		intSpinBox->setValue(8);
 		
 		option = new QTreeWidgetItem;
 		option->setText(0,"Crossover Rate");
@@ -685,8 +780,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(crossover_rate);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_crossover_rate(double)));
-		doubleSpinBox->setValue(1.0);
 		
 		option = new QTreeWidgetItem;
 		option->setText(0,"Avg. initial values");
@@ -696,8 +791,8 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,100000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(init_iv);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_init_iv(double)));
-		doubleSpinBox->setValue(1.0);
 		
 		option = new QTreeWidgetItem;
 		option->setText(0,"Mutate initial values");
@@ -707,17 +802,17 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setRange(0.0,1.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(mutate_iv);		
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_mutate_iv(double)));
-		doubleSpinBox->setValue(0.05);
-		
 		
 		option = new QTreeWidgetItem;
 		option->setText(0,"Lineage tracking");
 		option->setToolTip(0,"Track the original parent(s) for each network, and record this table in the log file");
 		treeWidget->addTopLevelItem(option);
 		treeWidget->setItemWidget(option,1,checkBox = new QCheckBox);
+		checkBox->setChecked(lineageTracking);
 		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(set_lineageTracking(bool)));
-		checkBox->setChecked(true);
+		
 		
 		return treeWidget;
 	}
@@ -737,14 +832,14 @@ namespace NetworkEvolutionLib
 		code->setText(0,"Code");
 		code->setToolTip(0,"The code that is automatically generated");
 		treeWidget->addTopLevelItem(code);
-		treeWidget->setItemWidget(code,1,lineEdit = new QLineEdit(codeFile = tr("run_net_ga.c")));
+		treeWidget->setItemWidget(code,1,lineEdit = new QLineEdit(codeFile));
 		connect(lineEdit,SIGNAL(textEdited (const QString &)),this,SLOT(setCodeFile(const QString&)));
 		
 		QTreeWidgetItem * output = new QTreeWidgetItem;
 		output->setText(0,"Log file");
 		output->setToolTip(0,"This file that will contain the results from all the runs, which includes the network, fitness values, fitness distrubtion, and lineage tracking");
 		treeWidget->addTopLevelItem(output);
-		treeWidget->setItemWidget(output,1,lineEdit = new QLineEdit(logFile = tr("evolution.log")));
+		treeWidget->setItemWidget(output,1,lineEdit = new QLineEdit(logFile));
 		connect(lineEdit,SIGNAL(textEdited (const QString &)),this,SLOT(setLogFile(const QString&)));
 		
 		QTreeWidgetItem * runs = new QTreeWidgetItem;
@@ -754,8 +849,8 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(runs,1,intSpinBox = new QSpinBox);
 		intSpinBox->setRange(1,1000000);
 		intSpinBox->setSingleStep(1);
+		intSpinBox->setValue(this->runs);
 		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(setRuns(int)));
-		intSpinBox->setValue(10);
 		
 		QTreeWidgetItem * popSz = new QTreeWidgetItem;
 		popSz->setText(0,"Population Size");
@@ -764,8 +859,8 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(popSz,1,intSpinBox = new QSpinBox);
 		intSpinBox->setRange(1,1000000);
 		intSpinBox->setSingleStep(1);
+		intSpinBox->setValue(this->popSz);
 		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(setPopSz(int)));
-		intSpinBox->setValue(200);
 		
 		QTreeWidgetItem * generation = new QTreeWidgetItem;
 		generation->setText(0,"Generations");
@@ -775,7 +870,7 @@ namespace NetworkEvolutionLib
 		intSpinBox->setRange(1,1000000);
 		intSpinBox->setSingleStep(1);
 		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(setGenerations(int)));
-		intSpinBox->setValue(50);
+		intSpinBox->setValue(generations);
 		
 		QTreeWidgetItem * seed = new QTreeWidgetItem;
 		seed->setText(0,"Seed");
@@ -816,8 +911,12 @@ namespace NetworkEvolutionLib
 	{	
 		QString s =	
 				tr("void init()\n")
-				+ tr("{\n ")
-				+ tr("   setDistributionOfMassActionNetwork(")
+				+ tr("{\n")
+				+ tr("    setNetworkProb(0,") + QString::number(mass_action_prob) + tr(");\n")
+				+ tr("    setNetworkProb(1,") + QString::number(enzyme_prob) + tr(");\n")
+				+ tr("    setNetworkProb(2,") + QString::number(protein_net_prob) + tr(");\n")
+				+ tr("    setNetworkProb(3,") + QString::number(grn_prob) + tr(");\n\n")
+				+ tr("    setDistributionOfMassActionNetwork(")
 				+ QString::number(uni_uni) + tr(",")
 				+ QString::number(uni_bi) + tr(",")
 				+ QString::number(bi_uni) + tr(",")
@@ -898,6 +997,12 @@ namespace NetworkEvolutionLib
 			s += tr("    lineageTrackingON();\n");
 		else
 			s += tr("    lineageTrackingOFF();\n");
+			
+		if (!seeds.isEmpty() && seeds.split(tr(",")).size() == 4)
+		{
+			s +=  tr("    unsigned long long a[] = {") + seeds + tr("};\n")
+				+ tr("    void setMTseeds(") + s + tr(");\n");
+		}
 		
 		s += tr("}\n");
 		
@@ -949,10 +1054,128 @@ namespace NetworkEvolutionLib
 	
 	void MainWindow::reset()
 	{
-	}
-	
-	void MainWindow::quit()
-	{
+		/***************************/
+		/*****initial values*******/
+		/**************************/
+		
+		mass_action_prob = 0.0;
+		enzyme_prob = 0.0;
+		protein_net_prob = 0.0;
+		grn_prob = 1.0;
+		
+		uni_uni = uni_bi = bi_uni = bi_bi = no_reactant = no_product = 0.2;
+		ma_init_max_constant = 1.0;
+		ma_mutate_constants = 0.5;
+		ma_mutate_remove_reaction = ma_mutate_add_reaction = 0.25;
+		
+		enzyme_init_max_kcat = enzyme_init_max_log_keq = enzyme_init_max_h = 4.0;
+		enzyme_init_max_alpha = 2.0;
+		enzyme_init_max_s_half = enzyme_init_max_p_half = 20.0;
+		enzyme_mutate_enzyme = enzyme_mutate_k_eq = enzyme_mutate_k_cat = enzyme_mutate_alpha = 0.1;
+		enzyme_mutate_h = enzyme_mutate_s_half = enzyme_mutate_p_half = 0.1;
+		enzyme_mutate_remove = enzyme_mutate_add = 0.1;		
+		
+		prot_init_ka = prot_init_vmax = prot_init_total = 10.0;
+		prot_mutate_rewire = prot_mutate_total = prot_mutate_addremove = 0.2;
+		prot_mutate_parameter = 0.4;
+		
+		grn_init_inflow = grn_init_cost_per_protein = 0.0;
+		grn_init_max_complex_size = 4;
+		grn_init_Ka = grn_init_Vmax = 10.0;
+		grn_init_degradation = 2.0;
+		grn_mutate_Ka = grn_mutate_Vmax = grn_mutate_complex = grn_mutate_add_gene = grn_mutate_remove_gene = 0.2;
+		
+		codeFile = tr("run_net_ga.c");
+		logFile = tr("evolution.log");
+		runs = 10;
+		popSz = 200;
+		generations = 50;
+		
+		species = 8;
+		reactions = 8;
+		crossover_rate = init_iv = 1.0;
+		mutate_iv = 0.05;
+		lineageTracking = true;
+
+#ifdef Q_WS_WIN
+		compileCommand = tr("win32\\tcc -Iwin32\\include -Lwin32\\lib netga.o ") + codeFile;
+#else
+		compileCommand = tr("gcc -L./ -lm -lnetga ") + codeFile;
+#endif
+
+		/***********************/
+		
+		QSettings settings("UWashington","NetworkEvolutionLib");
+		settings.beginGroup("parameters");
+		
+		uni_uni = settings.value("uni_uni",uni_uni).toDouble();
+		uni_bi = settings.value("uni_bi",uni_bi).toDouble();
+		bi_uni = settings.value("bi_uni",bi_uni).toDouble();
+		bi_uni = settings.value("bi_bi",bi_uni).toDouble();
+		no_reactant = settings.value("no_reactant",no_reactant).toDouble();
+		no_product = settings.value("no_product",no_product).toDouble();
+		ma_init_max_constant = settings.value("ma_init_max_constant",ma_init_max_constant).toDouble();
+		ma_mutate_constants = settings.value("ma_mutate_constants",ma_mutate_constants).toDouble();
+		ma_mutate_remove_reaction = settings.value("ma_mutate_remove_reaction",ma_mutate_remove_reaction).toDouble();
+		ma_mutate_add_reaction = settings.value("ma_mutate_add_reaction",ma_mutate_add_reaction).toDouble();
+		
+		prot_init_ka = settings.value("prot_init_ka",prot_init_ka).toDouble();
+		prot_init_vmax = settings.value("prot_init_vmax",prot_init_vmax).toDouble();
+		prot_init_total = settings.value("prot_init_total",prot_init_total).toDouble();
+		prot_mutate_rewire = settings.value("prot_mutate_rewire",prot_mutate_rewire).toDouble();
+		prot_mutate_parameter = settings.value("prot_mutate_parameter",prot_mutate_parameter).toDouble();
+		prot_mutate_total = settings.value("prot_mutate_total",prot_mutate_total).toDouble();
+		prot_mutate_addremove = settings.value("prot_mutate_addremove",prot_mutate_addremove).toDouble();
+		
+		enzyme_init_max_kcat = settings.value("enzyme_init_max_kcat",enzyme_init_max_kcat).toDouble();
+		enzyme_init_max_log_keq = settings.value("enzyme_init_max_log_keq",enzyme_init_max_log_keq).toDouble();
+		enzyme_init_max_alpha = settings.value("enzyme_init_max_alpha",enzyme_init_max_alpha).toDouble();
+		enzyme_init_max_h = settings.value("enzyme_init_max_h",enzyme_init_max_h).toDouble();
+		enzyme_init_max_s_half = settings.value("enzyme_init_max_s_half",enzyme_init_max_s_half).toDouble();
+		enzyme_init_max_p_half = settings.value("enzyme_init_max_p_half",enzyme_init_max_p_half).toDouble();
+		
+		enzyme_mutate_enzyme = settings.value("enzyme_mutate_enzyme",enzyme_mutate_enzyme).toDouble();
+		enzyme_mutate_k_cat = settings.value("enzyme_mutate_k_cat",enzyme_mutate_k_cat).toDouble();
+		enzyme_mutate_k_cat = settings.value("enzyme_mutate_k_eq",enzyme_mutate_k_eq).toDouble();
+		enzyme_mutate_h = settings.value("enzyme_mutate_h",enzyme_mutate_h).toDouble();
+		enzyme_mutate_s_half = settings.value("enzyme_mutate_s_half",enzyme_mutate_s_half).toDouble();
+		enzyme_mutate_p_half = settings.value("enzyme_mutate_p_half",enzyme_mutate_p_half).toDouble();
+		enzyme_mutate_remove = settings.value("enzyme_mutate_remove",enzyme_mutate_remove).toDouble();
+		enzyme_mutate_add = settings.value("enzyme_mutate_add",enzyme_mutate_add).toDouble();
+		
+		grn_init_inflow = settings.value("grn_init_inflow",grn_init_inflow).toDouble();
+		grn_init_cost_per_protein = settings.value("grn_init_cost_per_protein",grn_init_cost_per_protein).toDouble();
+		grn_init_max_complex_size = settings.value("grn_init_max_complex_size",grn_init_max_complex_size).toInt();
+		grn_init_Ka = settings.value("grn_init_Ka",grn_init_Ka).toDouble();
+		grn_init_Vmax = settings.value("grn_init_Vmax",grn_init_Vmax).toDouble();
+		grn_init_degradation = settings.value("grn_init_degradation",grn_init_degradation).toDouble();
+		
+		grn_mutate_Ka = settings.value("grn_mutate_Ka",grn_mutate_Ka).toDouble();
+		grn_mutate_Vmax = settings.value("grn_mutate_Vmax",grn_mutate_Vmax).toDouble();
+		grn_mutate_complex = settings.value("grn_mutate_complex",grn_mutate_complex).toDouble();
+		grn_mutate_add_gene = settings.value("grn_mutate_add_gene",grn_mutate_add_gene).toDouble();
+		grn_mutate_remove_gene = settings.value("grn_mutate_remove_gene",grn_mutate_remove_gene).toDouble();
+		
+		species = settings.value("species",species).toInt();
+		reactions = settings.value("reactions",reactions).toInt();
+		crossover_rate = settings.value("crossover_rate",crossover_rate).toDouble();
+		init_iv = settings.value("init_iv",init_iv).toDouble();
+		mutate_iv = settings.value("mutate_iv",mutate_iv).toDouble();
+		lineageTracking = settings.value("lineageTracking",lineageTracking).toBool();
+		
+		mass_action_prob = settings.value("mass_action_prob",mass_action_prob).toDouble();
+		enzyme_prob = settings.value("enzyme_prob",enzyme_prob).toDouble();
+		protein_net_prob = settings.value("protein_net_prob",protein_net_prob).toDouble();
+		grn_prob = settings.value("grn_prob",grn_prob).toDouble();
+		
+		codeFile = settings.value("codeFile",codeFile).toString();
+		logFile = settings.value("logFile",logFile).toString();
+		runs = settings.value("runs",runs).toInt();
+		generations = settings.value("generations",generations).toInt();
+		popSz = settings.value("popSz",popSz).toInt();
+		//compileCommand = settings.value("compileCommand",compileCommand).toString();
+		
+		settings.endGroup();
 	}
 	
 }
