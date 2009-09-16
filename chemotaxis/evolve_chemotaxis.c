@@ -364,7 +364,7 @@ int main(int args, char ** argv)
 	n = getNumSpecies(rnet);
 	r = getNumReactions(rnet);
 	
-	printNetwork(rnet);
+	printNetwork(stdout,rnet);
 	
 	cnet.network = rnet;	
 	

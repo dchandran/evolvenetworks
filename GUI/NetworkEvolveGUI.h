@@ -99,39 +99,15 @@ namespace NetworkEvolutionLib
 		QString seeds;
 		QString compileCommand;
 		
-		/*
-		void setDistributionOfMassActionNetwork(double uni_uni, double uni_bi, double bi_uni, double bi_bi, double no_reactant, double no_product);
-		void setRateConstantForMassActionNetwork(double max_rate_constant);
-		void setMutationRatesForMassActionNetwork(double prob_mutate_constants, double prob_mutate_remove_reaction, double prob_mutate_add_reaction);
-		
-		void setRateConstantsForProteinInteractionNetwork(double ka, double vmax, double total);
-		void setMutationRatesForProteinInteractionNetwork(double rewire, double parameter, double total, double addremove);
-		
-		void setRateConstantsForEnzymeNetwork(double max_kcat, double max_log_keq, double max_alpha, double max_h, double max_s_half, double max_p_half);
-		void setMutationRatesForEnzymeNetwork(double enzyme, 
-									  double k_cat, 
-									  double k_eq, 
-									  double alpha,
-									  double h, 
-									  double s_half, 
-									  double p_half, 
-									  double remove, 
-									  double add);
-	
-		void setResourceRestriction(double inflow, double cost_per_protein);
-		void setRateConstantsForGeneRegulationNetwork(int max_complex_size, double Ka, double Vmax, double degradation);
-		void setMutationRatesForGeneRegulationNetwork(double Ka, double Vmax, double complex, double add_gene, double remove_gene);
+		int bestNetworkFitness1, bestNetworkScript1,
+			bestNetworkSize1, bestNetworkLineage1,
+			allFitness1, allNetworkLineage1;
+			
+		int bestNetworkFitness2, bestNetworkScript2,
+			bestNetworkSize2, bestNetworkLineage2,
+			allFitness2, allNetworkLineage2, seeds2;
 
-		setInitialNetworkSize(int,int);
-		void setCrossoverRate(double);
-		void setAverageInitialValue(double);
-		void setMutationRateOfInitialValues(double);
-		void lineageTrackingON();
-		void lineageTrackingOFF();
-		void setNetworkTypeProbability(int, double);
-		void setNetworkType(int);
 		
-		*/
 	private slots:
 	
 		void clear();
@@ -199,7 +175,11 @@ namespace NetworkEvolutionLib
 		void set_grn_mutate_add_gene(double value) { grn_mutate_add_gene = value; }
 		void set_grn_mutate_remove_gene(double value) { grn_mutate_remove_gene = value; }
 		
-		void setCodeFile(const QString& file) { codeFile = file; }
+		void setCodeFile(const QString& file) 
+		{ 
+			compileCommand.replace(codeFile,file);
+			codeFile = file;
+		}
 		void setLogFile(const QString& file) { logFile = file; }
 		void setSeed(const QString& s) { seeds = s; }
 		void setRuns(int i) { runs = i; }
@@ -214,6 +194,22 @@ namespace NetworkEvolutionLib
 		void set_lineageTracking(bool value) { lineageTracking = value; }
 		
 		void setCompileCommand(const QString& s) { compileCommand = s; }
+		
+		int setBestNetworkFitness1(bool value) { bestNetworkFitness1 = (int)value; }
+		int setBestNetworkScript1(bool value) { bestNetworkScript1 = (int)value; }
+		int setBestNetworkSize1(bool value) { bestNetworkSize1 = (int)value; }
+		int setBestNetworkLineage1(bool value) { bestNetworkLineage1 = (int)value; }
+		int setAllFitness1(bool value) { allFitness1 = (int)value; }
+		int setAllNetworkLineage1(bool value) { allNetworkLineage1 = (int)value; }
+		
+		int setBestNetworkFitness2(bool value) { bestNetworkFitness2 = (int)value; }
+		int setBestNetworkScript2(bool value) { bestNetworkScript2 = (int)value; }
+		int setBestNetworkSize2(bool value) { bestNetworkSize2 = (int)value; }
+		int setBestNetworkLineage2(bool value) { bestNetworkLineage2 = (int)value; }
+		int setAllFitness2(bool value) { allFitness2 = (int)value; }
+		int setAllNetworkLineage2(bool value) { allNetworkLineage2 = (int)value; }
+		
+		int showSeed(bool value) { seeds = (int)value; }
 	};
 }
 

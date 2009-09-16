@@ -1,9 +1,6 @@
 
 double ** XORtable(); //make XOR table
 
-/* fitness function that tests for oscillations by using correlation to a sine wave */
-double fitness(GAindividual p);
-
 /* 
 fitness function that tests how well the steady state outputs match the
 given input/output table

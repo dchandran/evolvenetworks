@@ -1,5 +1,34 @@
 #include "reactionNetwork.h"
 
+/********************************************************
+
+		For keeping log file
+
+*********************************************************/
+
+static FILE * LOGFILE = 0;
+
+static int PRINT_SEEDS = 1; 
+
+static int PRINT_EACH_FITNESS = 1; 
+static int PRINT_FINAL_FITNESS = 1;
+
+static int PRINT_EACH_SCRIPT = 0;
+static int PRINT_FINAL_SCRIPT = 1;
+
+static int PRINT_EACH_SIZE = 1;
+static int PRINT_FINAL_SIZE = 1;
+
+static int PRINT_EACH_BEST_LINEAGE = 1;
+static int PRINT_FINAL_BEST_LINEAGE = 1;
+
+static int PRINT_EACH_ALL_FITNESS = 0;
+static int PRINT_FINAL_ALL_FITNESS = 1;
+
+static int PRINT_EACH_ALL_LINEAGE = 1;
+static int PRINT_FINAL_ALL_LINEAGE = 1;
+
+static GACallbackFnc USER_CALLBACK_FNC = 0;
 
 /********************************************************
 
@@ -385,7 +414,7 @@ double * simulateNetworkStochastically( GAindividual individual, double time, in
 	return y;
 }
 
-void printNetwork(GAindividual individual)
+void printNetwork(FILE * stream, GAindividual individual)
 {
 	ReactionNetwork * r = (ReactionNetwork*)individual;
 	PrintNetworkFunction f;
@@ -395,7 +424,7 @@ void printNetwork(GAindividual individual)
 	
 	f = printNetworkFunctions[r->type];
 	
-	f(stdout,r->network);
+	f(stream,r->network);
 
 	if (r->initialValues)
 	{
@@ -518,7 +547,7 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 	GACrossoverFnc f;
 	GAindividual net;
 	ReactionNetwork * r;
-	int i,j,k,sz1,sz2;
+	int i,j,k,sz1,sz2,*p;
 
 	if (mtrand() > CROSSOVER_PROB || r1->type != r2->type || r2->type < 0 || r2->type >= NUMBER_OF_NETWORK_TYPES)
 		return mutateNetwork(p1);
@@ -551,42 +580,59 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 		{
 			while (r1->parents[i]) 
 			{
-				j = 0;
-				while (j < i && r1->parents[i] != r1->parents[j])
-					++j;
-				if (j == i)
-					++sz1;
 				++i;
 			}
 		}
-		i = 0;
+		
+		j = 0;
 		if (r2->parents)
 		{
 			while (r2->parents[i]) 
 			{
-				j = 0;
-				while (j < i && r2->parents[i] != r2->parents[j])
-					++j;
-				if (j == i)
-					++sz2;
-				++i;
+				++j;
 			}
 		}
+		
+		sz1 = i + j;		
 
 		r->parents = 0;
 		if (TRACK_NETWORK_PARENTS)
 		{
-			if ((sz1+sz2) > 0)
+			if (sz1 > 0)
 			{
-				r->parents = (int*) malloc((sz1+sz2+1)*sizeof(int));
-				r->parents[sz1+sz2] = 0;
+				p = (int*)malloc(sz1 * sizeof(int));
+				
+				for (k=0; k < i; ++k)
+					p[k] = r1->parents[k];
+					
+				for (k=0; k < j; ++k)
+					p[k+i] = r2->parents[k];
+				
+				sz2 = 0;
+				
+				for (i=0; i < sz1; ++i)
+				{
+					for (j=0; j < i; ++j)
+						if (p[j] == p[i]) break;
+					if (i == j)
+						++sz2;
+				}
+				
+				r->parents = (int*) malloc((sz2+1)*sizeof(int));
+				r->parents[sz2] = 0;
 
-				if (sz1 > 0)
-					for (k=0; k < sz1; ++k)
-						r->parents[k] = r1->parents[k];
-				if (sz2 > 0)
-					for (k=0; k < sz2; ++k)
-						r->parents[k+sz1] = r2->parents[k];
+				k = 0;
+				for (i=0; i < sz1; ++i)
+				{
+					for (j=0; j < i; ++j)
+						if (p[j] == p[i]) break;
+					if (i == j)
+					{
+						r->parents[k] = p[i];
+						++k;
+					}
+				}
+				free(p);
 			}
 			else
 			{
@@ -662,10 +708,229 @@ void setFitnessFunction(GAFitnessFnc f)
 	GAsetFitnessFunction(f);
 }
 
+static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
+{
+	GAFitnessFnc fitness = GAgetFitnessFunction();
+	double f;
+	int i,j,k,*parents, num = 10*popSz, max = 0;
+	int * temp, * ids = 0;
+	GAindividual * p;
+	
+	if (iter == 0) //header
+	{
+	
+		fprintf(LOGFILE,"generation");
+		if (PRINT_EACH_FITNESS && !PRINT_EACH_ALL_FITNESS)
+		{
+			fprintf(LOGFILE,"\tbest_fitness");
+		}
+		
+		if (PRINT_EACH_ALL_FITNESS)
+		{
+			for (i=0; i < popSz; ++i)
+			{
+				fprintf(LOGFILE,"\tfitness_%i",i);
+			}
+		}
+	
+		if (PRINT_EACH_SIZE)
+		{
+			fprintf(LOGFILE,"\tspecies\treactions");
+		}
+	
+		if (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE)
+		{
+			fprintf(LOGFILE,"\tparents");
+		}
+		
+		fprintf(LOGFILE,"\n");
+		
+		fprintf(LOGFILE,"----------");
+		if (PRINT_EACH_FITNESS && !PRINT_EACH_ALL_FITNESS)
+		{
+			fprintf(LOGFILE,"\t------------");
+		}
+		
+		if (PRINT_EACH_ALL_FITNESS)
+		{
+			for (i=0; i < popSz; ++i)
+			{
+				fprintf(LOGFILE,"\t----------",i);
+			}
+		}
+	
+		if (PRINT_EACH_SIZE)
+		{
+			fprintf(LOGFILE,"\t-------\t---------");
+		}
+	
+		if (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE)
+		{
+			fprintf(LOGFILE,"\t-------");
+		}
+		
+		fprintf(LOGFILE,"\n");
+	}
+
+	if (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE)
+	{
+	
+		ids = (int*)malloc(num * sizeof(int));
+
+		for (i=0; i < num; ++i)
+			ids[i] = 0;
+
+		for (i=0; i < popSz; ++i)
+		{
+			p = pop[i];
+			parents = getParentIDs(p);
+			if (parents)
+			{
+				for (j=0; parents[j] != 0; ++j)
+				{
+					if (parents[j] >= max)
+						max = parents[j];
+					if (parents[j] >= num)
+					{
+						temp = ids;
+						ids = (int*)malloc( num * 2 * sizeof(int) );
+						
+						for (k=0; k < num; ++k)
+							ids[k] = temp[k];
+						
+						num *= 2;
+						
+						for (; k < num; ++k)
+							ids[k] = 0;
+							
+						free(temp);						
+					}
+					
+					ids[ parents[j] ] += 1;
+				}
+			}
+			else
+			{
+				j = getID(p);
+				
+				if (j >= max)
+					max = j;
+				if (j >= num)
+				{
+					temp = ids;
+					ids = (int*)malloc( num * 2 * sizeof(int) );
+					for (k=0; k < num; ++k)
+						ids[k] = temp[k];
+					
+					num *= 2;
+					
+					for (; k < num; ++k)
+						ids[k] = 0;
+						
+					free(temp);
+				}
+				
+				ids[j]++;
+			}
+			
+			if (PRINT_EACH_BEST_LINEAGE && !PRINT_EACH_ALL_LINEAGE)
+				break;
+		}
+	}
+	
+	fprintf(LOGFILE,"%i",iter);
+	if (PRINT_EACH_FITNESS && !PRINT_EACH_ALL_FITNESS)
+	{
+		f = fitness(pop[0]);
+		fprintf(LOGFILE,"\t%lf",f);
+	}
+	
+	if (PRINT_EACH_ALL_FITNESS)
+	{
+		for (i=0; i < popSz; ++i)
+		{
+			f = fitness(pop[i]);
+			fprintf(LOGFILE,"\t%lf",f);
+		}
+	}
+	
+	if (PRINT_EACH_SIZE)
+	{
+		fprintf(LOGFILE,"\t%i\t%i",getNumSpecies(pop[0]),getNumReactions(pop[0]));
+	}
+	
+	if (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE)
+	{
+		for (i=0; i < max; ++i)
+			if (i==0)
+			{
+				fprintf(LOGFILE,"\t%i",ids[i]);
+			}
+	}
+	
+	if (PRINT_EACH_SCRIPT)
+	{
+		fprintf(LOGFILE,"\n========script\n=======\n");
+		printNetwork(LOGFILE,pop[0]);
+		fprintf(LOGFILE,"\n=====================\n");
+	}
+	
+	if (ids)
+		free(ids);
+	
+	if (USER_CALLBACK_FNC)
+		return USER_CALLBACK_FNC(iter,pop,popSz);
+	
+	return 0;
+}
+
+void finalCallBackWithLogKepping(int iter, GApopulation pop, int popSz)
+{
+	unsigned long long * seeds;
+	
+	//save
+	int each_fitness = PRINT_EACH_FITNESS,
+		each_script = PRINT_EACH_SCRIPT,
+		each_size = PRINT_EACH_SIZE,
+		each_best_lineage = PRINT_EACH_BEST_LINEAGE,
+		each_all_fitness = PRINT_EACH_ALL_FITNESS,
+		each_all_lineage = PRINT_EACH_ALL_LINEAGE;
+	
+	//cheat
+	PRINT_EACH_FITNESS = PRINT_FINAL_FITNESS;
+	PRINT_EACH_SCRIPT = PRINT_FINAL_SCRIPT;
+	PRINT_EACH_SIZE = PRINT_FINAL_SIZE;
+	PRINT_EACH_BEST_LINEAGE = PRINT_FINAL_BEST_LINEAGE;
+	PRINT_EACH_ALL_FITNESS = PRINT_FINAL_ALL_FITNESS;
+	PRINT_EACH_ALL_LINEAGE = PRINT_FINAL_ALL_LINEAGE;
+	
+	callBackWithLogKeeping(iter,pop,popSz);
+	
+	//restore
+	PRINT_EACH_FITNESS = each_fitness;
+	PRINT_EACH_SCRIPT = each_script;
+	PRINT_EACH_SIZE = each_size;
+	PRINT_EACH_BEST_LINEAGE = each_best_lineage;
+	PRINT_EACH_ALL_FITNESS = each_all_fitness;
+	PRINT_EACH_ALL_LINEAGE = each_all_lineage;
+	
+	if (LOGFILE && PRINT_SEEDS)
+	{
+		seeds = getMTseeds();
+		fprintf(LOGFILE,"random number generator seeds: %lf,%lf,%lf,%lf\n",seeds[0],seeds[1],seeds[2],seeds[3]);
+	}
+}
+
 GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GACallbackFnc callbackFunc)
 {
 	GApopulation P;
 	if (!GAgetFitnessFunction()) return 0;
+	
+	if (LOGFILE)
+	{
+		USER_CALLBACK_FNC = callbackFunc;
+		callbackFunc = &callBackWithLogKeeping;
+	}
 
 	if (!MTrandHasBeenInitialized())
 		initMTrand(); 
@@ -675,6 +940,13 @@ GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GACallbackFnc callbackF
 	GAinit(&deleteNetwork, &cloneNetwork ,GAgetFitnessFunction(), &crossoverNetwork, &mutateNetwork, GAgetSelectionFunction());
 
 	P = GArun(P,sz0,sz1,maxIter,callbackFunc);
+	
+	if (LOGFILE)
+	{
+		USER_CALLBACK_FNC = 0;
+		finalCallBackWithLogKepping(maxIter,P,sz1);
+	}
+	
 	return P;
 }
 
@@ -861,4 +1133,59 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 	
 	if (corr) return corrcoef;
 	return (1.0 / (1.0 + sumOfSq));
+}
+
+void enableLogFile(char* filename)
+{
+	if (LOGFILE)
+			fclose(LOGFILE);
+			
+	LOGFILE = 0;
+	
+	if (filename)
+	{
+		LOGFILE = fopen(filename, "w");
+	}
+}
+
+void disableLogFile()
+{
+	enableLogFile(0);
+}
+
+void configureContinuousLog(int bestNetworkFitness, 
+							int bestNetworkScript,
+							int bestNetworkSize, 
+							int bestNetworkLineage,
+							int allFitness,
+							int allNetworkLineage )
+{
+	
+	PRINT_EACH_FITNESS = bestNetworkFitness > 0;
+	PRINT_EACH_SCRIPT = bestNetworkScript > 0;
+	PRINT_EACH_SIZE = bestNetworkSize > 0;
+	PRINT_EACH_BEST_LINEAGE = bestNetworkLineage > 0;
+	PRINT_EACH_ALL_FITNESS = allFitness > 0;
+	PRINT_EACH_ALL_LINEAGE = allNetworkLineage > 0;
+	if (PRINT_EACH_ALL_LINEAGE || PRINT_EACH_BEST_LINEAGE)
+		TRACK_NETWORK_PARENTS = 1;
+}
+
+void configureFinalLog(int bestNetworkFitness, 
+							int bestNetworkScript,
+							int bestNetworkSize, 
+							int bestNetworkLineage,
+							int allFitness, 
+							int allNetworkLineage,
+							int seeds)
+{
+	PRINT_FINAL_FITNESS = bestNetworkFitness > 0;
+	PRINT_FINAL_SCRIPT = bestNetworkScript > 0;
+	PRINT_FINAL_SIZE = bestNetworkSize > 0;
+	PRINT_FINAL_BEST_LINEAGE = bestNetworkLineage > 0;
+	PRINT_FINAL_ALL_FITNESS = allFitness > 0;
+	PRINT_FINAL_ALL_LINEAGE = allNetworkLineage > 0;
+	PRINT_SEEDS = seeds > 0;
+	if (PRINT_FINAL_BEST_LINEAGE || PRINT_FINAL_ALL_LINEAGE)
+		TRACK_NETWORK_PARENTS = 1;
 }

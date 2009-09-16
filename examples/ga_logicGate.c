@@ -48,7 +48,7 @@ int main()
 	
 	best = pop[0]; //get the best network
 	
-	printNetwork(best); //print the best network
+	printNetwork(stdout,best); //print the best network
 	
 	printNetworkToFile("network.txt",best); //print the best network
 	
@@ -81,8 +81,7 @@ int main()
 	free(table);
 
 	/****** free all the networks returned by the genetic algorithm ************/
-	for (i=0; i < 50; ++i)
-		deleteNetwork(pop[i]);
+	GAfree(pop);
 	
 	return 0; //done
 }

@@ -41,7 +41,8 @@ int main()
 
 	best = pop[0];  //get the best network
 
-	printNetwork(best); //print the best network
+	printNetwork(stdout,best); //print the best network
+	printNetworkToFile("noise_damper.txt",best); //print the best network
 
 	/******simulate the best network and write the result to a file************/
 
@@ -55,8 +56,7 @@ int main()
 
 	/****** free all the networks returned by the genetic algorithm ************/
 
-	for (i=0; i < 100; ++i)
-		deleteNetwork(pop[i]);
+	GAfree(pop);
 
 	return 0;
 }

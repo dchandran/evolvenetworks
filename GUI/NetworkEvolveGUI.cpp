@@ -60,7 +60,7 @@ namespace NetworkEvolutionLib
 		QProcess proc;
 		proc.setWorkingDirectory(appDir);
 		proc.setProcessChannelMode(QProcess::ForwardedChannels);
-		
+/*		
 #ifdef Q_WS_WIN
 		proc.start(tr("win32\\tcc -r -Iwin32\\include -Isource\\include -Isource -Lwin32\\lib source\\*.c -o netga.o"));
 		proc.waitForFinished();
@@ -70,7 +70,7 @@ namespace NetworkEvolutionLib
 		proc.start(tr("ar -r libnetga.a *.o"));
 		proc.waitForFinished();
 #endif
-
+*/
 		QLineEdit * compile = new QLineEdit(compileCommand);
 		layoutC->addWidget(compile);
 		
@@ -216,6 +216,21 @@ namespace NetworkEvolutionLib
 		settings.setValue("generations",generations);
 		settings.setValue("popSz",popSz);
 		settings.setValue("compileCommand",compileCommand);
+		
+		settings.setValue("bestNetworkFitness1",bestNetworkFitness1);
+		settings.setValue("bestNetworkScript1",bestNetworkScript1);
+		settings.setValue("bestNetworkSize1",bestNetworkSize1);
+		settings.setValue("bestNetworkLineage1",bestNetworkLineage1);
+		settings.setValue("allFitness1",allFitness1);
+		settings.setValue("allNetworkLineage1",allNetworkLineage1);
+		
+		settings.setValue("bestNetworkFitness2",bestNetworkFitness2);
+		settings.setValue("bestNetworkScript2",bestNetworkScript2);
+		settings.setValue("bestNetworkSize2",bestNetworkSize2);
+		settings.setValue("bestNetworkLineage2",bestNetworkLineage2);
+		settings.setValue("allFitness2",allFitness2);
+		settings.setValue("allNetworkLineage2",allNetworkLineage2);
+		settings.setValue("seeds2",seeds2);
 		
 		settings.endGroup();
 	}
@@ -856,11 +871,9 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(code,1,lineEdit = new QLineEdit(codeFile));
 		connect(lineEdit,SIGNAL(textEdited (const QString &)),this,SLOT(setCodeFile(const QString&)));
 		
-		QTreeWidgetItem * output = new QTreeWidgetItem;
-		output->setText(0,"Log file");
-		output->setToolTip(0,"This file that will contain the results from all the runs, which includes the network, fitness values, fitness distrubtion, and lineage tracking");
-		treeWidget->addTopLevelItem(output);
-		treeWidget->setItemWidget(output,1,lineEdit = new QLineEdit(logFile));
+		QTreeWidgetItem * log = new QTreeWidgetItem;
+		treeWidget->addTopLevelItem(log);
+		treeWidget->setItemWidget(log,1,lineEdit = new QLineEdit(logFile));
 		connect(lineEdit,SIGNAL(textEdited (const QString &)),this,SLOT(setLogFile(const QString&)));
 		
 		QTreeWidgetItem * runs = new QTreeWidgetItem;
@@ -892,6 +905,112 @@ namespace NetworkEvolutionLib
 		intSpinBox->setSingleStep(1);
 		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(setGenerations(int)));
 		intSpinBox->setValue(generations);
+		
+		log->setText(0,"Log file");
+		log->setToolTip(0,"Keep a log file with information about each generation and the final results");
+		
+		QTreeWidgetItem * log1, * log2, *child;
+		log->addChild(log1 = new QTreeWidgetItem);
+		log1->setText(0,"Track information during each generation");
+		log1->setToolTip(0,"Check the information you would like to record in the log file during each generation of the genetic algorithm.");
+		
+		log->addChild(log2 = new QTreeWidgetItem);
+		log2->setText(0,"Report final results");
+		log2->setToolTip(0,"Check the information you would like to record at the end of each run, where one run is one evolution experiment");
+		
+		QCheckBox * checkBox;
+		log1->addChild(child = new QTreeWidgetItem);
+		child->setText(0,"Best fitness score");
+		child->setToolTip(0,"Report the fitness score of the best network in this generation.");
+		treeWidget->setItemWidget(child,1,checkBox = new QCheckBox);
+		checkBox->setChecked(bestNetworkFitness1);
+		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(setBestNetworkFitness1(bool)));
+		
+		log1->addChild(child = new QTreeWidgetItem);
+		child->setText(0,"Best network script");
+		child->setToolTip(0,"Print the script for the best network during each generation. Warning: expect a bloated log file");
+		treeWidget->setItemWidget(child,1,checkBox = new QCheckBox);
+		checkBox->setChecked(bestNetworkScript1);
+		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(setBestNetworkScript1(bool)));
+		
+		log1->addChild(child = new QTreeWidgetItem);
+		child->setText(0,"Best network's size");
+		child->setToolTip(0,"Record the best network's size during each generation.");
+		treeWidget->setItemWidget(child,1,checkBox = new QCheckBox);
+		checkBox->setChecked(bestNetworkSize1);
+		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(setBestNetworkSize1(bool)));
+		
+		log1->addChild(child = new QTreeWidgetItem);
+		child->setText(0,"Best network's parents");
+		child->setToolTip(0,"Record the best network's lineage during each generation.");
+		treeWidget->setItemWidget(child,1,checkBox = new QCheckBox);
+		checkBox->setChecked(bestNetworkLineage1);
+		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(setBestNetworkLineage1(bool)));
+		
+		log1->addChild(child = new QTreeWidgetItem);
+		child->setText(0,"All fitness scores");
+		child->setToolTip(0,"Record all the networks' fitness scores during each generation.");
+		treeWidget->setItemWidget(child,1,checkBox = new QCheckBox);
+		checkBox->setChecked(allFitness1);
+		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(setAllFitness1(bool)));
+		
+		log1->addChild(child = new QTreeWidgetItem);
+		child->setText(0,"All parents");
+		child->setToolTip(0,"Record all parents. Enable this option if you are interested in the evolutionary dynamics of the population.");
+		treeWidget->setItemWidget(child,1,checkBox = new QCheckBox);
+		checkBox->setChecked(allNetworkLineage1);
+		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(setAllNetworkLineage1(bool)));
+		
+		//---
+		
+		log2->addChild(child = new QTreeWidgetItem);
+		child->setText(0,"Best fitness score");
+		child->setToolTip(0,"Report the fitness score of the best network at the end of each run.");
+		treeWidget->setItemWidget(child,1,checkBox = new QCheckBox);
+		checkBox->setChecked(bestNetworkFitness2);
+		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(setBestNetworkFitness2(bool)));
+		
+		log2->addChild(child = new QTreeWidgetItem);
+		child->setText(0,"Best network script");
+		child->setToolTip(0,"Print the script for the best network at the end of each run.");
+		treeWidget->setItemWidget(child,1,checkBox = new QCheckBox);
+		checkBox->setChecked(bestNetworkScript2);
+		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(setBestNetworkScript2(bool)));
+		
+		log2->addChild(child = new QTreeWidgetItem);
+		child->setText(0,"Best network's size");
+		child->setToolTip(0,"Record the best network's size  at the end of each run.");
+		treeWidget->setItemWidget(child,1,checkBox = new QCheckBox);
+		checkBox->setChecked(bestNetworkSize2);
+		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(setBestNetworkSize2(bool)));
+		
+		log2->addChild(child = new QTreeWidgetItem);
+		child->setText(0,"Best network's parents");
+		child->setToolTip(0,"Record the best network's lineage at the end of each run.");
+		treeWidget->setItemWidget(child,1,checkBox = new QCheckBox);
+		checkBox->setChecked(bestNetworkLineage2);
+		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(setBestNetworkLineage2(bool)));
+		
+		log2->addChild(child = new QTreeWidgetItem);
+		child->setText(0,"All fitness scores");
+		child->setToolTip(0,"Record all the networks' fitness scores at the end of each run.");
+		treeWidget->setItemWidget(child,1,checkBox = new QCheckBox);
+		checkBox->setChecked(allFitness2);
+		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(setAllFitness2(bool)));
+		
+		log2->addChild(child = new QTreeWidgetItem);
+		child->setText(0,"All parents");
+		child->setToolTip(0,"Record all parents at the end of each run.");
+		treeWidget->setItemWidget(child,1,checkBox = new QCheckBox);
+		checkBox->setChecked(allNetworkLineage2);
+		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(setAllNetworkLineage2(bool)));
+		
+		log->addChild(child = new QTreeWidgetItem);
+		child->setText(0,"Save seeds");
+		child->setToolTip(0,"Record the random number generator's seeds that were used for each run.");
+		treeWidget->setItemWidget(child,1,checkBox = new QCheckBox);
+		checkBox->setChecked(seeds2);
+		connect(checkBox,SIGNAL(toggled(bool)),this,SLOT(showSeed(bool)));
 		
 		QTreeWidgetItem * seed = new QTreeWidgetItem;
 		seed->setText(0,"Seed");
@@ -1013,7 +1132,27 @@ namespace NetworkEvolutionLib
 				+ tr(");\n")
 				+ tr("    setMutationRateOfInitialValues(")
 				+ QString::number(mutate_iv) 
-				+ tr(");\n");
+				+ tr(");\n")
+				+ tr("    configureContinuousLog(") 
+				+ QString::number(bestNetworkFitness1) + tr(",")
+				+ QString::number(bestNetworkScript1) + tr(",")
+				+ QString::number(bestNetworkSize1) + tr(",")
+				+ QString::number(bestNetworkLineage1) + tr(",")
+				+ QString::number(allFitness1) + tr(",")
+				+ QString::number(allNetworkLineage1) + tr(");\n")
+				+ tr("    configureFinalLog(")
+				+ QString::number(bestNetworkFitness2) + tr(",")
+				+ QString::number(bestNetworkScript2) + tr(",")
+				+ QString::number(bestNetworkSize2) + tr(",")
+				+ QString::number(bestNetworkLineage2) + tr(",")
+				+ QString::number(allFitness2) + tr(",")
+				+ QString::number(allNetworkLineage2) + tr(",")
+				+ QString::number(seeds2) + tr(");\n");
+		
+		if (logFile.isEmpty())
+			s += tr("    disableLogFile();\n");
+		else
+			s += tr("    enableLogFile(") + logFile + tr(");\n");
 		
 		if (lineageTracking)
 			s += tr("    lineageTrackingON();\n");
@@ -1082,12 +1221,12 @@ namespace NetworkEvolutionLib
 		proc.setProcessChannelMode(QProcess::ForwardedChannels);
 		
 #ifdef Q_WS_WIN
-		proc.start(tr("win32\\tcc -Iwin32\\include -Isource\\include -Isource -Lwin32\\lib netga.o -run ") + codeFile);
+		proc.start(compileCommand);
 		proc.waitForFinished();
 		proc.start(tr("echo \"done\""));
 		proc.waitForFinished();
 #else
-		proc.start(tr("gcc -Isource/include -Isource ") + codeFile + tr(" -L./ -lnetga -o a.out"));
+		proc.start(compileCommand);
 		proc.waitForFinished();
 		proc.start(tr("./a.out"));
 		proc.waitForFinished();
@@ -1139,13 +1278,22 @@ namespace NetworkEvolutionLib
 		crossover_rate = init_iv = 1.0;
 		mutate_iv = 0.05;
 		lineageTracking = true;
-
-#ifdef Q_WS_WIN
-		compileCommand = tr("win32\\tcc -Iwin32\\include -Isource -Lwin32\\lib netga.o ") + codeFile;
-#else
-		compileCommand = tr("gcc -Isource -L./ -lm -lnetga ") + codeFile;
-#endif
-
+		
+		bestNetworkFitness1 = 1;
+		bestNetworkScript1 = 0;
+		bestNetworkSize1 = 1;
+		bestNetworkLineage1 = 0;
+		allFitness1 = 0;
+		allNetworkLineage1 = 1;
+			
+		bestNetworkFitness2 = 1;
+		bestNetworkScript2 = 1;
+		bestNetworkSize2 = 1;
+		bestNetworkLineage2 = 0;
+		allFitness2 = 1;
+		allNetworkLineage2 = 1;
+		seeds2 = 1;
+		
 		/***********************/
 		
 		QSettings settings("UWashington","NetworkEvolutionLib");
@@ -1216,7 +1364,27 @@ namespace NetworkEvolutionLib
 		runs = settings.value("runs",runs).toInt();
 		generations = settings.value("generations",generations).toInt();
 		popSz = settings.value("popSz",popSz).toInt();
-		//compileCommand = settings.value("compileCommand",compileCommand).toString();
+		
+		bestNetworkFitness1 = settings.value("bestNetworkFitness1",bestNetworkFitness1).toInt();
+		bestNetworkScript1 = settings.value("bestNetworkScript1",bestNetworkScript1).toInt();
+		bestNetworkSize1 = settings.value("bestNetworkSize1",bestNetworkSize1).toInt();
+		bestNetworkLineage1 = settings.value("bestNetworkLineage1",bestNetworkLineage1).toInt();
+		allFitness1 = settings.value("allFitness1",allFitness1).toInt();
+		allNetworkLineage1 = settings.value("allNetworkLineage1",allNetworkLineage1).toInt();
+		
+		bestNetworkFitness2 = settings.value("bestNetworkFitness2",bestNetworkFitness2).toInt();
+		bestNetworkScript2 = settings.value("bestNetworkScript2",bestNetworkScript2).toInt();
+		bestNetworkSize2 = settings.value("bestNetworkSize2",bestNetworkSize2).toInt();
+		bestNetworkLineage2 = settings.value("bestNetworkLineage2",bestNetworkLineage2).toInt();
+		allFitness2 = settings.value("allFitness2",allFitness2).toInt();
+		allNetworkLineage2 = settings.value("allNetworkLineage2",allNetworkLineage2).toInt();
+		seeds2 = settings.value("seeds2",seeds2).toInt();
+		
+#ifdef Q_WS_WIN
+		compileCommand = tr("win32\\tcc -Iwin32\\include -Isource\\include -Isource -Lwin32\\lib source\\*.c -run ") + codeFile;
+#else
+		compileCommand =  tr("gcc -Isource/include -Isource source/*.c ") + codeFile + tr(" -o a.out");
+#endif
 		
 		settings.endGroup();
 	}
