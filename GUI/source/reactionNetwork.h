@@ -73,10 +73,11 @@ ReactionNetwork;
 /*! \brief print the reaction network to stdout.
     This function calls the print functions of one 
 	of the individual networks.
+ \param FILE* where to print (e.g. stdout)
  \param ReactionNetwork network
  \ingroup genericNetwork
 */
-void printNetwork(GAindividual);
+void printNetwork(FILE * stream, GAindividual);
 /*! \brief print the reaction network to a file. 
     This function calls the print functions of one 
 	of the individual networks.
@@ -367,6 +368,59 @@ GAindividual crossoverNetwork(GAindividual, GAindividual);
 	\ingroup genericNetwork
 */
 double compareSteadyStates(GAindividual, double **, int , int, int, int, double ** );
+
+/*!
+  \}
+  \name Keeping a log file
+  \{
+*/
+
+
+/*! \brief enable automatic log file. The log file will store information about every generation
+	as well as the final result of the GA. Setting the file will enable automatic log
+	\param char* log file name
+*/
+void enableLogFile(char * filename);
+
+/*! \brief disable automatic log file. */
+void disableLogFile();
+
+/*! \brief All arguments must be 0 or 1 (Boolean). This function allows the evolution experiment
+	to report information during each generation. The information to report can be configured
+	using the arguments. The GA uses a custom callback routine to write the information to 
+	the log file.
+	\param int report the best fitness score during each generation
+	\param int print the best network's script during each generation
+	\param int report the best network's size during each generation
+	\param int report the best network's parents during each generation
+	\param int report all fitness values during each generation
+	\param int report all networks' parents during each generation
+*/
+void configureContinuousLog(int bestNetworkFitness, 
+							int bestNetworkScript,
+							int bestNetworkSize, 
+							int bestNetworkLineage,
+							int allFitness,
+							int allNetworkLineage );
+
+/*! \brief All arguments must be 0 or 1 (Boolean). This function allows the evolution experiment
+	to report information at the end of the GA.
+	\param int report the best fitness score at the end
+	\param int print the best network's script at the end
+	\param int report the best network's size at the end
+	\param int report the best network's parents at the end
+	\param int report all fitness value at the end
+	\param int report all networks' parents at the end
+	\param int report the random number generator's seeds (useful for duplicating the experiment)
+*/
+void configureFinalLog(int bestNetworkFitness, 
+							int bestNetworkScript,
+							int bestNetworkSize, 
+							int bestNetworkLineage,
+							int allFitness, 
+							int allNetworkLineage,
+							int seeds);
+
 /*!\}*/
 
 #endif

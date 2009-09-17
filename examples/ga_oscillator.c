@@ -20,14 +20,9 @@
 /* Fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(GAindividual p);
 
-/* Print the number of each generation and the fitness of the best network */
-int callback(int iter,GApopulation pop,int popSz);
-
-FILE * lineageFile;
-
 #define INITIAL_POPULATION_SIZE 800
 #define SUCCESSIVE_POPULATION_SIZE 100
-#define NUM_GENERATIONS 50
+#define NUM_GENERATIONS 4
 
 /* main */
 int main()
@@ -37,10 +32,10 @@ int main()
 	GApopulation pop;
 	GAindividual * best;
 	
-	lineageFile = fopen("lineage.txt","w");
+	lineageTrackingON();
 	setFitnessFunction( &fitness );    // Set the fitness function	
 	
-	setNetworkType( MASS_ACTION_NETWORK );  // Use this network type
+	setNetworkType( ENZYME_NETWORK );  // Use this network type
 	setMutationRatesForMassActionNetwork(0.5,0.2,0.2);
 	setCrossoverRate(1.0);
 	setDistributionOfMassActionNetwork(0.5,0.25,0.25,0.0,0.1,0.1);
@@ -49,14 +44,15 @@ int main()
 	setInitialNetworkSize(5,8);       // Network size
 	
 	printf ("Oscillator Evolution\n\n");
-	printf("Generation\tBest fitness\tSpecies\t\tReactions\n");
-	printf("----------\t------------\t-------\t\t---------\n");
+	//printf("Generation\tBest fitness\tSpecies\t\tReactions\n");
+	//printf("----------\t------------\t-------\t\t---------\n");
 
 	/* Evolve using INITIAL_POPULATION_SIZE initial networks, 
 	  SUCCESSIVE_POPULATION_SIZE neworks during each successive generation, 
 	  for NUM_GENERATIONS generations*/
-
-	pop = evolveNetworks(INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, &callback);  
+	
+	enableLogFile("log.txt");
+	pop = evolveNetworks(INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, 0);  
 	
 	best = pop[0]; // Get the best network
 	
@@ -75,58 +71,10 @@ int main()
 	/****** free all the networks returned by the genetic algorithm ************/
 	GAfree(pop);
 	
-	fclose(lineageFile);
-
 	printf("Press a key to exit\n");
 	getchar();
 
 	return 0; // Done
-}
-
-void printLineage(GApopulation pop, int popSz, int num)
-{
-	int i,j,*parents;
-	int * ids = (int*)malloc(num * sizeof(int)), * ids2 = (int*)malloc(num * sizeof(int));
-	GAindividual * p;
-
-	for (i=0; i < num; ++i)
-		ids[i] = 0;
-
-	for (i=0; i < popSz; ++i)
-	{
-		p = pop[i];
-		parents = getParentIDs(p);
-		if (parents)
-		{
-			for (j=0; j < num; ++j)
-				ids2[j] = 0;
-
-			for (j=0; parents[j] != 0; ++j)
-				if (parents[j] < num)
-					ids2[ parents[j] ] = 1;
-			
-			for (j=0; j < num; ++j)
-				ids[ j ] += ids2[ j ];
-		}
-		else
-		{
-			j = getID(p);
-			if (j < num)
-				ids[j]++;
-		}
-	}
-	for (i=0; i < num; ++i)
-		if (i==0)
-		{
-			fprintf(lineageFile,"%i",ids[i]);
-		}
-		else
-		{
-			fprintf(lineageFile,",%i",ids[i]);
-		}
-	fprintf(lineageFile,"\n");
-	free(ids);
-	free(ids2);
 }
 
 /* Fitness function that tests for oscillations by using correlation to a sine wave */
@@ -173,27 +121,4 @@ double fitness(GAindividual net)
 	if(getNumSpecies(net) > 30)        // Disallow large networks
 	  return (0);
 	return (f);
-}
-
-/* Print the number of each generation and the fitness of the best network */
-int callback(int iter,GApopulation pop,int popSz)
-{
-	double f = fitness(pop[0]);
-	/*int i,j;
-	
-	if (iter > 1 && (iter % 10 == 0) && f < 0.5)
-	{
-		for (i=1; i < popSz; ++i)
-		{
-			for (j=0; j < 10; ++j)
-				pop[i] = mutateNetwork(pop[i]);
-		}
-	}*/
-	
-	printf("%i\t\t%lf\t%i\t\t%i\n",iter,f,getNumSpecies(pop[0]),getNumReactions(pop[0]));
-	printLineage(pop,popSz,INITIAL_POPULATION_SIZE);
-
-	if (f >= 0.5) return 1;  // Stop
-	
-	return 0;
 }

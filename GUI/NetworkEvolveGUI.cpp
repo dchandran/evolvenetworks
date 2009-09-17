@@ -143,6 +143,8 @@ namespace NetworkEvolutionLib
 		addToolBar(Qt::BottomToolBarArea,toolbar);
 		
 		setCentralWidget(twoCols);
+		
+		clear();
 	}
 	
 	MainWindow::~MainWindow()
@@ -1152,7 +1154,7 @@ namespace NetworkEvolutionLib
 		if (logFile.isEmpty())
 			s += tr("    disableLogFile();\n");
 		else
-			s += tr("    enableLogFile(") + logFile + tr(");\n");
+			s += tr("    enableLogFile(\"") + logFile + tr("\");\n");
 		
 		if (lineageTracking)
 			s += tr("    lineageTrackingON();\n");
@@ -1221,15 +1223,19 @@ namespace NetworkEvolutionLib
 		proc.setProcessChannelMode(QProcess::ForwardedChannels);
 		
 #ifdef Q_WS_WIN
+		proc.start(tr("echo \"running...\""));
 		proc.start(compileCommand);
 		proc.waitForFinished();
-		proc.start(tr("echo \"done\""));
+		proc.start(tr("echo \"...done\""));
 		proc.waitForFinished();
 #else
+		proc.start(tr("echo \"compiling...\""));
 		proc.start(compileCommand);
 		proc.waitForFinished();
 		proc.start(tr("./a.out"));
+		proc.start(tr("echo \"running...\""));
 		proc.waitForFinished();
+		proc.start(tr("echo \"...done\""));
 #endif
 
 	}
@@ -1393,6 +1399,7 @@ namespace NetworkEvolutionLib
 	QComboBox* MainWindow::comboBox()
 	{
 		QComboBox * comboBox = new QComboBox;
+		comboBox->addItem("NEW");
 		
 		QString appDir = QCoreApplication::applicationDirPath();
 		
@@ -1413,6 +1420,12 @@ namespace NetworkEvolutionLib
 	
 	void MainWindow::fitnessSelected(const QString& s)
 	{
+		if (fitnessComboBox->currentIndex() == 0)
+		{
+			clear();
+			return;
+		}
+			
 		QString appDir = QCoreApplication::applicationDirPath();
 		QFile file(appDir + tr("/FitnessFunctions/") + s + tr(".c"));
 	

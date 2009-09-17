@@ -560,7 +560,7 @@ void printEnzymeNetwork(FILE * stream,GAindividual individual)
 					else
 						p = net->product1[i]+1;
 					fprintf(stream, "k%i * s%i/shalf%i * (1 - (s%i/s%i)/keq%i) * (s%i/shalf%i + s%i/phalf%i)^(h%i-1) / ((s%i/shalf%i + s%i/phalf%i)^(h%i) + (1+s%i)/(1+alpha%i*s%i))",
-						i+1,r,i+1,r,p,i+1,r,i+1,p,i+1,enet->h[i],r,i+1,p,i+1,enet->h[i],enet->enzymes[i]+1,i+1,enet->enzymes[i]+1);
+						i+1,r,i+1,r,p,i+1,r,i+1,p,i+1,i+1,r,i+1,p,i+1,i+1,enet->enzymes[i]+1,i+1,enet->enzymes[i]+1);
 				}
 				else
 				{

@@ -587,7 +587,7 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 		j = 0;
 		if (r2->parents)
 		{
-			while (r2->parents[i]) 
+			while (r2->parents[j]) 
 			{
 				++j;
 			}
@@ -713,15 +713,16 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 	GAFitnessFnc fitness = GAgetFitnessFunction();
 	double f;
 	int i,j,k,*parents, num = 10*popSz, max = 0;
-	int * temp, * ids = 0;
+	int * temp = 0, * ids = 0;
 	GAindividual * p;
 	
 	if (iter == 0) //header
 	{
-	
+		printf("generation");
 		fprintf(LOGFILE,"generation");
 		if (PRINT_EACH_FITNESS && !PRINT_EACH_ALL_FITNESS)
 		{
+			printf("\tbest_fitness");
 			fprintf(LOGFILE,"\tbest_fitness");
 		}
 		
@@ -729,25 +730,32 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 		{
 			for (i=0; i < popSz; ++i)
 			{
+				printf("\tfitness_%i",i);
 				fprintf(LOGFILE,"\tfitness_%i",i);
 			}
 		}
 	
 		if (PRINT_EACH_SIZE)
 		{
+			printf("\tspecies\treactions");
 			fprintf(LOGFILE,"\tspecies\treactions");
 		}
 	
-		if (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE)
+		if (TRACK_NETWORK_PARENTS && (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE))
 		{
+			printf("\tparents");
 			fprintf(LOGFILE,"\tparents");
 		}
 		
+		printf("\n");
 		fprintf(LOGFILE,"\n");
 		
+		printf("----------");
 		fprintf(LOGFILE,"----------");
+
 		if (PRINT_EACH_FITNESS && !PRINT_EACH_ALL_FITNESS)
 		{
+			printf("\t------------");
 			fprintf(LOGFILE,"\t------------");
 		}
 		
@@ -755,26 +763,29 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 		{
 			for (i=0; i < popSz; ++i)
 			{
+				printf("\t----------",i);
 				fprintf(LOGFILE,"\t----------",i);
 			}
 		}
 	
 		if (PRINT_EACH_SIZE)
 		{
+			printf("\t-------\t---------");
 			fprintf(LOGFILE,"\t-------\t---------");
 		}
 	
-		if (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE)
+		if (TRACK_NETWORK_PARENTS && (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE))
 		{
+			printf("\t-------");
 			fprintf(LOGFILE,"\t-------");
 		}
 		
+		printf("\n");
 		fprintf(LOGFILE,"\n");
 	}
 
-	if (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE)
+	if (TRACK_NETWORK_PARENTS && (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE))
 	{
-	
 		ids = (int*)malloc(num * sizeof(int));
 
 		for (i=0; i < num; ++i)
@@ -838,10 +849,12 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 		}
 	}
 	
+	printf("%i",iter);
 	fprintf(LOGFILE,"%i",iter);
 	if (PRINT_EACH_FITNESS && !PRINT_EACH_ALL_FITNESS)
 	{
 		f = fitness(pop[0]);
+		printf("\t%lf",f);
 		fprintf(LOGFILE,"\t%lf",f);
 	}
 	
@@ -850,33 +863,43 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 		for (i=0; i < popSz; ++i)
 		{
 			f = fitness(pop[i]);
+			printf("\t%lf",f);
 			fprintf(LOGFILE,"\t%lf",f);
 		}
 	}
 	
 	if (PRINT_EACH_SIZE)
 	{
+		printf("\t%i\t%i",getNumSpecies(pop[0]),getNumReactions(pop[0]));
 		fprintf(LOGFILE,"\t%i\t%i",getNumSpecies(pop[0]),getNumReactions(pop[0]));
 	}
 	
-	if (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE)
+	if (TRACK_NETWORK_PARENTS && (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE))
 	{
 		for (i=0; i < max; ++i)
 			if (i==0)
 			{
+				printf("\t%i",ids[i]);
 				fprintf(LOGFILE,"\t%i",ids[i]);
 			}
+		if (ids && num > 0)
+			free(ids);
 	}
 	
 	if (PRINT_EACH_SCRIPT)
 	{
-		fprintf(LOGFILE,"\n========script\n=======\n");
+		printf("\n========script=======\n");
+		fprintf(LOGFILE,"\n========script=======\n");
+
+		printNetwork(stdout,pop[0]);
 		printNetwork(LOGFILE,pop[0]);
+
+		printf("\n=====================\n");
 		fprintf(LOGFILE,"\n=====================\n");
 	}
-	
-	if (ids)
-		free(ids);
+
+	printf("\n");
+	fprintf(LOGFILE,"\n");
 	
 	if (USER_CALLBACK_FNC)
 		return USER_CALLBACK_FNC(iter,pop,popSz);
@@ -904,7 +927,9 @@ void finalCallBackWithLogKepping(int iter, GApopulation pop, int popSz)
 	PRINT_EACH_ALL_FITNESS = PRINT_FINAL_ALL_FITNESS;
 	PRINT_EACH_ALL_LINEAGE = PRINT_FINAL_ALL_LINEAGE;
 	
-	callBackWithLogKeeping(iter,pop,popSz);
+	printf("\n========final results=======\n");
+	fprintf(LOGFILE,"\n========final results=======\n");
+	callBackWithLogKeeping(0,pop,popSz);
 	
 	//restore
 	PRINT_EACH_FITNESS = each_fitness;
