@@ -34,17 +34,17 @@ int main()
 	GApopulation pop;
 	GAindividual * best;
 	double ** table;
-	
-	setFitnessFunction( &fitness );  //set the fitness function	
-	
-	setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
-	
+
+	lineageTrackingON();
+	setFitnessFunction( &fitness );  //set the fitness function
+	setNetworkType( MASS_ACTION_NETWORK );  //use this network type
 	setInitialNetworkSize(5,8);  //network size
 
-	printf("generation\tbest fitness\tnetwork size\n");
-	
+	printf ("Logic Gate Evolution\n\n");
+
+	enableLogFile("log.txt");
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(1000,200,50,&callback);  
+	pop = evolveNetworks(1000,200,50,0);
 	
 	best = pop[0]; //get the best network
 	
@@ -82,6 +82,9 @@ int main()
 
 	/****** free all the networks returned by the genetic algorithm ************/
 	GAfree(pop);
+
+	printf("Press a key to exit\n");
+	getchar();
 	
 	return 0; //done
 }
@@ -118,8 +121,6 @@ double fitness(GAindividual p)
 int callback(int iter,GApopulation pop,int popSz)
 {
 	double f = fitness(pop[0]);
-	
-	printf("%i\t%lf\n",iter,f);
 	
 	if (f >= 0.9) return 1;  //stop if good enough
 	

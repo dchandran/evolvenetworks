@@ -421,6 +421,21 @@ void configureFinalLog(int bestNetworkFitness,
 							int allNetworkLineage,
 							int seeds);
 
+/*! \brief set parameters for networkSteadyState()
+	\param double the allowed error. When the sum of squares of all derivatives is
+			between two time points that is delta apart is within this error range, 
+			then the system is considered to be at steady state.
+			default = 1.0E-3 (quite good for the default delta)
+	\param double the time separation for checking error tolerance.
+			default = 0.1
+	\param double maximum time allows. after this time limit, a 0 is returned, i.e. no steady state
+			default = 10000.0 (you may want to lower this if you want speed).
+*/
+void configureSteadyStateFunction(double tolerance, 
+									double delta,
+									double maxTime);
+
+
 /*!\}*/
 
 #endif

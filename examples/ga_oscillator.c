@@ -22,7 +22,7 @@ double fitness(GAindividual p);
 
 #define INITIAL_POPULATION_SIZE 800
 #define SUCCESSIVE_POPULATION_SIZE 100
-#define NUM_GENERATIONS 4
+#define NUM_GENERATIONS 30
 
 /* main */
 int main()
@@ -35,28 +35,20 @@ int main()
 	lineageTrackingON();
 	setFitnessFunction( &fitness );    // Set the fitness function	
 	
-	setNetworkType( ENZYME_NETWORK );  // Use this network type
+	setNetworkType( MASS_ACTION_NETWORK );  // Use this network type
 	setMutationRatesForMassActionNetwork(0.5,0.2,0.2);
-	setCrossoverRate(1.0);
+	setCrossoverRate(0.0);
 	setDistributionOfMassActionNetwork(0.5,0.25,0.25,0.0,0.1,0.1);
 	setRateConstantForMassActionNetwork(2.0);
 	
 	setInitialNetworkSize(5,8);       // Network size
 	
 	printf ("Oscillator Evolution\n\n");
-	//printf("Generation\tBest fitness\tSpecies\t\tReactions\n");
-	//printf("----------\t------------\t-------\t\t---------\n");
 
-	/* Evolve using INITIAL_POPULATION_SIZE initial networks, 
-	  SUCCESSIVE_POPULATION_SIZE neworks during each successive generation, 
-	  for NUM_GENERATIONS generations*/
-	
 	enableLogFile("log.txt");
 	pop = evolveNetworks(INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, 0);  
 	
 	best = pop[0]; // Get the best network
-	
-	printNetworkToFile("network.txt",best); // Save the best network
 	
 	/******simulate the best network and write the result to a file************/
 	

@@ -273,8 +273,6 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 	if (r < (MUTATE_KA+MUTATE_PRODUCTION+MUTATE_COMPLEX+ADD_GENE))
 	{
 		++m;
-		net->species = m;
-		net->numComplexes = n+1;
 		complexes = net->complexes;
 		targetGene = net->targetGene;
 		Ka = net->Ka;
@@ -282,6 +280,8 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 		degradation = net->degradation;
 		fixed = net->fixed;
 		
+		net->species = m;
+		net->numComplexes = n+1;
 		net->complexes = (TFComplex*) malloc( (1+n) * sizeof (TFComplex) );
 		net->targetGene = (int*) malloc( (1+n) * sizeof(int) );
 		net->Ka = (double*) malloc( (1+n) * sizeof(double) );
@@ -292,7 +292,9 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 		for (j=0; j < n; ++j)
 		{
 			net->targetGene[j] = targetGene[j];
-			net->complexes[j] = complexes[j];
+			net->complexes[j].size = complexes[j].size;
+			net->complexes[j].TFs = complexes[j].TFs;
+			complexes[j].TFs = 0;
 			net->Ka[j] = Ka[j];
 		}
 		
@@ -302,21 +304,21 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 			net->Vmax[j] = Vmax[j];
 			net->fixed[j] = fixed[j];
 		}
-		
-		net->complexes[n].size = (int)(1 + TF_RANGE * mtrand());
-		net->complexes[n].TFs = (int*) malloc(net->complexes[n].size * sizeof(int));
-		net->complexes[n].TFs[0] = (int)(m-1);
-		for (i=1; i < net->complexes[n].size; ++i)
-		{
-			net->complexes[n].TFs[i] = (int)(m * mtrand());
-		}
-		
+
 		free(targetGene);
 		free(complexes);
 		free(Ka);
 		free(degradation);
 		free(Vmax);
 		free(fixed);
+		
+		net->complexes[n].size = (int)(1.0 + (TF_RANGE * mtrand()));
+		net->complexes[n].TFs = (int*) malloc(net->complexes[n].size * sizeof(int));
+		net->complexes[n].TFs[0] = (int)(m-1);
+		for (i=1; i < net->complexes[n].size; ++i)
+		{
+			net->complexes[n].TFs[i] = (int)(m * mtrand());
+		}
 
 		net->targetGene[n] = (int)(mtrand() * m);
 		net->Ka[n] = (2.0 * mtrand() - 1.0) * KA_RANGE;
@@ -387,6 +389,7 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 			{
 				net->complexes[j1].size = complexes[j].size;
 				net->complexes[j1].TFs = complexes[j].TFs;
+				complexes[j].TFs = 0;
 				net->Ka[j1] = Ka[j];
 				net->targetGene[j1] = targetGene[j];
 				++j1;
