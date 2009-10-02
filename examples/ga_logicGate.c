@@ -33,7 +33,7 @@ int main()
 	double *iv;
 	GApopulation pop;
 	GAindividual * best;
-	double ** table;
+	double ** table, ** table2;
 
 	lineageTrackingON();
 	setFitnessFunction( &fitness );  //set the fitness function
@@ -44,7 +44,7 @@ int main()
 
 	enableLogFile("log.txt");
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(1000,200,50,0);
+	pop = evolveNetworks(1000,200,50,&callback);
 	
 	best = pop[0]; //get the best network
 	
@@ -60,25 +60,28 @@ int main()
 	iv[1] = 10.0;
 	
 	table = XORtable();
+	table2 = XORtable();
 
 	num_rows = 4;
 	num_inputs = 2;
 	num_outputs = 1;
 	
-	compareSteadyStates(best, table, num_rows, num_inputs, num_outputs, 1, table);
+	compareSteadyStates(best, table, num_rows, num_inputs, num_outputs, 1, table2);
 
 	//free table
 	for (i=0; i < 4; ++i)
 	{
-		printf("%lf\t%lf\t%lf\n",table[i][0],table[i][1],table[i][2]);
+		printf("%lf\t%lf\t%lf\n",table2[i][0],table2[i][1],table2[i][2]);
 	}
 
 	for (i=0; i < 4; ++i)
 	{
 		free(table[i]);
+		free(table2[i]);
 	}
 	
 	free(table);
+	free(table2);
 
 	/****** free all the networks returned by the genetic algorithm ************/
 	GAfree(pop);

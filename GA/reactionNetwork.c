@@ -1057,7 +1057,7 @@ int* getParentIDs(GAindividual individual)
 
 double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs, int outputs, int corr, double ** res)
 {
-	int i, j, m, cols, n, *best;
+	int i, j, m, k, g, cols, n, *best;
 	double * ss, * iv, closest, temp, sumOfSq, corrcoef, *mXY, *mX, *mY, *mX2, *mY2, oldMaxT = SS_FUNC_MAX_TIME;
 	ReactionNetwork * r = (ReactionNetwork*)(p);
 	SetFixedSpeciesFunction setFixed;
@@ -1120,6 +1120,14 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 					closest = -1.0;
 					for (j=inputs; j < n; ++j) //find best match
 					{
+						g = 0;
+						for (k=0; k < outputs; ++k)
+							if (best[k] == j)
+							{
+								g = 1;
+								break;
+							}
+						if (g) continue;
 						temp = (ss[j] - table[m][inputs+i]);
 						if ((closest < 0.0) || ((temp*temp) < closest))
 						{
@@ -1129,20 +1137,17 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 					}
 				}
 				
-				j = best[i];
+				j = inputs+i;//best[i];
 
 				if (res)
 				{
-					res[m][inputs+i] = ss[inputs+i];
+					res[m][inputs+i] = ss[j];
 				}
 
 				temp = (ss[j] - table[m][inputs+i]);
 				closest = temp*temp;
 				
 				sumOfSq += closest;
-
-				j = best[i];
-
 				mX[i] += ss[j];
 				mY[i] += table[m][inputs+i];
 				mXY[i] += table[m][inputs+i] * ss[j];
@@ -1173,10 +1178,16 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 		mXY[i] /= rows;
 		mX2[i] /= rows;
 		mY2[i] /= rows;
-		temp = ( (mXY[i] - mX[i]*mY[i])/
-				( 0.01 + sqrt(mX2[i] - mX[i]*mX[i])*sqrt(mY2[i] - mY[i]*mY[i])) );   //correlation formula
 
-		corrcoef += (1.0 + temp)/2.0; //between 0 and 1, instead of -1 and 1
+		if ( (mX2[i] - mX[i]*mX[i]) <= 0.0 || (mY2[i] - mY[i]*mY[i]) <= 0.0 )
+		{
+			sumOfSq = -1.0;
+			break;
+		}
+
+		temp = ( (mXY[i] - mX[i]*mY[i])/
+				( sqrt(mX2[i] - mX[i]*mX[i])*sqrt(mY2[i] - mY[i]*mY[i])) );   //correlation formula
+		corrcoef += (1.0 + temp)/2.0; //between 0 and 1, instead of -1 and 1		
 	}
 
 	for (i=0; i < n; ++i)
@@ -1197,7 +1208,7 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 
 	SS_FUNC_MAX_TIME = oldMaxT;
 	
-	if (sumOfSq < 0.0) return 0.0;
+	if (sumOfSq <= 0.0) return 0.0;
 	
 	if (corr) return corrcoef;
 	return (1.0 / (1.0 + sumOfSq));
