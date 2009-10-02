@@ -58,6 +58,18 @@ void setMutationRateOfInitialValues(double d)
 	MUTATE_INIT_VALUE_PROB = d;
 }
 
+static double SS_FUNC_ERROR_TOLERANCE = 1.0E-3;
+static double SS_FUNC_DELTA_TIME = 0.1;
+static double SS_FUNC_MAX_TIME = 10000.0;
+
+void configureSteadyStateFunction(double tolerance, 
+									double delta,
+									double maxTime)
+{
+	SS_FUNC_ERROR_TOLERANCE = tolerance;
+	SS_FUNC_DELTA_TIME = delta;
+	SS_FUNC_MAX_TIME = maxTime;
+}
 
 /********************************************************
 
@@ -381,7 +393,7 @@ double * networkSteadyState( GAindividual individual )
 
 	if (species == 0 || reactions == 0) return 0;
 	N = stoic(r->network);
-	y = steadyState2(species, reactions, N, rate, iv, p, 1.0E-3,10000.0,0.1);
+	y = steadyState2(species, reactions, N, rate, iv, p, SS_FUNC_ERROR_TOLERANCE,SS_FUNC_MAX_TIME,SS_FUNC_DELTA_TIME);
 	free(N);
 	
 	return y;
@@ -428,11 +440,11 @@ void printNetwork(FILE * stream, GAindividual individual)
 
 	if (r->initialValues)
 	{
-		printf("\n");
+		fprintf(stream,"\n");
 		n = getNumSpecies(r);
 		for (i=0; i < n; ++i)
 		{
-			printf("s%i = %lf;\n",i+1,r->initialValues[i]);
+			fprintf(stream,"s%i = %lf;\n",i+1,r->initialValues[i]);
 		}
 	}
 }
@@ -518,6 +530,8 @@ double* getStoichiometryMatrix(GAindividual individual)
 GAindividual mutateNetwork(GAindividual p)
 {
 	ReactionNetwork * r = (ReactionNetwork*)(p);
+	int n0, n1, i;
+	double * iv;
 	GAMutateFnc f;
 
 	GAindividual net;
@@ -525,11 +539,28 @@ GAindividual mutateNetwork(GAindividual p)
 	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return p;
 	
 	f = mutateFunctions[r->type];
+	n0 = getNumSpecies(r);
 
 	if (f)
 	{
 		net = f(r->network);
 		r->network = net;
+		n1 = getNumSpecies(r);
+		if (n0 != n1)
+		{
+			iv = r->initialValues;
+			r->initialValues = (double*)malloc(n1 * sizeof(double));
+			for (i=0; i < n0 && i < n1; ++i)
+			{
+				r->initialValues[i] = iv[i];
+			}
+			for (i=n0; i < n1; ++i)
+			{
+				r->initialValues[i] = AVG_INIT_VALUES * mtrand();
+			}
+			free(iv);
+		}
+
 		if (mtrand() < MUTATE_INIT_VALUE_PROB) 
 		{
 			r->initialValues[ (int)(mtrand() * getNumSpecies(r)) ] *= 2.0 * mtrand();
@@ -730,7 +761,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 		{
 			for (i=0; i < popSz; ++i)
 			{
-				printf("\tfitness_%i",i);
+				//printf("\tfitness_%i",i);
 				fprintf(LOGFILE,"\tfitness_%i",i);
 			}
 		}
@@ -743,7 +774,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 	
 		if (TRACK_NETWORK_PARENTS && (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE))
 		{
-			printf("\tparents");
+			//printf("\tparents");
 			fprintf(LOGFILE,"\tparents");
 		}
 		
@@ -755,7 +786,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 
 		if (PRINT_EACH_FITNESS && !PRINT_EACH_ALL_FITNESS)
 		{
-			printf("\t------------");
+			//printf("\t------------");
 			fprintf(LOGFILE,"\t------------");
 		}
 		
@@ -763,7 +794,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 		{
 			for (i=0; i < popSz; ++i)
 			{
-				printf("\t----------",i);
+				//printf("\t----------",i);
 				fprintf(LOGFILE,"\t----------",i);
 			}
 		}
@@ -776,7 +807,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 	
 		if (TRACK_NETWORK_PARENTS && (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE))
 		{
-			printf("\t-------");
+			//printf("\t-------");
 			fprintf(LOGFILE,"\t-------");
 		}
 		
@@ -794,10 +825,13 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 		for (i=0; i < popSz; ++i)
 		{
 			p = pop[i];
+
+			if (!p) continue;
+
 			parents = getParentIDs(p);
 			if (parents)
 			{
-				for (j=0; parents[j] != 0; ++j)
+				for (j=0; parents[j] > 0; ++j)
 				{
 					if (parents[j] >= max)
 						max = parents[j];
@@ -814,7 +848,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 						for (; k < num; ++k)
 							ids[k] = 0;
 							
-						free(temp);						
+						free(temp);
 					}
 					
 					ids[ parents[j] ] += 1;
@@ -824,6 +858,8 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 			{
 				j = getID(p);
 				
+				if (j < 0) continue;
+
 				if (j >= max)
 					max = j;
 				if (j >= num)
@@ -863,7 +899,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 		for (i=0; i < popSz; ++i)
 		{
 			f = fitness(pop[i]);
-			printf("\t%lf",f);
+			//printf("\t%lf",f);
 			fprintf(LOGFILE,"\t%lf",f);
 		}
 	}
@@ -877,29 +913,29 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 	if (TRACK_NETWORK_PARENTS && (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE))
 	{
 		for (i=0; i < max; ++i)
-			if (i==0)
-			{
-				printf("\t%i",ids[i]);
-				fprintf(LOGFILE,"\t%i",ids[i]);
-			}
-		if (ids && num > 0)
-			free(ids);
+		{
+			//printf("\t%i",ids[i]);
+			fprintf(LOGFILE,"\t%i",ids[i]);
+		}
 	}
 	
 	if (PRINT_EACH_SCRIPT)
 	{
-		printf("\n========script=======\n");
+		//printf("\n========script=======\n");
 		fprintf(LOGFILE,"\n========script=======\n");
 
-		printNetwork(stdout,pop[0]);
+		//printNetwork(stdout,pop[0]);
 		printNetwork(LOGFILE,pop[0]);
 
-		printf("\n=====================\n");
+		//printf("\n=====================\n");
 		fprintf(LOGFILE,"\n=====================\n");
 	}
 
 	printf("\n");
 	fprintf(LOGFILE,"\n");
+
+	if (ids && (num > 0))
+		free(ids);
 	
 	if (USER_CALLBACK_FNC)
 		return USER_CALLBACK_FNC(iter,pop,popSz);
@@ -927,9 +963,9 @@ void finalCallBackWithLogKepping(int iter, GApopulation pop, int popSz)
 	PRINT_EACH_ALL_FITNESS = PRINT_FINAL_ALL_FITNESS;
 	PRINT_EACH_ALL_LINEAGE = PRINT_FINAL_ALL_LINEAGE;
 	
-	printf("\n========final results=======\n");
+	//printf("\n========final results=======\n");
 	fprintf(LOGFILE,"\n========final results=======\n");
-	callBackWithLogKeeping(0,pop,popSz);
+	callBackWithLogKeeping(iter,pop,popSz);
 	
 	//restore
 	PRINT_EACH_FITNESS = each_fitness;
@@ -972,6 +1008,9 @@ GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GACallbackFnc callbackF
 		finalCallBackWithLogKepping(maxIter,P,sz1);
 	}
 	
+	if (LOGFILE)
+		fclose(LOGFILE);
+
 	return P;
 }
 
@@ -1018,11 +1057,13 @@ int* getParentIDs(GAindividual individual)
 
 double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs, int outputs, int corr, double ** res)
 {
-	int i, j, m, cols, n, *best;
-	double * ss, * iv, closest, temp, sumOfSq, corrcoef, *mXY, *mX, *mY, *mX2, *mY2;
+	int i, j, m, k, g, cols, n, *best;
+	double * ss, * iv, closest, temp, sumOfSq, corrcoef, *mXY, *mX, *mY, *mX2, *mY2, oldMaxT = SS_FUNC_MAX_TIME;
 	ReactionNetwork * r = (ReactionNetwork*)(p);
 	SetFixedSpeciesFunction setFixed;
 	
+	SS_FUNC_MAX_TIME = 100.0;
+
 	cols = inputs + outputs;
 	
 	n = getNumSpecies(r);
@@ -1079,6 +1120,14 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 					closest = -1.0;
 					for (j=inputs; j < n; ++j) //find best match
 					{
+						g = 0;
+						for (k=0; k < outputs; ++k)
+							if (best[k] == j)
+							{
+								g = 1;
+								break;
+							}
+						if (g) continue;
 						temp = (ss[j] - table[m][inputs+i]);
 						if ((closest < 0.0) || ((temp*temp) < closest))
 						{
@@ -1088,20 +1137,17 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 					}
 				}
 				
-				j = best[i];
+				j = inputs+i;//best[i];
 
 				if (res)
 				{
-					res[m][inputs+i] = ss[inputs+i];
+					res[m][inputs+i] = ss[j];
 				}
 
 				temp = (ss[j] - table[m][inputs+i]);
 				closest = temp*temp;
 				
 				sumOfSq += closest;
-
-				j = best[i];
-
 				mX[i] += ss[j];
 				mY[i] += table[m][inputs+i];
 				mXY[i] += table[m][inputs+i] * ss[j];
@@ -1132,10 +1178,16 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 		mXY[i] /= rows;
 		mX2[i] /= rows;
 		mY2[i] /= rows;
-		temp = ( (mXY[i] - mX[i]*mY[i])/
-				( 0.01 + sqrt(mX2[i] - mX[i]*mX[i])*sqrt(mY2[i] - mY[i]*mY[i])) );   //correlation formula
 
-		corrcoef += (1.0 + temp)/2.0; //between 0 and 1, instead of -1 and 1
+		if ( (mX2[i] - mX[i]*mX[i]) <= 0.0 || (mY2[i] - mY[i]*mY[i]) <= 0.0 )
+		{
+			sumOfSq = -1.0;
+			break;
+		}
+
+		temp = ( (mXY[i] - mX[i]*mY[i])/
+				( sqrt(mX2[i] - mX[i]*mX[i])*sqrt(mY2[i] - mY[i]*mY[i])) );   //correlation formula
+		corrcoef += (1.0 + temp)/2.0; //between 0 and 1, instead of -1 and 1		
 	}
 
 	for (i=0; i < n; ++i)
@@ -1153,8 +1205,10 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 	{
 		setFixed(r->network,i,0);
 	}
+
+	SS_FUNC_MAX_TIME = oldMaxT;
 	
-	if (sumOfSq < 0.0) return 0.0;
+	if (sumOfSq <= 0.0) return 0.0;
 	
 	if (corr) return corrcoef;
 	return (1.0 / (1.0 + sumOfSq));
@@ -1163,7 +1217,7 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 void enableLogFile(char* filename)
 {
 	if (LOGFILE)
-			fclose(LOGFILE);
+		fclose(LOGFILE);
 			
 	LOGFILE = 0;
 	

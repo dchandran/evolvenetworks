@@ -210,8 +210,11 @@ GApopulation GAnextGen(GApopulation currentGApopulation, int oldPopSz, int newPo
 	if (keepOldGApopulation == 0)
 	{
 		for (i = 0; i < oldPopSz; ++i)
+		{
 			if (currentGApopulation[i] != NULL)
 				deleteGAindividual(currentGApopulation[i]);
+		}
+
 		free(currentGApopulation);
 	}
 	free(fitnessArray);
