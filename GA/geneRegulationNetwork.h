@@ -163,13 +163,20 @@ void setResourceRestriction(double inflow, double cost_per_protein);
    \{
 */
 /*! \brief Set the initial parameters for generating random networks.
- * \param int maximum number of transcription factors in a complex (i.e. 2 means that only monomers or dimers allowed)
- * \param double the average Ka value for random networks
- * \param double the average maximum production rate for a gene
- * \param double the average degradation rate constant for a gene product
+ * \param int min number of transcription factors in a complex (i.e. 2 means that monomers are disallowed)
+ * \param int max number of transcription factors in a complex (i.e. 2 means that only monomers or dimers allowed)
+ * \param double the min Ka value for random networks
+ * \param double the max Ka value for random networks
+ * \param double the min production rate for a gene
+ * \param double the max production rate for a gene
+ * \param double the min degradation rate constant for a gene product
+ * \param double the max degradation rate constant for a gene product
  * \ingroup geneticnetwork
 */
-void setRateConstantsForGeneRegulationNetwork(int max_complex_size, double Ka, double Vmax, double degradation);
+void setRateConstantsForGeneRegulationNetwork(int min_complex_size, int max_complex_size, 
+											  double min_Ka, double max_Ka, 
+											  double min_Vmax, double max_Vmax, 
+											  double min_degradation, double max_degradation);
 
 /*! \brief Set the initial parameters for generating random networks.
  * \param int average number of genes in the networks

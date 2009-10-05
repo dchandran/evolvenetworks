@@ -11,16 +11,40 @@
 global parameters
 **************/
 
-static double AVG_TOTAL = 10.0;
-static double KM_RANGE = 10.0;
-static double VMAX_RANGE = 10.0;
-static double AVG_NUM_REGULATIONS = 0.2;
+static double MIN_TOTAL = 0.001;
+static double MAX_TOTAL = 10.0;
+static double KM_MIN = 0.0001;
+static double KM_MAX = 10.0;
+static double VMAX_MIN = 0.0001;
+static double VMAX_MAX = 10.0;
+static double MIN_NUM_REGULATIONS = 0.1;
+static double MAX_NUM_REGULATIONS = 0.5;
 static double MUTATE_REWIRE = 0.2;
 static double MUTATE_CHANGE_PARAM = 0.5;
 static double MUTATE_TOTAL_CONC = 0.15;
 static double CROSSOVER_PROB = 1.0;
-static int AVG_NUM_SPECIES = 10;
+static int MIN_NUM_SPECIES = 4;
+static int MAX_NUM_SPECIES = 16;
 
+void setRateConstantsForProteinInteractionNetwork(double min_ka, double max_ka, double min_vmax, double max_vmax, double min_total, double max_total)
+{
+	double d;
+	if (min_ka > 0.0) KM_MIN = min_ka;
+	if (max_ka > 0.0) KM_MAX = min_ka;
+	if (KM_MIN > KM_MAX)
+	{
+		d = KM_MIN;
+		KM_MIN = KM_MAX;
+		KM_MAX = d;
+	}
+	if (min_ka > 0.0) KM_MIN = min_ka;
+	if (max_ka > 0.0) KM_MAX = min_ka;
+	if (KM_MIN > KM_MAX)
+	{
+		d = KM_MIN;
+		KM_MIN = KM_MAX;
+		KM_MAX = d;
+	}
 void setRateConstantsForProteinInteractionNetwork(double ka, double vmax, double total)
 {
 	KM_RANGE = ka;
@@ -28,10 +52,23 @@ void setRateConstantsForProteinInteractionNetwork(double ka, double vmax, double
 	AVG_TOTAL = total;
 }
 
-void setSizeForProteinInteractionNetwork(int s, int r)
+void setSizeForProteinInteractionNetwork(int s0, int s1, int r0, int r1)
 {
-	AVG_NUM_SPECIES = s;
-	AVG_NUM_REGULATIONS = (double)r/(double)s;
+	double d;
+	MIN_NUM_SPECIES = s0;
+	MAX_NUM_SPECIES = s1;
+	if (MIN_NUM_SPECIES < 2) MIN_NUM_SPECIES = 2;
+	if (MAX_NUM_SPECIES < MIN_NUM_SPECIES)
+	{
+		d = MIN_NUM_SPECIES;
+		MIN_NUM_SPECIES = MAX_NUM_SPECIES;
+		MAX_NUM_SPECIES = d;
+	}
+	
+	if (r0 < 1) r0 = 1;
+	if (r1 < r0) r1 = r0;
+	MIN_NUM_REGULATIONS = (double)r0/((double)(s0 + s1)/2.0);
+	MAX_NUM_REGULATIONS = (double)r1/((double)(s0 + s1)/2.0);
 }
 
 void setMutationRatesForProteinInteractionNetwork(double a, double b, double c, double d)

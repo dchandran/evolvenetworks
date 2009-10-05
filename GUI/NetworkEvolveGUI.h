@@ -64,7 +64,7 @@ namespace NetworkEvolutionLib
 		/*params to fill in*/
 		
 		double uni_uni, uni_bi, bi_uni, bi_bi, no_reactant, no_product;
-		double ma_init_max_constant;
+		double ma_min_constant, ma_max_constant;
 		double ma_mutate_constants, ma_mutate_remove_reaction, ma_mutate_add_reaction;
 		
 		double prot_init_ka, prot_init_vmax, prot_init_total;
@@ -133,7 +133,8 @@ namespace NetworkEvolutionLib
 		void setNoReactant(double value) { no_reactant = value; }
 		void setNoProduct(double value) { no_product = value; }
 		
-		void set_ma_init_max_constant(double value) { ma_init_max_constant = value; }
+		void set_ma_min_constant(double value) { ma_min_constant = value; }
+		void set_ma_max_constant(double value) { ma_max_constant = value; }
 		void set_ma_mutate_constants(double value) { ma_mutate_constants = value; }
 		void set_ma_mutate_remove_reaction(double value) { ma_mutate_remove_reaction = value; }
 		void set_ma_mutate_add_reaction(double value) { ma_mutate_add_reaction = value; }

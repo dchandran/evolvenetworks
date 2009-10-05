@@ -12,19 +12,24 @@
 *************************/
 
 static double MUTATE_KEQ_PROB = 0.1;
-static double KEQ_LN_RANGE = 4.0;
+static double KEQ_LN_MAX = -4.0;
+static double KEQ_LN_MAX = 4.0;
 
 static double MUTATE_ALPHA_PROB = 0.1;
-static double ALPHA_LN_RANGE = 2.0;
+static double ALPHA_LN_MIN = -2.0;
+static double ALPHA_LN_MAX = 2.0;
 
 static double MUTATE_H_PROB = 0.1;
-static double H_RANGE = 2.0;
+static double H_MIN = 1.0;
+static double H_MAX = 4.0;
 
 static double MUTATE_S_HALF_PROB = 0.1;
-static double S_HALF_RANGE = 20.0;
+static double S_HALF_MIN = 0.001;
+static double S_HALF_MAX = 20.0;
 
 static double MUTATE_P_HALF_PROB = 0.1;
-static double P_HALF_RANGE = 20.0;
+static double P_HALF_MIN = 0.001;
+static double P_HALF_MAX = 20.0;
 
 static double MUTATE_ENZYME_PROB = 0.1;
 static double CROSSOVER_PROB = 0.2;
@@ -34,24 +39,76 @@ void setDistributionOfEnzymeNetwork(double uni_uni, double uni_bi, double bi_uni
 	setDistributionOfMassActionNetwork(uni_uni, uni_bi, bi_uni, bi_bi, no_reactant, no_product);
 }
 
-void setRateConstantsForEnzymeNetwork(double max_kcat, double max_log_keq, double max_alpha, double max_h, double max_s_half, double max_p_half)
+void setRateConstantsForEnzymeNetwork(double min_kcat, double max_kcat, 
+									  double min_log_keq, double max_log_keq, 
+									  double min_alpha, double max_alpha, 
+									  double min_h, double max_h, 
+									  double min_s_half, double max_s_half, 
+									  double max_p_half, double max_p_half)
 {
-	setRateConstantForMassActionNetwork(max_kcat);
+	double d;
+	
+	setRateConstantForMassActionNetwork(min_kcat, max_kcat);
+	
+	if (min_log_keq > 0)
+		KEQ_LN_MIN = min_log_keq;
 	if (max_log_keq > 0)
-		KEQ_LN_RANGE = max_log_keq;
+		KEQ_LN_MAX = max_log_keq;
+	if (KEQ_LN_MIN > KEQ_LN_MAX)
+	{
+		d = KEQ_LN_MIN;
+		KEQ_LN_MIN = KEQ_LN_MAX;
+		KEQ_LN_MAX = d;
+	}
+	
+	if (min_alpha > 0)
+		ALPHA_LN_MIN = min_alpha;
 	if (max_alpha > 0)
-		ALPHA_LN_RANGE = max_alpha;
+		ALPHA_LN_MAX = max_alpha;
+	if (ALPHA_LN_MIN > ALPHA_LN_MAX)
+	{
+		d = ALPHA_LN_MIN;
+		ALPHA_LN_MIN = ALPHA_LN_MAX;
+		ALPHA_LN_MAX = d;
+	}
+	
+	if (min_h > 0)
+		H_MIN = min_h;
+	if (max_h > 0)
+		H_MAX = max_h;
+	if (H_MIN > H_MAX)
+	{
+		d = H_MIN;
+		H_MIN = H_MAX;
+		H_MAX = d;
+	}
+	
+	if (min_s_half > 0)
+		S_HALF_MIN = min_s_half;
 	if (max_s_half > 0)
-		S_HALF_RANGE = max_s_half;
+		S_HALF_MAX = max_s_half;
+	if (S_HALF_MIN > S_HALF_MAX)
+	{
+		d = S_HALF_MIN;
+		S_HALF_MIN = S_HALF_MAX;
+		S_HALF_MAX = d;
+	}
+	
 	if (max_p_half > 0)
-		P_HALF_RANGE = max_p_half;
-	if (max_h > 2)
-		H_RANGE = max_h-2.0;
+		P_HALF_MIN = max_p_half;
+	if (max_p_half > 0)
+		P_HALF_MAX = max_p_half;
+	if (P_HALF_MIN > P_HALF_MAX)
+	{
+		d = P_HALF_MIN;
+		P_HALF_MIN = P_HALF_MAX;
+		P_HALF_MAX = d;
+	}
 }
 
-void setSizeForEnzymeNetwork(int n, int s)
+void setSizeForEnzymeNetwork(int n0, int n1, int s0, int s1)
 {
-	setSizeForMassActionNetwork(n,s);
+	setSizeForMassActionNetwork(n0,n1,s0,s1);
 }
 
 void setMutationRatesForEnzymeNetwork(double enzyme, 
@@ -210,11 +267,11 @@ GAindividual crossoverEnzymeNetwork(GAindividual individualA, GAindividual indiv
 	for (i=0; i < n; ++i)
 	{
 		net3->enzymes[i] = (int)(mtrand() * net3->massActionNetwork->species);
-		net3->Keq[i] = mtrand() * pow(2, (KEQ_LN_RANGE * (2.0 * mtrand() - 1)));
+		net3->Keq[i] = mtrand() * pow(2, (KEQ_LN_MIN + (KEQ_LN_MAX - KEQ_LN_MIN) * mtrand()));
 		net3->h[i] = 2.0 + H_RANGE * mtrand();
 		net3->alpha[i] = mtrand() * pow(2, (ALPHA_LN_RANGE * (2.0 * mtrand() - 1)));
-		net3->S_half[i] = S_HALF_RANGE * mtrand();
-		net3->P_half[i] = P_HALF_RANGE * mtrand();
+		net3->S_half[i] = S_HALF_MIN + (S_HALF_MAX - S_HALF_MIN) * mtrand();
+		net3->P_half[i] = P_HALF_MIN + (P_HALF_MAX - P_HALF_MIN) * mtrand();
 	}
 
 	j = (int)(mtrand() * net3->massActionNetwork->reactions);
@@ -300,16 +357,28 @@ GAindividual mutateEnzymeNetwork(GAindividual individual)
 		if (r < MUTATE_KEQ_PROB) //mutate km
 		{
 			net->Keq[i] *= 2.0 * mtrand();
+			if (net->Keq[i] > pow(2,KEQ_LN_MAX) || net->Keq[i] < pow(2,KEQ_LN_MIN))
+			{
+				net->Keq[i] = mtrand() * pow(2,KEQ_LN_MIN + (KEQ_LN_MAX - KEQ_LN_MIN) * mtrand());
+			}
 			return (GAindividual)(net);
 		}
 		if (r < (MUTATE_KEQ_PROB+MUTATE_S_HALF_PROB))   //mutate s_half
 		{
 			net->S_half[i] *= 2.0 * mtrand();
+			if (net->S_half[i] > S_HALF_MAX || net->S_half[i] < S_HALF_MIN)
+			{
+				net->S_half[i] = S_HALF_MIN + (S_HALF_MAX - S_HALF_MIN) * mtrand();
+			}
 			return (GAindividual)(net);
 		}
 		if (r < (MUTATE_KEQ_PROB+MUTATE_S_HALF_PROB+MUTATE_P_HALF_PROB))   //mutate s_half
 		{
 			net->P_half[i] *= 2.0 * mtrand();
+			if (net->P_half[i] > P_HALF_MAX || net->P_half[i] < P_HALF_MIN)
+			{
+				net->P_half[i] = P_HALF_MIN + (P_HALF_MAX - P_HALF_MIN) * mtrand();
+			}
 			return (GAindividual)(net);
 		}
 		if (r < (MUTATE_KEQ_PROB+MUTATE_S_HALF_PROB+MUTATE_P_HALF_PROB+MUTATE_ENZYME_PROB))   //mutate enzyme
@@ -320,11 +389,19 @@ GAindividual mutateEnzymeNetwork(GAindividual individual)
 		if (r < (MUTATE_KEQ_PROB+MUTATE_S_HALF_PROB+MUTATE_P_HALF_PROB+MUTATE_ENZYME_PROB+MUTATE_H_PROB))   //mutate h
 		{
 			net->h[i] *= 2.0 * mtrand();
+			if (net->h[i] > H_MAX || net->h[i] < H_MAX)
+			{
+				net->h[i] = H_MIN + (H_MAX - H_MIN) * mtrand();
+			}
 			return (GAindividual)(net);
 		}
 		if (r < (MUTATE_H_PROB+MUTATE_KEQ_PROB+MUTATE_S_HALF_PROB+MUTATE_P_HALF_PROB+MUTATE_ENZYME_PROB+MUTATE_ALPHA_PROB)) //mutate alpha
 		{
 			net->alpha[i] *= 2.0 * mtrand();
+			if (net->alpha[i] > pow(2,ALPHA_LN_MAX) || net->alpha[i] < pos(2,ALPHA_LN_MIN))
+			{
+				net->alpha[i] = mtrand() * pow(2, ALPHA_LN_MIN + (ALPHA_LN_MAX - ALPHA_LN_MIN) *mtrand());
+			}
 			return (GAindividual)(net);
 		}
 	}
@@ -332,8 +409,6 @@ GAindividual mutateEnzymeNetwork(GAindividual individual)
 	n = net->massActionNetwork->reactions;
 
 	mnet = (MassActionNetwork*)mutateMassActionNetwork(net->massActionNetwork);
-
-	//mnet = net->massActionNetwork;
 	
 	if (n == mnet->reactions)
 	{
@@ -357,11 +432,11 @@ GAindividual mutateEnzymeNetwork(GAindividual individual)
 		for (i=0; i < mnet->reactions; ++i)
 		{
 			net2->enzymes[i] = (int)(mtrand() * mnet->species);
-			net2->Keq[i] = mtrand() * pow(2, (KEQ_LN_RANGE * (2.0 * mtrand() - 1)));
-			net2->h[i] = 2.0 + (mtrand() * H_RANGE);
-			net2->alpha[i] = mtrand() * pow(2, (ALPHA_LN_RANGE * (2.0 * mtrand() - 1)));
-			net2->P_half[i] = (mtrand() * P_HALF_RANGE);
-			net2->S_half[i] = (mtrand() * S_HALF_RANGE);
+			net2->Keq[i] = mtrand() * pow(2, (KEQ_LN_MIN + (KEQ_LN_MAX - KEQ_LN_MIN) * mtrand()));
+			net2->h[i] = H_MIN + (H_MAX - H_MIN) * mtrand();
+			net2->alpha[i] = mtrand() * pow(2, (ALPHA_LN_MIN + (ALPHA_LN_MAX - ALPHA_LN_MIN) * mtrand()));
+			net2->P_half[i] = mtrand() * (P_HALF_MAX - P_HALF_MIN) + P_HALF_MIN;
+			net2->S_half[i] = mtrand() * (S_HALF_MAX - S_HALF_MIN) + S_HALF_MIN;
 		}
 
 		for (i=0; i < n && i < mnet->reactions; ++i)
@@ -619,11 +694,11 @@ GApopulation randomEnzymeNetworks(int num)
 		for (j=0; j < mnet->reactions; ++j)
 		{
 			enet->enzymes[j] = (int)(mtrand() * mnet->species);
-			enet->Keq[j] = mtrand() * pow(2, (KEQ_LN_RANGE * (2.0 * mtrand() - 1)));
-			enet->alpha[j] = mtrand() * pow(2, (ALPHA_LN_RANGE * (2.0 * mtrand() - 1)));
-			enet->h[j] = H_RANGE * mtrand();
-			enet->S_half[j] = S_HALF_RANGE * mtrand();
-			enet->P_half[j] = P_HALF_RANGE * mtrand();
+			enet->Keq[j] = mtrand() * pow(2, (KEQ_LN_MIN + (KEQ_LN_MAX - KEQ_LN_MIN) * mtrand()));
+			enet->alpha[j] = mtrand() * pow(2, (ALPHA_LN_MIN + (ALPHA_LN_MAX - ALPHA_LN_MIN) * mtrand()));
+			enet->h[j] = H_MIN + (H_MAX - H_MIN) * mtrand();
+			enet->S_half[j] = S_HALF_MIN + (S_HALF_MAX - S_HALF_MIN) * mtrand();
+			enet->P_half[j] = P_HALF_MIN + (P_HALF_MAX - P_HALF_MIN) * mtrand();
 		}
 		enet->massActionNetwork = mnet;
 		pop[i] = enet;

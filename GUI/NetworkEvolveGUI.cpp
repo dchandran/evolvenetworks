@@ -158,7 +158,8 @@ namespace NetworkEvolutionLib
 		settings.setValue("bi_bi",bi_bi);
 		settings.setValue("no_reactant",no_reactant);
 		settings.setValue("no_product",no_product);
-		settings.setValue("ma_init_max_constant",ma_init_max_constant);
+		settings.setValue("ma_min_constant",ma_min_constant);
+		settings.setValue("ma_max_constant",ma_max_constant);
 		settings.setValue("ma_mutate_constants",ma_mutate_constants);
 		settings.setValue("ma_mutate_remove_reaction",ma_mutate_remove_reaction);
 		settings.setValue("ma_mutate_add_reaction",ma_mutate_add_reaction);
@@ -323,14 +324,24 @@ namespace NetworkEvolutionLib
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setNoProduct(double)));
 		
 		massaction->addChild(child = new QTreeWidgetItem);
-		child->setText(0,"Avg. rate constant");
-		child->setToolTip(0,"Average value for a reaction rate constant");
+		child->setText(0,"Min rate constant");
+		child->setToolTip(0,"Minimum value for a reaction rate constant");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,1000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
-		doubleSpinBox->setValue(ma_init_max_constant);
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_ma_init_max_constant(double)));
+		doubleSpinBox->setValue(ma_min_constant);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_ma_min_constant(double)));
+		
+		massaction->addChild(child = new QTreeWidgetItem);
+		child->setText(0,"Max rate constant");
+		child->setToolTip(0,"Maximum value for a reaction rate constant");
+		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
+		doubleSpinBox->setRange(0.0,1000.0);
+		doubleSpinBox->setDecimals(3);
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(ma_max_constant);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_ma_max_constant(double)));
 		
 		massaction->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate rate constant");
@@ -1068,7 +1079,8 @@ namespace NetworkEvolutionLib
 				+ QString::number(no_product)
 				+ tr(");\n")
 				+ tr("    setRateConstantForMassActionNetwork(")
-				+ QString::number(ma_init_max_constant)
+				+ QString::number(ma_min_constant) + tr(",")
+				+ QString::number(ma_max_constant)
 				+ tr(");\n")
 				+ tr("    setMutationRatesForMassActionNetwork(")
 				+ QString::number(ma_mutate_constants) + tr(",")
@@ -1252,7 +1264,8 @@ namespace NetworkEvolutionLib
 		grn_prob = 1.0;
 		
 		uni_uni = uni_bi = bi_uni = bi_bi = no_reactant = no_product = 0.2;
-		ma_init_max_constant = 1.0;
+		ma_min_constant = 0.0;
+		ma_max_constant = 2.0;
 		ma_mutate_constants = 0.5;
 		ma_mutate_remove_reaction = ma_mutate_add_reaction = 0.25;
 		
@@ -1311,7 +1324,8 @@ namespace NetworkEvolutionLib
 		bi_uni = settings.value("bi_bi",bi_uni).toDouble();
 		no_reactant = settings.value("no_reactant",no_reactant).toDouble();
 		no_product = settings.value("no_product",no_product).toDouble();
-		ma_init_max_constant = settings.value("ma_init_max_constant",ma_init_max_constant).toDouble();
+		ma_min_constant = settings.value("ma_min_constant",ma_min_constant).toDouble();
+		ma_max_constant = settings.value("ma_max_constant",ma_max_constant).toDouble();
 		ma_mutate_constants = settings.value("ma_mutate_constants",ma_mutate_constants).toDouble();
 		ma_mutate_remove_reaction = settings.value("ma_mutate_remove_reaction",ma_mutate_remove_reaction).toDouble();
 		ma_mutate_add_reaction = settings.value("ma_mutate_add_reaction",ma_mutate_add_reaction).toDouble();

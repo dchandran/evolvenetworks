@@ -143,7 +143,8 @@ void setFixedSpeciesForMassActionNetwork(GAindividual, int,int);
     @name Functions for initializing a GA
 \{*/
 
-/*! \brief Set parameters for randomly generating mass-action networks
+/*! \brief Set probabilities for different reaction types mass-action networks. These probabilities will also
+           be used by the mutation function
  * \param double percent of initial reactions having one reactant and one product
  * \param double percent of initial reactions having one reactant and two products
  * \param double percent of initial reactions having two reactants and one product
@@ -153,17 +154,20 @@ void setFixedSpeciesForMassActionNetwork(GAindividual, int,int);
  * \ingroup massaction
 */
 void setDistributionOfMassActionNetwork(double uni_uni, double uni_bi, double bi_uni, double bi_bi, double no_reactant, double no_product);
-/*! \brief Set average reaction rate when randomly generating mass-action networks
+/*! \brief range for the reaction rate constant when randomly generating mass-action networks and mutating
+ * \param double min rate constant
  * \param double max rate constant
  * \ingroup massaction
 */
-void setRateConstantForMassActionNetwork(double max_rate_constant);
+void setRateConstantForMassActionNetwork(double min_rate_constant, double max_rate_constant);
 /*! \brief Set parameters for randomly generating mass-action networks
- * \param int average number of species
- * \param int average number of reactions
+ * \param int min number of species
+ * \param int max number of species
+ * \param int min number of reactions
+ * \param int max number of reactions
  * \ingroup massaction
 */
-void setSizeForMassActionNetwork(int species,int reactions);
+void setSizeForMassActionNetwork(int min_species,int max_species, int min_reactions, int max_reactions);
 /*! \brief Set parameters for the mutationr functions
  * \param double probability of mutating a coefficient (default = 0.5) 
  * \param double probability of remove a reaction during mutation. This may also remove some species.
