@@ -34,7 +34,7 @@ int main()
 
 	setFitnessFunction( &fitness );  //set the fitness function	
 	setNetworkType( GENE_REGULATION_NETWORK );  //use this network type 
-	setInitialNetworkSize(4,3);  //network size
+	setNetworkSize(2,8,2,20);  //network size
 
 	//evolve using 1000 initial networks, 500 neworks during each successive generation, for 20 generations
 	pop = evolveNetworks(200,100,20,&callback);  

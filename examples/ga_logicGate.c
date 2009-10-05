@@ -38,7 +38,7 @@ int main()
 	lineageTrackingON();
 	setFitnessFunction( &fitness );  //set the fitness function
 	setNetworkType( MASS_ACTION_NETWORK );  //use this network type
-	setInitialNetworkSize(5,8);  //network size
+	setNetworkSize(2,10,3,20);  //network size
 
 	printf ("Logic Gate Evolution\n\n");
 

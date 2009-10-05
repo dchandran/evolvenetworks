@@ -346,7 +346,7 @@ int main(int args, char ** argv)
 	
 	setFitnessFunction(&fitness);
 	
-	setInitialNetworkSize(numspecs, numreacs);
+	setNetworkSize(3, numspecs, 3, numreacs);
 	
 	pop = evolveNetworks(initsz,initsz/2,iter, &callback);
 	

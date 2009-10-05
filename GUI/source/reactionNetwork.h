@@ -253,14 +253,17 @@ void setNetworkTypeProbability(int, double);
 */
 void setNetworkType(int);
 
-/*! \brief set the average network size of the initial population. Use before calling evolveNetworks.
+/*! \brief set the min and max network sizes. Use before calling evolveNetworks.
      The "size" can mean different things for different types of networks. In general, it corresponds to the number
-	 of rows and columns in the stoichiometry matrix.
- \param int number of variables (e.g, species or genes)
- \param int number of reactions (e.g, enzymatic or transcriptional)
+	 of rows and columns in the stoichiometry matrix. In somecases, the columns might be twice the given size, due
+	 to degradation reactions. 
+ \param int min number of variables (e.g, species or genes)
+ \param int max number of variables (e.g, species or genes)
+ \param int min number of reactions (e.g, enzymatic or transcriptional)
+ \param int max number of reactions (e.g, enzymatic or transcriptional)
  \ingroup genericNetwork
 */
-void setInitialNetworkSize(int,int);
+void setNetworkSize(int min_vars,int max_vars,int min_reactions,int max_reactions);
 
 /*! \brief Run the genetic algorithm. 
      Calls GArun from ga.h using a random population created using randomNetworks()

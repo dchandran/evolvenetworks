@@ -12,12 +12,12 @@
 *************************/
 
 static double MUTATE_KEQ_PROB = 0.1;
-static double KEQ_LN_MAX = -4.0;
+static double KEQ_LN_MIN = -4.0;
 static double KEQ_LN_MAX = 4.0;
 
 static double MUTATE_ALPHA_PROB = 0.1;
-static double ALPHA_LN_MIN = -2.0;
-static double ALPHA_LN_MAX = 2.0;
+static double ALPHA_LN_MIN = -4.0;
+static double ALPHA_LN_MAX = 4.0;
 
 static double MUTATE_H_PROB = 0.1;
 static double H_MIN = 1.0;
@@ -44,7 +44,7 @@ void setRateConstantsForEnzymeNetwork(double min_kcat, double max_kcat,
 									  double min_alpha, double max_alpha, 
 									  double min_h, double max_h, 
 									  double min_s_half, double max_s_half, 
-									  double max_p_half, double max_p_half)
+									  double min_p_half, double max_p_half)
 {
 	double d;
 	
@@ -268,8 +268,8 @@ GAindividual crossoverEnzymeNetwork(GAindividual individualA, GAindividual indiv
 	{
 		net3->enzymes[i] = (int)(mtrand() * net3->massActionNetwork->species);
 		net3->Keq[i] = mtrand() * pow(2, (KEQ_LN_MIN + (KEQ_LN_MAX - KEQ_LN_MIN) * mtrand()));
-		net3->h[i] = 2.0 + H_RANGE * mtrand();
-		net3->alpha[i] = mtrand() * pow(2, (ALPHA_LN_RANGE * (2.0 * mtrand() - 1)));
+		net3->h[i] = H_MIN + (H_MAX - H_MIN) * mtrand();
+		net3->alpha[i] = mtrand() * pow(2, (ALPHA_LN_MIN + (ALPHA_LN_MAX - ALPHA_LN_MIN) * mtrand()));
 		net3->S_half[i] = S_HALF_MIN + (S_HALF_MAX - S_HALF_MIN) * mtrand();
 		net3->P_half[i] = P_HALF_MIN + (P_HALF_MAX - P_HALF_MIN) * mtrand();
 	}
@@ -398,7 +398,7 @@ GAindividual mutateEnzymeNetwork(GAindividual individual)
 		if (r < (MUTATE_H_PROB+MUTATE_KEQ_PROB+MUTATE_S_HALF_PROB+MUTATE_P_HALF_PROB+MUTATE_ENZYME_PROB+MUTATE_ALPHA_PROB)) //mutate alpha
 		{
 			net->alpha[i] *= 2.0 * mtrand();
-			if (net->alpha[i] > pow(2,ALPHA_LN_MAX) || net->alpha[i] < pos(2,ALPHA_LN_MIN))
+			if (net->alpha[i] > pow(2,ALPHA_LN_MAX) || net->alpha[i] < pow(2,ALPHA_LN_MIN))
 			{
 				net->alpha[i] = mtrand() * pow(2, ALPHA_LN_MIN + (ALPHA_LN_MAX - ALPHA_LN_MIN) *mtrand());
 			}

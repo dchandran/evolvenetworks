@@ -145,22 +145,33 @@ void setFixedSpeciesForEnzymeNetwork(GAindividual, int, int);
  * \ingroup modifiedmassaction
 */
 void setDistributionOfEnzymeNetwork(double uni_uni, double uni_bi, double bi_uni, double bi_bi, double no_reactant, double no_product);
-/*! \brief Set the initial (average) parameters for generating random networks.
+/*! \brief Set the min and max parameters for generating and mutating networks.
+ * \param double min rate constant (Vmax for enzymatic reactions)
  * \param double max rate constant (Vmax for enzymatic reactions)
+ * \param double min equilibrium point (Keq) in log scale
  * \param double max equilibrium point (Keq) in log scale
- * \param double max number of modification sites for an enzyme (h)
+ * \param double min number of modification sites for an enzyme (h) in log scale
+ * \param double max number of modification sites for an enzyme (h) in log scale
+ * \param double min half-saturation point for substrate
  * \param double max half-saturation point for substrate
+ * \param double min half-saturation point for product
  * \param double max half-saturation point for product
  * \ingroup modifiedmassaction
 */
-void setRateConstantsForEnzymeNetwork(double max_kcat, double max_log_keq, double max_alpha, double max_h, double max_s_half, double max_p_half);
+void setRateConstantsForEnzymeNetwork(double min_kcat, double max_kcat, 
+									  double min_log_keq, double max_log_keq, 
+									  double min_log_alpha, double max_log_alpha, 
+									  double min_h, double max_h, 
+									  double min_s_half, double max_s_half, 
+									  double min_p_half, double max_p_half);
 
 /*! \brief Set the initial (average) parameters for generating random networks.
- * \param int average number of species
+ * \param int min number of species
+ * \param int min number of species
  * \param int average number of reactions
  * \ingroup modifiedmassaction
 */
-void setSizeForEnzymeNetwork(int, int);
+void setSizeForEnzymeNetwork(int, int,int, int);
 /*! \brief Set parameters for the mutation and crossover functions. Arguments must add to 1.
  * \param double probability of mutating an enzyme
  * \param double probability of mutating a rate constant (vmax for enzyme reaction)

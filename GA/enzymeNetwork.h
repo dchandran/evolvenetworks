@@ -163,7 +163,7 @@ void setRateConstantsForEnzymeNetwork(double min_kcat, double max_kcat,
 									  double min_log_alpha, double max_log_alpha, 
 									  double min_h, double max_h, 
 									  double min_s_half, double max_s_half, 
-									  double max_p_half, double max_p_half);
+									  double min_p_half, double max_p_half);
 
 /*! \brief Set the initial (average) parameters for generating random networks.
  * \param int min number of species

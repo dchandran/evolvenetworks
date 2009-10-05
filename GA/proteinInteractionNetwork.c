@@ -11,18 +11,18 @@
 global parameters
 **************/
 
-static double MIN_TOTAL = 0.001;
-static double MAX_TOTAL = 10.0;
+static double TOTAL_MIN = 0.001;
+static double TOTAL_MAX = 10.0;
 static double KM_MIN = 0.0001;
 static double KM_MAX = 10.0;
 static double VMAX_MIN = 0.0001;
 static double VMAX_MAX = 10.0;
-static double MIN_NUM_REGULATIONS = 0.1;
-static double MAX_NUM_REGULATIONS = 0.5;
 static double MUTATE_REWIRE = 0.2;
 static double MUTATE_CHANGE_PARAM = 0.5;
 static double MUTATE_TOTAL_CONC = 0.15;
 static double CROSSOVER_PROB = 1.0;
+static int MIN_NUM_REGULATIONS = 0.1;
+static int MAX_NUM_REGULATIONS = 0.5;
 static int MIN_NUM_SPECIES = 4;
 static int MAX_NUM_SPECIES = 16;
 
@@ -37,24 +37,27 @@ void setRateConstantsForProteinInteractionNetwork(double min_ka, double max_ka, 
 		KM_MIN = KM_MAX;
 		KM_MAX = d;
 	}
-	if (min_ka > 0.0) KM_MIN = min_ka;
-	if (max_ka > 0.0) KM_MAX = min_ka;
-	if (KM_MIN > KM_MAX)
+	if (min_vmax > 0.0) VMAX_MIN = min_vmax;
+	if (max_vmax > 0.0) VMAX_MAX = max_vmax;
+	if (VMAX_MIN > VMAX_MAX)
 	{
-		d = KM_MIN;
-		KM_MIN = KM_MAX;
-		KM_MAX = d;
+		d = VMAX_MIN;
+		VMAX_MIN = VMAX_MAX;
+		VMAX_MAX = d;
 	}
-void setRateConstantsForProteinInteractionNetwork(double ka, double vmax, double total)
-{
-	KM_RANGE = ka;
-	VMAX_RANGE = vmax;
-	AVG_TOTAL = total;
+	if (min_total > 0.0) TOTAL_MIN = min_total;
+	if (max_total > 0.0) TOTAL_MAX = max_total;
+	if (TOTAL_MIN > TOTAL_MAX)
+	{
+		d = TOTAL_MIN;
+		TOTAL_MIN = TOTAL_MAX;
+		TOTAL_MAX = d;
+	}
 }
 
 void setSizeForProteinInteractionNetwork(int s0, int s1, int r0, int r1)
 {
-	double d;
+	int d;
 	MIN_NUM_SPECIES = s0;
 	MAX_NUM_SPECIES = s1;
 	if (MIN_NUM_SPECIES < 2) MIN_NUM_SPECIES = 2;
@@ -67,8 +70,14 @@ void setSizeForProteinInteractionNetwork(int s0, int s1, int r0, int r1)
 	
 	if (r0 < 1) r0 = 1;
 	if (r1 < r0) r1 = r0;
-	MIN_NUM_REGULATIONS = (double)r0/((double)(s0 + s1)/2.0);
-	MAX_NUM_REGULATIONS = (double)r1/((double)(s0 + s1)/2.0);
+	MIN_NUM_REGULATIONS = r0;
+	MAX_NUM_REGULATIONS = r1;
+	if (MIN_NUM_REGULATIONS < MAX_NUM_REGULATIONS)
+	{
+		d = MIN_NUM_REGULATIONS;
+		MIN_NUM_REGULATIONS = MAX_NUM_REGULATIONS;
+		MAX_NUM_REGULATIONS = d;
+	}
 }
 
 void setMutationRatesForProteinInteractionNetwork(double a, double b, double c, double d)
@@ -256,17 +265,27 @@ GAindividual mutateProteinInteractionNetwork(GAindividual individual)
 			net->regulators[i].Km[j]  *= (mtrand() * 2.0);
 		else
 			net->regulators[i].Vmax[j]  *= (mtrand() * 2.0);
+			
+		if (net->regulators[i].Km[j] > KM_MAX || net->regulators[i].Km[j] < KM_MIN)
+			net->regulators[i].Km[j] = KM_MIN + (KM_MAX - KM_MIN) * mtrand();
+
+		if (net->regulators[i].Vmax[j] > VMAX_MAX || net->regulators[i].Vmax[j] < VMAX_MIN)
+			net->regulators[i].Vmax[j] = VMAX_MIN + (VMAX_MAX - VMAX_MIN) * mtrand();
 		
 		return (GAindividual)(net);
 	}
 	if (r < (MUTATE_REWIRE+MUTATE_CHANGE_PARAM+MUTATE_TOTAL_CONC))  //change total concentrations (conservation rule)
 	{
 		net->totals[i] *= (2.0 * mtrand());
+		
+		if (net->totals[i] > TOTAL_MAX || net->totals[i] < TOTAL_MIN)
+			net->totals[i] = TOTAL_MIN + (TOTAL_MAX - TOTAL_MIN) * mtrand();
+		
 		return (GAindividual)(net);
 	}
 	else              //add or remove a new protein to the network
 	{
-		if (mtrand() < 0.5 && n > 2)     //remove a protein
+		if (mtrand() < 0.5 && n > 2 && n > MIN_NUM_SPECIES)     //remove a protein
 		{
 			n2 = n-1;
 			net->species = n2;
@@ -317,6 +336,7 @@ GAindividual mutateProteinInteractionNetwork(GAindividual individual)
 			return (GAindividual)(net);
 		}
 		else	//add a protein
+		if (n < MAX_NUM_SPECIES)
 		{
 			n2 = n+1;
 			regulators = net->regulators;
@@ -360,8 +380,8 @@ GAindividual mutateProteinInteractionNetwork(GAindividual individual)
 			}
 
 			//the new protein
-			net->totals[n] = (2.0 * mtrand()) * AVG_TOTAL;
-			m = (int)(mtrand() * n * AVG_NUM_REGULATIONS);
+			net->totals[n] = TOTAL_MIN + mtrand() * (TOTAL_MAX - TOTAL_MIN);
+			m = (int)(MIN_NUM_REGULATIONS + (MAX_NUM_REGULATIONS - MIN_NUM_REGULATIONS) * mtrand());
 			net->regulators[n].size = m;
 			net->regulators[n].proteins = (int*) malloc(m * sizeof(int));
 			net->regulators[n].Km = (double*) malloc(m * sizeof(double));
@@ -369,8 +389,8 @@ GAindividual mutateProteinInteractionNetwork(GAindividual individual)
 			for (j=0; j < m; ++j)  //random values for the new protein
 			{
 				net->regulators[n].proteins[j] = (int)(mtrand() * net->species);
-				net->regulators[n].Km[j] = mtrand() * KM_RANGE;
-				net->regulators[n].Vmax[j] = mtrand() * VMAX_RANGE;
+				net->regulators[n].Km[j] = mtrand() * (KM_MAX - KM_MIN) + KM_MIN;
+				net->regulators[n].Vmax[j] = mtrand() * (VMAX_MAX - VMAX_MIN) + VMAX_MIN;
 				
 				if (mtrand() < 0.5)
 					net->regulators[n].Vmax[j] *= -1.0;  //negative regulator
@@ -417,7 +437,7 @@ void ratesForProteinInteractionNetwork(double time,double* u,double* rate,GAindi
 	n = net->species;
 	
 	//this is cheating!...but safeguards against bad initial conditions
-	//should be a one-time issue, generally
+	//should be a one-time correction, generally
 	for (i=0; i < n; ++i)
 	{
 		if (u[i] > net->totals[i])
@@ -446,10 +466,10 @@ void ratesForProteinInteractionNetwork(double time,double* u,double* rate,GAindi
 			}
 		}
 		if (!forward)
-			rate[2*i] += VMAX_RANGE/2.0 * u[i] / (tot/2.0 + u[i]);
+			rate[2*i] += VMAX_MIN * u[i] / (tot/2.0 + u[i]);
 		
 		if (!backward)
-			rate[2*i+1] += VMAX_RANGE/2.0 * (tot - u[i]) / (tot/2.0 + (tot - u[i]));
+			rate[2*i+1] += VMAX_MIN * (tot - u[i]) / (tot/2.0 + (tot - u[i]));
 	}
 }
 
@@ -569,7 +589,6 @@ void printProteinInteractionNetwork(FILE* stream, GAindividual individual)
 
 GApopulation randomProteinInteractionNetworks(int num)
 {
-	int s = AVG_NUM_SPECIES;
 	int i,j,k,n,m;
 	ProteinInteractionNetwork * net;
 	ProteinInteractionNetwork ** array;
@@ -579,7 +598,7 @@ GApopulation randomProteinInteractionNetworks(int num)
 	array = (ProteinInteractionNetwork**) malloc(num * sizeof(ProteinInteractionNetwork*));
 	for (i=0; i < num; ++i)
 	{
-		n = (int)(1 + s * 2.0 * mtrand());
+		n = (int)(MIN_NUM_SPECIES + (MAX_NUM_SPECIES - MIN_NUM_SPECIES) * mtrand());
 		net = (ProteinInteractionNetwork*) malloc(sizeof(ProteinInteractionNetwork)); //new network
 	
 		net->species = n;    //number of proteins
@@ -591,8 +610,8 @@ GApopulation randomProteinInteractionNetworks(int num)
 		for (j=0; j < n; ++j)   //random regulators for each protein
 		{
 			net->fixed[j] = 0; //no fixed species by default
-			net->totals[j] = 2.0*mtrand()*AVG_TOTAL;
-			m = (int)(2 + mtrand() * n * AVG_NUM_REGULATIONS);
+			net->totals[j] = TOTAL_MIN + mtrand() * (TOTAL_MAX - TOTAL_MIN);
+			m = (int)(MIN_NUM_REGULATIONS + mtrand() * (MAX_NUM_REGULATIONS - MIN_NUM_REGULATIONS));
 			net->regulators[j].size = m;
 			net->regulators[j].proteins = (int*) malloc(m * sizeof(int));
 			net->regulators[j].Km = (double*) malloc(m * sizeof(double));
@@ -600,8 +619,8 @@ GApopulation randomProteinInteractionNetworks(int num)
 			for (k=0; k < m; ++k)  //random values for the new protein
 			{
 				net->regulators[j].proteins[k] = (int)(mtrand() * net->species);
-				net->regulators[j].Km[k] = mtrand() * KM_RANGE;
-				net->regulators[j].Vmax[k] = mtrand() * VMAX_RANGE;
+				net->regulators[j].Km[k] = mtrand() * (KM_MAX - KM_MIN) + KM_MIN;
+				net->regulators[j].Vmax[k] = mtrand() * (VMAX_MAX - VMAX_MIN) + VMAX_MIN;
 				
 				if (mtrand() < 0.5 || k == (m-1))
 					net->regulators[j].Vmax[k] *= -1.0;  //negative regulator

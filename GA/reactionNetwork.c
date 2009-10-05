@@ -180,12 +180,12 @@ static SetFixedSpeciesFunction setFixedSpeciesFunctions[] =
 
 ************************************************************/
 
-void setInitialNetworkSize(int a,int b)
+void setNetworkSize(int n0, int n1, int r0, int r1)
 {
-	setSizeForMassActionNetwork(a,b);
-	setSizeForEnzymeNetwork(a,b);
-	setSizeForProteinInteractionNetwork(a,b);
-	setSizeForGeneRegulationNetwork(a,b);
+	setSizeForMassActionNetwork(n0,n1,r0,r1);
+	setSizeForEnzymeNetwork(n0,n1,r0,r1);
+	setSizeForProteinInteractionNetwork(n0,n1,r0,r1);
+	setSizeForGeneRegulationNetwork(n0,n1,r0,r1);
 }
 
 GApopulation randomNetworks(int sz0)

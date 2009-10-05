@@ -108,10 +108,10 @@ namespace NetworkEvolutionLib
 		group3->setLayout(layout3);
 		
 		twoCols->addWidget(firstCol);
-		twoCols->setStretchFactor(0,0);
+		twoCols->setStretchFactor(0,1);
 		
 		twoCols->addWidget(group3);
-		twoCols->setStretchFactor(1,20);
+		twoCols->setStretchFactor(1,2);
 		
 		setWindowTitle("Network Evolution GUI");
 		
@@ -164,20 +164,29 @@ namespace NetworkEvolutionLib
 		settings.setValue("ma_mutate_remove_reaction",ma_mutate_remove_reaction);
 		settings.setValue("ma_mutate_add_reaction",ma_mutate_add_reaction);
 		
-		settings.setValue("prot_init_ka",prot_init_ka);
-		settings.setValue("prot_init_vmax",prot_init_vmax);
-		settings.setValue("prot_init_total",prot_init_total);
+		settings.setValue("prot_min_ka",prot_min_ka);
+		settings.setValue("prot_min_vmax",prot_min_vmax);
+		settings.setValue("prot_min_total",prot_min_total);
+		settings.setValue("prot_max_ka",prot_max_ka);
+		settings.setValue("prot_max_vmax",prot_max_vmax);
+		settings.setValue("prot_max_total",prot_max_total);
 		settings.setValue("prot_mutate_rewire",prot_mutate_rewire);
 		settings.setValue("prot_mutate_parameter",prot_mutate_parameter);
 		settings.setValue("prot_mutate_total",prot_mutate_total);
 		settings.setValue("prot_mutate_addremove",prot_mutate_addremove);
 		
-		settings.setValue("enzyme_init_max_kcat",enzyme_init_max_kcat);
-		settings.setValue("enzyme_init_max_log_keq",enzyme_init_max_log_keq);
-		settings.setValue("enzyme_init_max_alpha",enzyme_init_max_alpha);
-		settings.setValue("enzyme_init_max_h",enzyme_init_max_h);
-		settings.setValue("enzyme_init_max_s_half",enzyme_init_max_s_half);
-		settings.setValue("enzyme_init_max_p_half",enzyme_init_max_p_half);
+		settings.setValue("enzyme_min_kcat",enzyme_min_kcat);
+		settings.setValue("enzyme_min_log_keq",enzyme_min_log_keq);
+		settings.setValue("enzyme_min_alpha",enzyme_min_alpha);
+		settings.setValue("enzyme_min_h",enzyme_min_h);
+		settings.setValue("enzyme_min_s_half",enzyme_min_s_half);
+		settings.setValue("enzyme_min_p_half",enzyme_min_p_half);
+		settings.setValue("enzyme_max_kcat",enzyme_max_kcat);
+		settings.setValue("enzyme_max_log_keq",enzyme_max_log_keq);
+		settings.setValue("enzyme_max_alpha",enzyme_max_alpha);
+		settings.setValue("enzyme_max_h",enzyme_max_h);
+		settings.setValue("enzyme_max_s_half",enzyme_max_s_half);
+		settings.setValue("enzyme_max_p_half",enzyme_max_p_half);
 		
 		settings.setValue("enzyme_mutate_enzyme",enzyme_mutate_enzyme);
 		settings.setValue("enzyme_mutate_k_cat",enzyme_mutate_k_cat);
@@ -190,10 +199,14 @@ namespace NetworkEvolutionLib
 		
 		settings.setValue("grn_init_inflow",grn_init_inflow);
 		settings.setValue("grn_init_cost_per_protein",grn_init_cost_per_protein);
-		settings.setValue("grn_init_max_complex_size",grn_init_max_complex_size);
-		settings.setValue("grn_init_Ka",grn_init_Ka);
-		settings.setValue("grn_init_Vmax",grn_init_Vmax);
-		settings.setValue("grn_init_degradation",grn_init_degradation);
+		settings.setValue("grn_min_complex_size",grn_min_complex_size);
+		settings.setValue("grn_min_Ka",grn_min_Ka);
+		settings.setValue("grn_min_Vmax",grn_min_Vmax);
+		settings.setValue("grn_min_degradation",grn_min_degradation);
+		settings.setValue("grn_max_complex_size",grn_max_complex_size);
+		settings.setValue("grn_max_Ka",grn_max_Ka);
+		settings.setValue("grn_max_Vmax",grn_max_Vmax);
+		settings.setValue("grn_max_degradation",grn_max_degradation);
 		
 		settings.setValue("grn_mutate_Ka",grn_mutate_Ka);
 		settings.setValue("grn_mutate_Vmax",grn_mutate_Vmax);
@@ -201,8 +214,10 @@ namespace NetworkEvolutionLib
 		settings.setValue("grn_mutate_add_gene",grn_mutate_add_gene);
 		settings.setValue("grn_mutate_remove_gene",grn_mutate_remove_gene);
 		
-		settings.setValue("species",species);
-		settings.setValue("reactions",reactions);
+		settings.setValue("species_min",species_min);
+		settings.setValue("species_max",species_max);
+		settings.setValue("reactions_min",reactions_min);
+		settings.setValue("reactions_max",reactions_max);
 		settings.setValue("crossover_rate",crossover_rate);
 		settings.setValue("init_iv",init_iv);
 		settings.setValue("mutate_iv",mutate_iv);
@@ -324,19 +339,15 @@ namespace NetworkEvolutionLib
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setNoProduct(double)));
 		
 		massaction->addChild(child = new QTreeWidgetItem);
-		child->setText(0,"Min rate constant");
-		child->setToolTip(0,"Minimum value for a reaction rate constant");
+		child->setText(0,"Rate constant range");
+		child->setToolTip(0,"Minimum and maximum value for a reaction rate constant");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,1000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
 		doubleSpinBox->setValue(ma_min_constant);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_ma_min_constant(double)));
-		
-		massaction->addChild(child = new QTreeWidgetItem);
-		child->setText(0,"Max rate constant");
-		child->setToolTip(0,"Maximum value for a reaction rate constant");
-		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
+		treeWidget->setItemWidget(child,2,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,1000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
@@ -401,63 +412,99 @@ namespace NetworkEvolutionLib
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Kcat range");
-		child->setToolTip(0,"Initial range for the Kcat parameter");
+		child->setToolTip(0,"Minimum and maximum for the Kcat parameter");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,10000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
-		doubleSpinBox->setValue(enzyme_init_max_kcat);	
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_init_max_kcat(double)));
+		doubleSpinBox->setValue(enzyme_min_kcat);	
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_min_kcat(double)));
+		treeWidget->setItemWidget(child,2,doubleSpinBox = new QDoubleSpinBox);
+		doubleSpinBox->setRange(0.0,10000.0);
+		doubleSpinBox->setDecimals(3);
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(enzyme_max_kcat);	
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_max_kcat(double)));
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Keq range (log)");
-		child->setToolTip(0,"Initial range for the Keq parameter in log scale (base 2)");
+		child->setToolTip(0,"Minimum and maximum for the Keq parameter in log scale (base 2)");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,32.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
-		doubleSpinBox->setValue(enzyme_init_max_log_keq);
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_init_max_log_keq(double)));
+		doubleSpinBox->setValue(enzyme_min_log_keq);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_min_log_keq(double)));
+		treeWidget->setItemWidget(child,2,doubleSpinBox = new QDoubleSpinBox);
+		doubleSpinBox->setRange(0.0,32.0);
+		doubleSpinBox->setDecimals(3);
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(enzyme_max_log_keq);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_max_log_keq(double)));
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Alpha range (log)");
-		child->setToolTip(0,"Initial range for the Alpha parameter in log scale (base 2)");
+		child->setToolTip(0,"Minimum and maximum for the Alpha parameter in log scale (base 2)");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,32.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
-		doubleSpinBox->setValue(enzyme_init_max_alpha);
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_init_max_alpha(double)));		
+		doubleSpinBox->setValue(enzyme_min_alpha);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_min_alpha(double)));
+		treeWidget->setItemWidget(child,2,doubleSpinBox = new QDoubleSpinBox);
+		doubleSpinBox->setRange(0.0,32.0);
+		doubleSpinBox->setDecimals(3);
+		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(enzyme_max_alpha);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_max_alpha(double)));	
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Hill range");
-		child->setToolTip(0,"Initial range for the Hill coefficient");
+		child->setToolTip(0,"Minimum and maximum for the Hill coefficient");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,100.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
-		doubleSpinBox->setValue(enzyme_init_max_h);
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_init_max_h(double)));		
+		doubleSpinBox->setValue(enzyme_min_h);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_min_h(double)));
+		treeWidget->setItemWidget(child,2,doubleSpinBox = new QDoubleSpinBox);
+		doubleSpinBox->setRange(0.0,100.0);
+		doubleSpinBox->setDecimals(3);
+		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(enzyme_max_h);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_max_h(double)));		
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"S-half range");
-		child->setToolTip(0,"Initial range for the substrate half saturation value");
+		child->setToolTip(0,"Minimum and maximum for the substrate half saturation value");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,1000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
-		doubleSpinBox->setValue(enzyme_init_max_s_half);
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_init_max_s_half(double)));
+		doubleSpinBox->setValue(enzyme_min_s_half);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_min_s_half(double)));
+		treeWidget->setItemWidget(child,2,doubleSpinBox = new QDoubleSpinBox);
+		doubleSpinBox->setRange(0.0,1000.0);
+		doubleSpinBox->setDecimals(3);
+		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(enzyme_max_s_half);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_max_s_half(double)));
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"S-half range");
-		child->setToolTip(0,"Initial range for the substrate half saturation value");
+		child->setToolTip(0,"Minimum and maximum for the substrate half saturation value");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,100.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
-		doubleSpinBox->setValue(enzyme_init_max_p_half);
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_init_max_p_half(double)));
+		doubleSpinBox->setValue(enzyme_min_p_half);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_min_p_half(double)));
+		treeWidget->setItemWidget(child,2,doubleSpinBox = new QDoubleSpinBox);
+		doubleSpinBox->setRange(0.0,100.0);
+		doubleSpinBox->setDecimals(3);
+		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(enzyme_max_p_half);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_enzyme_max_p_half(double)));
 		
 		enzyme->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate enzyme");
@@ -576,34 +623,52 @@ namespace NetworkEvolutionLib
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setProteinProb(double)));
 		
 		protein->addChild(child = new QTreeWidgetItem);
-		child->setText(0,"Avg. Km");
-		child->setToolTip(0,"The average Michaelis-Menten constant for initial networks");
+		child->setText(0,"Km range");
+		child->setToolTip(0,"The minimum and maximum Michaelis-Menten constant for initial networks");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,10000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
-		doubleSpinBox->setValue(prot_init_ka);
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_init_ka(double)));
+		doubleSpinBox->setValue(prot_min_ka);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_min_ka(double)));
+		treeWidget->setItemWidget(child,2,doubleSpinBox = new QDoubleSpinBox);
+		doubleSpinBox->setRange(0.0,10000.0);
+		doubleSpinBox->setDecimals(3);
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(prot_max_ka);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_max_ka(double)));
 		
 		protein->addChild(child = new QTreeWidgetItem);
-		child->setText(0,"Avg. Vmax");
-		child->setToolTip(0,"The average Vmax constant for initial networks");
+		child->setText(0,"Vmax range");
+		child->setToolTip(0,"The minimum and maximum Vmax constant for initial networks");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,10000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
-		doubleSpinBox->setValue(prot_init_vmax);
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_init_vmax(double)));
+		doubleSpinBox->setValue(prot_min_vmax);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_min_vmax(double)));
+		treeWidget->setItemWidget(child,2,doubleSpinBox = new QDoubleSpinBox);
+		doubleSpinBox->setRange(0.0,10000.0);
+		doubleSpinBox->setDecimals(3);
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(prot_max_vmax);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_max_vmax(double)));
 		
 		protein->addChild(child = new QTreeWidgetItem);
-		child->setText(0,"Avg. total");
-		child->setToolTip(0,"The average total concentration for proteins in the initial networks");
+		child->setText(0,"Total range");
+		child->setToolTip(0,"The minimum and maximum total concentration for proteins in the initial networks");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,100000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
-		doubleSpinBox->setValue(prot_init_total);
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_init_total(double)));		
+		doubleSpinBox->setValue(prot_min_total);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_min_total(double)));		
+		treeWidget->setItemWidget(child,2,doubleSpinBox = new QDoubleSpinBox);
+		doubleSpinBox->setRange(0.0,100000.0);
+		doubleSpinBox->setDecimals(3);
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(prot_max_total);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_prot_max_total(double)));		
 		
 		protein->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate regulation");
@@ -693,43 +758,66 @@ namespace NetworkEvolutionLib
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_init_cost_per_protein(double)));
 		
 		grn->addChild(child = new QTreeWidgetItem);
-		child->setText(0,"Max. complex size");
-		child->setToolTip(0,"The maximum number of transcription factors that can form a complex");
+		child->setText(0,"Complex size range");
+		child->setToolTip(0,"The minimum and maximum number of transcription factors that can form a complex");
 		treeWidget->setItemWidget(child,1,intSpinBox = new QSpinBox);
 		intSpinBox->setRange(0,10);
 		intSpinBox->setSingleStep(1);		
-		intSpinBox->setValue(grn_init_max_complex_size);
-		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(set_grn_init_max_complex_size(int)));
+		intSpinBox->setValue(grn_min_complex_size);
+		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(set_grn_min_complex_size(int)));
+		treeWidget->setItemWidget(child,2,intSpinBox = new QSpinBox);
+		intSpinBox->setRange(0,10);
+		intSpinBox->setSingleStep(1);		
+		intSpinBox->setValue(grn_max_complex_size);
+		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(set_grn_max_complex_size(int)));
 		
 		grn->addChild(child = new QTreeWidgetItem);
-		child->setText(0,"Avg. Ka");
-		child->setToolTip(0,"Average association constant for transcription factors");
+		child->setText(0,"Ka range");
+		child->setToolTip(0,"Minimum and maximum association constant for transcription factors");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,10000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
-		doubleSpinBox->setValue(grn_init_Ka);
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_init_Ka(double)));
+		doubleSpinBox->setValue(grn_min_Ka);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_min_Ka(double)));
+		treeWidget->setItemWidget(child,2,doubleSpinBox = new QDoubleSpinBox);
+		doubleSpinBox->setRange(0.0,10000.0);
+		doubleSpinBox->setDecimals(3);
+		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(grn_max_Ka);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_max_Ka(double)));
 		
 		grn->addChild(child = new QTreeWidgetItem);
-		child->setText(0,"Avg. Vmax");
-		child->setToolTip(0,"Average Vmax for protein production rate");
+		child->setText(0,"Vmax range");
+		child->setToolTip(0,"Minimum and maximum Vmax for protein production rate");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,10000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);	
-		doubleSpinBox->setValue(grn_init_Vmax);	
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_init_Vmax(double)));
+		doubleSpinBox->setValue(grn_min_Vmax);	
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_min_Vmax(double)));
+		treeWidget->setItemWidget(child,2,doubleSpinBox = new QDoubleSpinBox);
+		doubleSpinBox->setRange(0.0,10000.0);
+		doubleSpinBox->setDecimals(3);
+		doubleSpinBox->setSingleStep(0.01);	
+		doubleSpinBox->setValue(grn_max_Vmax);	
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_max_Vmax(double)));
 		
 		grn->addChild(child = new QTreeWidgetItem);
-		child->setText(0,"Avg. degradation");
-		child->setToolTip(0,"Average degradation/dilution rate for proteins");
+		child->setText(0,"Degradation range");
+		child->setToolTip(0,"Minimum and maximum degradation/dilution rate for proteins");
 		treeWidget->setItemWidget(child,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0.0,10000.0);
 		doubleSpinBox->setDecimals(3);
 		doubleSpinBox->setSingleStep(0.01);		
-		doubleSpinBox->setValue(grn_init_degradation);
-		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_init_degradation(double)));		
+		doubleSpinBox->setValue(grn_min_degradation);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_min_degradation(double)));		
+		treeWidget->setItemWidget(child,2,doubleSpinBox = new QDoubleSpinBox);
+		doubleSpinBox->setRange(0.0,10000.0);
+		doubleSpinBox->setDecimals(3);
+		doubleSpinBox->setSingleStep(0.01);		
+		doubleSpinBox->setValue(grn_max_degradation);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(set_grn_max_degradation(double)));		
 		
 		grn->addChild(child = new QTreeWidgetItem);
 		child->setText(0,"Mutate Ka");
@@ -786,9 +874,9 @@ namespace NetworkEvolutionLib
 	QWidget * MainWindow::setupNetworkOptions()
 	{
 		QTreeWidget * treeWidget = new QTreeWidget();
-		treeWidget->setColumnCount(2);
+		treeWidget->setColumnCount(3);
 		treeWidget->setColumnWidth(0,200);
-		treeWidget->setHeaderLabels( QStringList() << "network/property" << "value" );
+		treeWidget->setHeaderLabels( QStringList() << "network/property" << "value/min" << "max");
 		
 		setupMassActionNetwork(treeWidget);
 		setupEnzymeNetwork(treeWidget);
@@ -802,24 +890,34 @@ namespace NetworkEvolutionLib
 		QTreeWidgetItem * option;
 		
 		option = new QTreeWidgetItem;
-		option->setText(0,"Avg. Molecular Species");
-		option->setToolTip(0,"Average number of molecular species is the initial set of networks");
+		option->setText(0,"Num. Molecular Species");
+		option->setToolTip(0,"Minimum and maximum number of molecular species is the evolved networks");
 		treeWidget->addTopLevelItem(option);
 		treeWidget->setItemWidget(option,1,intSpinBox = new QSpinBox);
 		intSpinBox->setRange(0,100000);
 		intSpinBox->setSingleStep(1);	
-		intSpinBox->setValue(species);	
-		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(set_species(int)));
+		intSpinBox->setValue(species_min);	
+		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(set_min_species(int)));
+		treeWidget->setItemWidget(option,2,intSpinBox = new QSpinBox);
+		intSpinBox->setRange(0,100000);
+		intSpinBox->setSingleStep(1);	
+		intSpinBox->setValue(species_max);	
+		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(set_max_species(int)));
 		
 		option = new QTreeWidgetItem;
-		option->setText(0,"Avg. Num. Reactions");
-		option->setToolTip(0,"Average number of reactions is the initial set of networks");
+		option->setText(0,"Num. Reactions");
+		option->setToolTip(0,"Minimum and maximum number of reactions is the evolved networks");
 		treeWidget->addTopLevelItem(option);
 		treeWidget->setItemWidget(option,1,intSpinBox = new QSpinBox);
 		intSpinBox->setRange(0,100000);
 		intSpinBox->setSingleStep(1);		
-		intSpinBox->setValue(reactions);
-		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(set_reactions(int)));
+		intSpinBox->setValue(reactions_min);
+		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(set_min_reactions(int)));
+		treeWidget->setItemWidget(option,2,intSpinBox = new QSpinBox);
+		intSpinBox->setRange(0,100000);
+		intSpinBox->setSingleStep(1);		
+		intSpinBox->setValue(reactions_max);
+		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(set_max_reactions(int)));
 		
 		option = new QTreeWidgetItem;
 		option->setText(0,"Crossover Rate");
@@ -1088,9 +1186,12 @@ namespace NetworkEvolutionLib
 				+ QString::number(ma_mutate_add_reaction)
 				+ tr(");\n")
 				+ tr("    setRateConstantsForProteinInteractionNetwork(")
-				+ QString::number(prot_init_ka) + tr(",")
-				+ QString::number(prot_init_vmax) + tr(",")
-				+ QString::number(prot_init_total)
+				+ QString::number(prot_min_ka) + tr(",")
+				+ QString::number(prot_max_ka) + tr(",")
+				+ QString::number(prot_min_vmax) + tr(",")
+				+ QString::number(prot_max_vmax) + tr(",")
+				+ QString::number(prot_min_total) + tr(",")
+				+ QString::number(prot_max_total)
 				+ tr(");\n")
 				+ tr("    setMutationRatesForProteinInteractionNetwork(")
 				+ QString::number(prot_mutate_rewire) + tr(",")
@@ -1099,12 +1200,18 @@ namespace NetworkEvolutionLib
 				+ QString::number(prot_mutate_addremove)
 				+ tr(");\n")
 				+ tr("    setRateConstantsForEnzymeNetwork(")
-				+ QString::number(enzyme_init_max_kcat) + tr(",")
-				+ QString::number(enzyme_init_max_log_keq) + tr(",")
-				+ QString::number(enzyme_init_max_alpha) + tr(",")
-				+ QString::number(enzyme_init_max_h) + tr(",")
-				+ QString::number(enzyme_init_max_s_half) + tr(",")
-				+ QString::number(enzyme_init_max_p_half)
+				+ QString::number(enzyme_min_kcat) + tr(",")
+				+ QString::number(enzyme_max_kcat) + tr(",")
+				+ QString::number(enzyme_min_log_keq) + tr(",")
+				+ QString::number(enzyme_max_log_keq) + tr(",")
+				+ QString::number(enzyme_min_alpha) + tr(",")
+				+ QString::number(enzyme_max_alpha) + tr(",")
+				+ QString::number(enzyme_min_h) + tr(",")
+				+ QString::number(enzyme_max_h) + tr(",")
+				+ QString::number(enzyme_min_s_half) + tr(",")
+				+ QString::number(enzyme_max_s_half) + tr(",")
+				+ QString::number(enzyme_min_p_half) + tr(",")
+				+ QString::number(enzyme_max_p_half)
 				+ tr(");\n")
 				+ tr("    setMutationRatesForEnzymeNetwork(")
 				+ QString::number(enzyme_mutate_enzyme) + tr(",")
@@ -1122,10 +1229,14 @@ namespace NetworkEvolutionLib
 				+ QString::number(grn_init_cost_per_protein)
 				+ tr(");\n")
 				+ tr("    setRateConstantsForGeneRegulationNetwork(")
-				+ QString::number(grn_init_max_complex_size) + tr(",")
-				+ QString::number(grn_init_Ka) + tr(",")
-				+ QString::number(grn_init_Vmax) + tr(",")
-				+ QString::number(grn_init_degradation)
+				+ QString::number(grn_min_complex_size) + tr(",")
+				+ QString::number(grn_max_complex_size) + tr(",")
+				+ QString::number(grn_min_Ka) + tr(",")
+				+ QString::number(grn_max_Ka) + tr(",")
+				+ QString::number(grn_min_Vmax) + tr(",")
+				+ QString::number(grn_max_Vmax) + tr(",")
+				+ QString::number(grn_min_degradation) + tr(",")
+				+ QString::number(grn_max_degradation)
 				+ tr(");\n")
 				+ tr("    setMutationRatesForGeneRegulationNetwork(")
 				+ QString::number(grn_mutate_Ka) + tr(",")
@@ -1134,9 +1245,11 @@ namespace NetworkEvolutionLib
 				+ QString::number(grn_mutate_add_gene) + tr(",")
 				+ QString::number(grn_mutate_remove_gene)
 				+ tr(");\n")
-				+ tr("    setInitialNetworkSize(")
-				+ QString::number(species) + tr(",")
-				+ QString::number(reactions) 
+				+ tr("    setNetworkSize(")
+				+ QString::number(species_min) + tr(",")
+				+ QString::number(species_max) + tr(",")
+				+ QString::number(reactions_min) + tr(",")
+				+ QString::number(reactions_max) 
 				+ tr(");\n")
 				+ tr("    setCrossoverRate(")
 				+ QString::number(crossover_rate) 
@@ -1264,26 +1377,44 @@ namespace NetworkEvolutionLib
 		grn_prob = 1.0;
 		
 		uni_uni = uni_bi = bi_uni = bi_bi = no_reactant = no_product = 0.2;
-		ma_min_constant = 0.0;
-		ma_max_constant = 2.0;
+		ma_min_constant = 0.01;
+		ma_max_constant = 100.0;
 		ma_mutate_constants = 0.5;
 		ma_mutate_remove_reaction = ma_mutate_add_reaction = 0.25;
 		
-		enzyme_init_max_kcat = enzyme_init_max_log_keq = enzyme_init_max_h = 4.0;
-		enzyme_init_max_alpha = 2.0;
-		enzyme_init_max_s_half = enzyme_init_max_p_half = 20.0;
+		enzyme_max_kcat = 100.0;
+		enzyme_max_log_keq = enzyme_max_h = 4.0;
+		enzyme_max_alpha = 4.0;
+		enzyme_max_s_half = enzyme_max_p_half = 20.0;
+		
+		enzyme_min_kcat = 0.001;
+		enzyme_min_log_keq = -4.0;
+		enzyme_min_h = 1.0;
+		enzyme_min_alpha = -4.0;
+		enzyme_min_s_half = enzyme_min_p_half = 0.001;
+		
 		enzyme_mutate_enzyme = enzyme_mutate_k_eq = enzyme_mutate_k_cat = enzyme_mutate_alpha = 0.1;
 		enzyme_mutate_h = enzyme_mutate_s_half = enzyme_mutate_p_half = 0.1;
 		enzyme_mutate_remove = enzyme_mutate_add = 0.1;		
 		
-		prot_init_ka = prot_init_vmax = prot_init_total = 10.0;
+		prot_min_ka = 0.001;
+		prot_max_ka = 100.0;
+		prot_min_vmax = 0.1;
+		prot_max_vmax = 100.0;
+		prot_min_total = 0.1;
+		prot_max_total = 100.0;
 		prot_mutate_rewire = prot_mutate_total = prot_mutate_addremove = 0.2;
 		prot_mutate_parameter = 0.4;
 		
 		grn_init_inflow = grn_init_cost_per_protein = 0.0;
-		grn_init_max_complex_size = 4;
-		grn_init_Ka = grn_init_Vmax = 10.0;
-		grn_init_degradation = 2.0;
+		grn_min_complex_size = 1;
+		grn_max_complex_size = 4;
+		grn_min_Ka = 0.001;
+		grn_max_Ka = 100.0;
+		grn_min_Vmax = 0.1;
+		grn_max_Vmax = 20.0;
+		grn_min_degradation = 0.1;
+		grn_max_degradation = 10.0;
 		grn_mutate_Ka = grn_mutate_Vmax = grn_mutate_complex = grn_mutate_add_gene = grn_mutate_remove_gene = 0.2;
 		
 		codeFile = tr("run_net_ga.c");
@@ -1292,8 +1423,10 @@ namespace NetworkEvolutionLib
 		popSz = 200;
 		generations = 50;
 		
-		species = 8;
-		reactions = 8;
+		species_min = 4;
+		species_max = 12;
+		reactions_min = 5;
+		reactions_max = 24;
 		crossover_rate = init_iv = 1.0;
 		mutate_iv = 0.05;
 		lineageTracking = true;
@@ -1330,20 +1463,30 @@ namespace NetworkEvolutionLib
 		ma_mutate_remove_reaction = settings.value("ma_mutate_remove_reaction",ma_mutate_remove_reaction).toDouble();
 		ma_mutate_add_reaction = settings.value("ma_mutate_add_reaction",ma_mutate_add_reaction).toDouble();
 		
-		prot_init_ka = settings.value("prot_init_ka",prot_init_ka).toDouble();
-		prot_init_vmax = settings.value("prot_init_vmax",prot_init_vmax).toDouble();
-		prot_init_total = settings.value("prot_init_total",prot_init_total).toDouble();
+		prot_min_ka = settings.value("prot_min_ka",prot_min_ka).toDouble();
+		prot_min_vmax = settings.value("prot_min_vmax",prot_min_vmax).toDouble();
+		prot_min_total = settings.value("prot_min_total",prot_min_total).toDouble();
+		prot_max_ka = settings.value("prot_max_ka",prot_max_ka).toDouble();
+		prot_max_vmax = settings.value("prot_max_vmax",prot_max_vmax).toDouble();
+		prot_max_total = settings.value("prot_max_total",prot_max_total).toDouble();
+		
 		prot_mutate_rewire = settings.value("prot_mutate_rewire",prot_mutate_rewire).toDouble();
 		prot_mutate_parameter = settings.value("prot_mutate_parameter",prot_mutate_parameter).toDouble();
 		prot_mutate_total = settings.value("prot_mutate_total",prot_mutate_total).toDouble();
 		prot_mutate_addremove = settings.value("prot_mutate_addremove",prot_mutate_addremove).toDouble();
 		
-		enzyme_init_max_kcat = settings.value("enzyme_init_max_kcat",enzyme_init_max_kcat).toDouble();
-		enzyme_init_max_log_keq = settings.value("enzyme_init_max_log_keq",enzyme_init_max_log_keq).toDouble();
-		enzyme_init_max_alpha = settings.value("enzyme_init_max_alpha",enzyme_init_max_alpha).toDouble();
-		enzyme_init_max_h = settings.value("enzyme_init_max_h",enzyme_init_max_h).toDouble();
-		enzyme_init_max_s_half = settings.value("enzyme_init_max_s_half",enzyme_init_max_s_half).toDouble();
-		enzyme_init_max_p_half = settings.value("enzyme_init_max_p_half",enzyme_init_max_p_half).toDouble();
+		enzyme_min_kcat = settings.value("enzyme_min_kcat",enzyme_min_kcat).toDouble();
+		enzyme_min_log_keq = settings.value("enzyme_min_log_keq",enzyme_min_log_keq).toDouble();
+		enzyme_min_alpha = settings.value("enzyme_min_alpha",enzyme_min_alpha).toDouble();
+		enzyme_min_h = settings.value("enzyme_min_h",enzyme_min_h).toDouble();
+		enzyme_min_s_half = settings.value("enzyme_min_s_half",enzyme_min_s_half).toDouble();
+		enzyme_min_p_half = settings.value("enzyme_min_p_half",enzyme_min_p_half).toDouble();
+		enzyme_max_kcat = settings.value("enzyme_max_kcat",enzyme_max_kcat).toDouble();
+		enzyme_max_log_keq = settings.value("enzyme_max_log_keq",enzyme_max_log_keq).toDouble();
+		enzyme_max_alpha = settings.value("enzyme_max_alpha",enzyme_max_alpha).toDouble();
+		enzyme_max_h = settings.value("enzyme_max_h",enzyme_max_h).toDouble();
+		enzyme_max_s_half = settings.value("enzyme_max_s_half",enzyme_max_s_half).toDouble();
+		enzyme_max_p_half = settings.value("enzyme_max_p_half",enzyme_max_p_half).toDouble();
 		
 		enzyme_mutate_enzyme = settings.value("enzyme_mutate_enzyme",enzyme_mutate_enzyme).toDouble();
 		enzyme_mutate_k_cat = settings.value("enzyme_mutate_k_cat",enzyme_mutate_k_cat).toDouble();
@@ -1356,10 +1499,14 @@ namespace NetworkEvolutionLib
 		
 		grn_init_inflow = settings.value("grn_init_inflow",grn_init_inflow).toDouble();
 		grn_init_cost_per_protein = settings.value("grn_init_cost_per_protein",grn_init_cost_per_protein).toDouble();
-		grn_init_max_complex_size = settings.value("grn_init_max_complex_size",grn_init_max_complex_size).toInt();
-		grn_init_Ka = settings.value("grn_init_Ka",grn_init_Ka).toDouble();
-		grn_init_Vmax = settings.value("grn_init_Vmax",grn_init_Vmax).toDouble();
-		grn_init_degradation = settings.value("grn_init_degradation",grn_init_degradation).toDouble();
+		grn_min_complex_size = settings.value("grn_min_complex_size",grn_min_complex_size).toInt();
+		grn_min_Ka = settings.value("grn_min_Ka",grn_min_Ka).toDouble();
+		grn_min_Vmax = settings.value("grn_min_Vmax",grn_min_Vmax).toDouble();
+		grn_min_degradation = settings.value("grn_min_degradation",grn_min_degradation).toDouble();
+		grn_max_complex_size = settings.value("grn_max_complex_size",grn_max_complex_size).toInt();
+		grn_max_Ka = settings.value("grn_max_Ka",grn_max_Ka).toDouble();
+		grn_max_Vmax = settings.value("grn_max_Vmax",grn_max_Vmax).toDouble();
+		grn_max_degradation = settings.value("grn_max_degradation",grn_max_degradation).toDouble();
 		
 		grn_mutate_Ka = settings.value("grn_mutate_Ka",grn_mutate_Ka).toDouble();
 		grn_mutate_Vmax = settings.value("grn_mutate_Vmax",grn_mutate_Vmax).toDouble();
@@ -1367,8 +1514,10 @@ namespace NetworkEvolutionLib
 		grn_mutate_add_gene = settings.value("grn_mutate_add_gene",grn_mutate_add_gene).toDouble();
 		grn_mutate_remove_gene = settings.value("grn_mutate_remove_gene",grn_mutate_remove_gene).toDouble();
 		
-		species = settings.value("species",species).toInt();
-		reactions = settings.value("reactions",reactions).toInt();
+		species_min = settings.value("species_min",species_min).toInt();
+		species_max = settings.value("species_max",species_max).toInt();
+		reactions_min = settings.value("reactions_min",reactions_min).toInt();
+		reactions_max = settings.value("reactions_max",reactions_max).toInt();
 		crossover_rate = settings.value("crossover_rate",crossover_rate).toDouble();
 		init_iv = settings.value("init_iv",init_iv).toDouble();
 		mutate_iv = settings.value("mutate_iv",mutate_iv).toDouble();

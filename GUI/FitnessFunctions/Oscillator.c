@@ -1,7 +1,3 @@
-
-/* Fitness function that tests for oscillations by using correlation to a sine wave */
-double fitness(GAindividual p);
-
 /* Fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(GAindividual net)
 {

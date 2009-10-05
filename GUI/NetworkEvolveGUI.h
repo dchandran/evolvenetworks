@@ -67,10 +67,12 @@ namespace NetworkEvolutionLib
 		double ma_min_constant, ma_max_constant;
 		double ma_mutate_constants, ma_mutate_remove_reaction, ma_mutate_add_reaction;
 		
-		double prot_init_ka, prot_init_vmax, prot_init_total;
+		double prot_min_ka, prot_min_vmax, prot_min_total;
+		double prot_max_ka, prot_max_vmax, prot_max_total;
 		double prot_mutate_rewire, prot_mutate_parameter, prot_mutate_total, prot_mutate_addremove;
 		
-		double enzyme_init_max_kcat, enzyme_init_max_log_keq, enzyme_init_max_alpha, enzyme_init_max_h, enzyme_init_max_s_half, enzyme_init_max_p_half;
+		double enzyme_min_kcat, enzyme_min_log_keq, enzyme_min_alpha, enzyme_min_h, enzyme_min_s_half, enzyme_min_p_half;
+		double enzyme_max_kcat, enzyme_max_log_keq, enzyme_max_alpha, enzyme_max_h, enzyme_max_s_half, enzyme_max_p_half;
 		double 	enzyme_mutate_enzyme, 
 				enzyme_mutate_k_cat, 
 				enzyme_mutate_k_eq, 
@@ -82,11 +84,13 @@ namespace NetworkEvolutionLib
 				enzyme_mutate_add;
 	
 		double grn_init_inflow, grn_init_cost_per_protein;
-		int grn_init_max_complex_size;
-		double grn_init_Ka, grn_init_Vmax, grn_init_degradation;
+		int grn_min_complex_size;
+		int grn_max_complex_size;
+		double grn_min_Ka, grn_min_Vmax, grn_min_degradation;
+		double grn_max_Ka, grn_max_Vmax, grn_max_degradation;
 		double grn_mutate_Ka, grn_mutate_Vmax, grn_mutate_complex, grn_mutate_add_gene, grn_mutate_remove_gene;
 
-		int species, reactions;
+		int species_min, species_max, reactions_min, reactions_max;
 		double crossover_rate;
 		double init_iv;
 		double mutate_iv;
@@ -139,12 +143,19 @@ namespace NetworkEvolutionLib
 		void set_ma_mutate_remove_reaction(double value) { ma_mutate_remove_reaction = value; }
 		void set_ma_mutate_add_reaction(double value) { ma_mutate_add_reaction = value; }
 		
-		void set_enzyme_init_max_kcat(double value) { enzyme_init_max_kcat = value; }
-		void set_enzyme_init_max_log_keq(double value) { enzyme_init_max_log_keq = value; }
-		void set_enzyme_init_max_alpha(double value) { enzyme_init_max_alpha = value; }
-		void set_enzyme_init_max_h(double value) { enzyme_init_max_h = value; }
-		void set_enzyme_init_max_s_half(double value) { enzyme_init_max_s_half = value; }
-		void set_enzyme_init_max_p_half(double value) { enzyme_init_max_p_half = value; }
+		void set_enzyme_min_kcat(double value) { enzyme_min_kcat = value; }
+		void set_enzyme_min_log_keq(double value) { enzyme_min_log_keq = value; }
+		void set_enzyme_min_alpha(double value) { enzyme_min_alpha = value; }
+		void set_enzyme_min_h(double value) { enzyme_min_h = value; }
+		void set_enzyme_min_s_half(double value) { enzyme_min_s_half = value; }
+		void set_enzyme_min_p_half(double value) { enzyme_min_p_half = value; }
+		
+		void set_enzyme_max_kcat(double value) { enzyme_max_kcat = value; }
+		void set_enzyme_max_log_keq(double value) { enzyme_max_log_keq = value; }
+		void set_enzyme_max_alpha(double value) { enzyme_max_alpha = value; }
+		void set_enzyme_max_h(double value) { enzyme_max_h = value; }
+		void set_enzyme_max_s_half(double value) { enzyme_max_s_half = value; }
+		void set_enzyme_max_p_half(double value) { enzyme_max_p_half = value; }
 		
 		void set_enzyme_mutate_enzyme(double value) { enzyme_mutate_enzyme = value; }
 		void set_enzyme_mutate_k_cat(double value) { enzyme_mutate_k_cat = value; }
@@ -156,9 +167,13 @@ namespace NetworkEvolutionLib
 		void set_enzyme_mutate_remove(double value) { enzyme_mutate_remove = value; }
 		void set_enzyme_mutate_add(double value) { enzyme_mutate_add = value; }
 		
-		void set_prot_init_ka(double value) { prot_init_ka = value; }
-		void set_prot_init_vmax(double value) { prot_init_vmax = value; }
-		void set_prot_init_total(double value) { prot_init_total = value; }
+		void set_prot_min_ka(double value) { prot_min_ka = value; }
+		void set_prot_min_vmax(double value) { prot_min_vmax = value; }
+		void set_prot_min_total(double value) { prot_min_total = value; }
+		void set_prot_max_ka(double value) { prot_max_ka = value; }
+		void set_prot_max_vmax(double value) { prot_max_vmax = value; }
+		void set_prot_max_total(double value) { prot_max_total = value; }
+		
 		void set_prot_mutate_rewire(double value) { prot_mutate_rewire = value; }
 		void set_prot_mutate_parameter(double value) { prot_mutate_parameter = value; }
 		void set_prot_mutate_total(double value) { prot_mutate_total = value; }
@@ -166,10 +181,16 @@ namespace NetworkEvolutionLib
 		
 		void set_grn_init_inflow(double value) { grn_init_inflow = value; }
 		void set_grn_init_cost_per_protein(double value) { grn_init_cost_per_protein = value; }
-		void set_grn_init_max_complex_size(int value) { grn_init_max_complex_size = value; }
-		void set_grn_init_Ka(double value) { grn_init_Ka = value; }
-		void set_grn_init_Vmax(double value) { grn_init_Vmax = value; }
-		void set_grn_init_degradation(double value) { grn_init_degradation = value; }
+		void set_grn_min_complex_size(int value) { grn_min_complex_size = value; }
+		void set_grn_max_complex_size(int value) { grn_max_complex_size = value; }
+		
+		void set_grn_min_Ka(double value) { grn_min_Ka = value; }
+		void set_grn_min_Vmax(double value) { grn_min_Vmax = value; }
+		void set_grn_min_degradation(double value) { grn_min_degradation = value; }
+		void set_grn_max_Ka(double value) { grn_max_Ka = value; }
+		void set_grn_max_Vmax(double value) { grn_max_Vmax = value; }
+		void set_grn_max_degradation(double value) { grn_max_degradation = value; }
+		
 		void set_grn_mutate_Ka(double value) { grn_mutate_Ka = value; }
 		void set_grn_mutate_Vmax(double value) { grn_mutate_Vmax = value; }
 		void set_grn_mutate_complex(double value) { grn_mutate_complex = value; }
@@ -187,8 +208,10 @@ namespace NetworkEvolutionLib
 		void setGenerations(int i) { generations = i; }
 		void setPopSz(int i) { popSz = i; }
 		
-		void set_species(int value) { species = value; }
-		void set_reactions(int value) { reactions = value; }
+		void set_min_species(int value) { species_min = value; }
+		void set_min_reactions(int value) { reactions_min = value; }
+		void set_max_species(int value) { species_max = value; }
+		void set_max_reactions(int value) { reactions_max = value; }
 		void set_crossover_rate(double value) { crossover_rate = value; }
 		void set_init_iv(double value) { init_iv = value; }
 		void set_mutate_iv(double value) { mutate_iv = value; }

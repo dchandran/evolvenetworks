@@ -11,12 +11,20 @@
     global variables
 *************************/
 
-static double VMAX_RANGE = 10.0;
-static double KA_RANGE = 10.0;
-static double DEG_RANGE = 2.0;
-static int TF_RANGE = 4;
-static int AVG_NUM_GENES = 5;
-static int AVG_NUM_REGULATIONS = 2;
+static double VMAX_MIN = 0.00001;
+static double KA_MIN = 0.00001;
+static double DEG_MIN = 0.1;
+static double VMAX_MAX = 10.0;
+static double KA_MAX = 10.0;
+static double DEG_MAX = 5.0;
+
+static int TF_MIN = 1;
+static int TF_MAX = 4;
+
+static int MIN_NUM_GENES = 3;
+static int MAX_NUM_GENES = 8;
+static int MIN_NUM_REGULATIONS = 1;
+static int MAX_NUM_REGULATIONS = 5;
 
 static double CROSSOVER_PROB = 1.0;
 static double MUTATE_KA = 0.2;
@@ -33,18 +41,55 @@ void setResourceRestriction(double influx, double cost)
 	if (cost >= 0.0) RESOURCE_COST_PER_GENE = cost;
 }
 
-void setRateConstantsForGeneRegulationNetwork(int tfs, double ka, double vmax, double deg)
+void setRateConstantsForGeneRegulationNetwork(int min_complex_size, int max_complex_size, 
+											  double min_Ka, double max_Ka, 
+											  double min_Vmax, double max_Vmax, 
+											  double min_degradation, double max_degradation)
 {
-	KA_RANGE = ka;
-	TF_RANGE = tfs;
-	VMAX_RANGE = vmax;
-	DEG_RANGE = deg;
+	double d;
+	int i;
+	
+	if (min_Vmax > 0.0) VMAX_MIN = min_Vmax;
+	if (max_Vmax > 0.0) VMAX_MAX = max_Vmax;
+	if (max_complex_size > 0.0) KA_MIN = max_complex_size;
+	if (max_complex_size > 0.0) KA_MAX = max_complex_size;
+	if (min_degradation > 0.0) DEG_MIN = min_degradation;
+	if (max_degradation > 0.0) DEG_MAX = max_degradation;
+	if (min_complex_size > 0.0) TF_MIN = min_complex_size;
+	if (max_complex_size > 0.0) TF_MAX = max_complex_size;
+	
+	if (DEG_MAX < DEG_MIN) 
+	{
+		d = DEG_MIN;
+		DEG_MIN = DEG_MAX;
+		DEG_MAX = d;
+	}
+	if (KA_MAX < KA_MIN) 
+	{
+		d = KA_MIN;
+		KA_MIN = KA_MAX;
+		KA_MAX = d;
+	}
+	if (VMAX_MAX < VMAX_MIN) 
+	{
+		d = VMAX_MIN;
+		VMAX_MIN = VMAX_MAX;
+		VMAX_MAX = d;
+	}
+	if (TF_MAX < TF_MIN) 
+	{
+		i = TF_MIN;
+		TF_MIN = TF_MAX;
+		TF_MAX = d;
+	}
 }
 
-void setSizeForGeneRegulationNetwork(int n1, int n2)
+void setSizeForGeneRegulationNetwork(int n0, int n1, int r0, int r1)
 {
-	AVG_NUM_GENES = n1;
-	AVG_NUM_REGULATIONS = n2;
+	MIN_NUM_GENES = n0;
+	MAX_NUM_GENES = n1;
+	MIN_NUM_REGULATIONS = r0;
+	MAX_NUM_REGULATIONS = r1;
 }
 
 void setMutationRatesForGeneRegulationNetwork(double ka, double degrade, double complex, double add, double remove)
@@ -219,8 +264,8 @@ GAindividual crossoverGeneRegulationNetwork(GAindividual individualA, GAindividu
 		}
 		else
 		{
-			net3->degradation[i] = mtrand() * DEG_RANGE;
-			net3->Vmax[i] = mtrand() * VMAX_RANGE;
+			net3->degradation[i] = DEG_MIN + (DEG_MAX-DEG_MIN) * mtrand();
+			net3->Vmax[i] = VMAX_MIN + (VMAX_MAX-VMAX_MIN) * mtrand();
 			net3->fixed[i] = 0;
 		}
 	}	
@@ -259,6 +304,12 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 			net->degradation[i] *= (mtrand() * 2.0);
 		else
 			net->Vmax[i] *= (mtrand() * 2.0);
+		
+		if (net->degradation[i] > DEG_MAX || net->degradation[i] < DEG_MIN)
+			net->degradation[i] = DEG_MIN + (DEG_MAX-DEG_MIN) * mtrand();
+		if (net->Vmax[i] > VMAX_MAX || net->Vmax[i] < VMAX_MIN)
+			net->Vmax[i] = VMAX_MIN + (VMAX_MAX-VMAX_MIN) * mtrand();
+		
 		return (GAindividual)(net);
 	}
 	else
@@ -312,7 +363,7 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 		free(Vmax);
 		free(fixed);
 		
-		net->complexes[n].size = (int)(1.0 + (TF_RANGE * mtrand()));
+		net->complexes[n].size = (int)(TF_MIN + (TF_MAX-TF_MIN) * mtrand());
 		net->complexes[n].TFs = (int*) malloc(net->complexes[n].size * sizeof(int));
 		net->complexes[n].TFs[0] = (int)(m-1);
 		for (i=1; i < net->complexes[n].size; ++i)
@@ -321,9 +372,9 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 		}
 
 		net->targetGene[n] = (int)(mtrand() * m);
-		net->Ka[n] = (2.0 * mtrand() - 1.0) * KA_RANGE;
-		net->degradation[m-1] = mtrand() * DEG_RANGE;
-		net->Vmax[m-1] = mtrand() * VMAX_RANGE;
+		net->Ka[n] = KA_MIN + (KA_MAX - KA_MIN) * mtrand();
+		net->degradation[m-1] = DEG_MIN + (DEG_MAX - DEG_MIN) * mtrand();
+		net->Vmax[m-1] = VMAX_MIN + (VMAX_MAX - VMAX_MIN) * mtrand();
 		net->fixed[m-1] = 0;
 		
 		return (GAindividual)(net);
@@ -626,12 +677,8 @@ void printGeneRegulationNetwork(FILE *stream, GAindividual individual)
 
 GApopulation randomGeneRegulationNetworks(int num)
 {
-	int g,i,j,k,n,m;
-	double r;
+	int i,j,k,n,m;
 	GeneRegulationNetwork * net, **array;
-	
-	g = AVG_NUM_GENES;
-	r = AVG_NUM_REGULATIONS;
 	
 	initMTrand(); /*initialize seeds for MT random number generator*/
 	
@@ -639,25 +686,25 @@ GApopulation randomGeneRegulationNetworks(int num)
 	
 	for (k=0; k < num; ++k)
 	{
-		m = (int)(2 + g * 1.5 * (0.25 + mtrand()));
-		n = (int)(2 + r * 1.5 * (0.25 + mtrand()));
+		m = (int)(MIN_NUM_GENES + (MAX_NUM_GENES - MIN_NUM_GENES) * mtrand());
+		n = (int)(MIN_NUM_REGULATIONS + (MAX_NUM_REGULATIONS - MIN_NUM_REGULATIONS) * mtrand());
 		net = newGeneRegulationNetwork(m,n);
 		
 		for (i=0; i < n; ++i)
 		{
-			net->complexes[i].size = (int)(1 + TF_RANGE * mtrand());
+			net->complexes[i].size = (int)(TF_MIN + (TF_MAX - TF_MIN) * mtrand());
 			net->complexes[i].TFs = (int*) malloc(net->complexes[i].size * sizeof(int));
 			for (j=0; j < net->complexes[i].size; ++j)
 			{
 				net->complexes[i].TFs[j] = (int)(m * mtrand());
 			}
 			net->targetGene[i] = (int)(mtrand() * m);
-			net->Ka[i] = (2.0 * mtrand() - 1.0) * KA_RANGE;
+			net->Ka[i] = (KA_MIN + (KA_MAX - KA_MIN) * mtrand());
 		}
 		for (i=0; i < m; ++i)
 		{
-			net->degradation[i] = mtrand() * DEG_RANGE;
-			net->Vmax[i] = mtrand() * VMAX_RANGE;
+			net->degradation[i] = DEG_MIN + (DEG_MAX - DEG_MIN ) * mtrand();
+			net->Vmax[i] =  VMAX_MIN + (VMAX_MAX - VMAX_MIN ) * mtrand();
 		}
 		array[k] = net;
 	}
@@ -671,7 +718,7 @@ GeneRegulationNetwork * newGeneRegulationNetwork(int m,int n)
 	GeneRegulationNetwork * net;
 	
 	net = (GeneRegulationNetwork*) malloc(sizeof(GeneRegulationNetwork));
-	net->species = m;    //number of genes
+	net->species = m;         //number of genes
 	net->numComplexes = n;    //number of complexes
 	
 	net->complexes = (TFComplex*) malloc( n * sizeof (TFComplex) );

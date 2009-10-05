@@ -39,9 +39,9 @@ int main()
 	setMutationRatesForMassActionNetwork(0.5,0.2,0.2);
 	setCrossoverRate(0.0);
 	setDistributionOfMassActionNetwork(0.5,0.25,0.25,0.0,0.1,0.1);
-	setRateConstantForMassActionNetwork(2.0);
+	setRateConstantForMassActionNetwork(1.0,100.0);
 	
-	setInitialNetworkSize(5,8);       // Network size
+	setNetworkSize(3,10,3,20);  //network size
 	
 	printf ("Oscillator Evolution\n\n");
 

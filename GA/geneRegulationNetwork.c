@@ -21,8 +21,10 @@ static double DEG_MAX = 5.0;
 static int TF_MIN = 1;
 static int TF_MAX = 4;
 
-static int AVG_NUM_GENES = 5;
-static int AVG_NUM_REGULATIONS = 2;
+static int MIN_NUM_GENES = 3;
+static int MAX_NUM_GENES = 8;
+static int MIN_NUM_REGULATIONS = 1;
+static int MAX_NUM_REGULATIONS = 5;
 
 static double CROSSOVER_PROB = 1.0;
 static double MUTATE_KA = 0.2;
@@ -82,10 +84,12 @@ void setRateConstantsForGeneRegulationNetwork(int min_complex_size, int max_comp
 	}
 }
 
-void setSizeForGeneRegulationNetwork(int n1, int n2)
+void setSizeForGeneRegulationNetwork(int n0, int n1, int r0, int r1)
 {
-	AVG_NUM_GENES = n1;
-	AVG_NUM_REGULATIONS = n2;
+	MIN_NUM_GENES = n0;
+	MAX_NUM_GENES = n1;
+	MIN_NUM_REGULATIONS = r0;
+	MAX_NUM_REGULATIONS = r1;
 }
 
 void setMutationRatesForGeneRegulationNetwork(double ka, double degrade, double complex, double add, double remove)
@@ -673,12 +677,8 @@ void printGeneRegulationNetwork(FILE *stream, GAindividual individual)
 
 GApopulation randomGeneRegulationNetworks(int num)
 {
-	int g,i,j,k,n,m;
-	double r;
+	int i,j,k,n,m;
 	GeneRegulationNetwork * net, **array;
-	
-	g = AVG_NUM_GENES;
-	r = AVG_NUM_REGULATIONS;
 	
 	initMTrand(); /*initialize seeds for MT random number generator*/
 	
@@ -686,8 +686,8 @@ GApopulation randomGeneRegulationNetworks(int num)
 	
 	for (k=0; k < num; ++k)
 	{
-		m = (int)(2 + g * 1.5 * (0.25 + mtrand()));
-		n = (int)(2 + r * 1.5 * (0.25 + mtrand()));
+		m = (int)(MIN_NUM_GENES + (MAX_NUM_GENES - MIN_NUM_GENES) * mtrand());
+		n = (int)(MIN_NUM_REGULATIONS + (MAX_NUM_REGULATIONS - MIN_NUM_REGULATIONS) * mtrand());
 		net = newGeneRegulationNetwork(m,n);
 		
 		for (i=0; i < n; ++i)
@@ -718,7 +718,7 @@ GeneRegulationNetwork * newGeneRegulationNetwork(int m,int n)
 	GeneRegulationNetwork * net;
 	
 	net = (GeneRegulationNetwork*) malloc(sizeof(GeneRegulationNetwork));
-	net->species = m;    //number of genes
+	net->species = m;         //number of genes
 	net->numComplexes = n;    //number of complexes
 	
 	net->complexes = (TFComplex*) malloc( n * sizeof (TFComplex) );

@@ -141,19 +141,24 @@ void setFixedSpeciesForProteinInteractionNetwork(GAindividual, int, int);
 /*!\}
    @name Functions for initializing a GA
 \{*/
-/*! \brief Set the initial (average) parameters for generating random networks.
- * \param double the average Ka value for random networks
- * \param double the average Vmax value for random networks
- * \param double the average Total (conservation law) for random networks
+/*! \brief Set the min and max parameters for generating and mutating networks.
+ * \param double the min Ka value for random networks
+ * \param double the max Ka value for random networks
+ * \param double the min Vmax value for random networks
+ * \param double the max Vmax value for random networks
+ * \param double the min Total (conservation law) for random networks
+ * \param double the max Total (conservation law) for random networks
  * \ingroup proteinnetwork
 */
-void setRateConstantsForProteinInteractionNetwork(double ka, double vmax, double total);
+void setRateConstantsForProteinInteractionNetwork(double min_ka, double max_ka, double min_vmax, double max_vmax, double min_total, double max_total);
 /*! \brief Set the initial (average) parameters for generating random networks.
- * \param int average number of species in the networks
- * \param int regulations per species
+ * \param int min number of species in the networks
+ * \param int max number of species in the networks
+ * \param int min regulations per species
+ * \param int max regulations per species
  * \ingroup proteinnetwork
 */
-void setSizeForProteinInteractionNetwork(int, int);
+void setSizeForProteinInteractionNetwork(int, int, int, int);
 /*! \brief Set parameters for the mutation functions. Arguments must add to 1.
  * \param double probability of rewiring the network during mutation
  * \param double probability of changing network parameter during mutation

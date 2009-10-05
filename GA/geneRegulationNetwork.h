@@ -183,7 +183,7 @@ void setRateConstantsForGeneRegulationNetwork(int min_complex_size, int max_comp
  * \param int average number of regulations per gene in the networks
  * \ingroup geneticnetwork
 */
-void setSizeForGeneRegulationNetwork(int,int);
+void setSizeForGeneRegulationNetwork(int,int,int,int);
 
 /*! \brief Set parameters for the mutation and crossover functions. Arguments must add to 1.
  * \param double probability of mutating a random Ka value

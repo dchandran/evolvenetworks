@@ -42,3 +42,5 @@ double fitness(GAindividual p)
 	return (f);
 }
 
+
+

@@ -1,4 +1,3 @@
-
 double ** XORtable(); //make XOR table
 
 /* 

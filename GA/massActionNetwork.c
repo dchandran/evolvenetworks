@@ -172,15 +172,15 @@ GAindividual crossoverMassActionNetwork(GAindividual individualA, GAindividual i
 	if (n > MAX_NUM_REACTIONS)
 	{
 		n = MAX_NUM_REACTIONS - 1;
-		i2 = i1 + n2->reactions - n;
+		i2 = i1 + net2->reactions - n;
 		if (i2 < 0)
 			return mutateMassActionNetwork(cloneMassActionNetwork(net1));
 	}
 	if (n < MIN_NUM_REACTIONS)
 	{
 		n = MIN_NUM_REACTIONS;
-		i2 = i1 + n2->reactions - n;
-		if (i2 >= n2->reactions)
+		i2 = i1 + net2->reactions - n;
+		if (i2 >= net2->reactions)
 			return mutateMassActionNetwork(cloneMassActionNetwork(net1));
 	}
 	
@@ -517,8 +517,6 @@ void printMassActionNetwork(FILE *stream, GAindividual individual)
 
 GApopulation randomMassActionNetworks(int num)
 {
-	int s = AVG_NUM_SPECIES;
-	int r = AVG_NUM_REACTIONS;
 	int i,j,n;
 	double u;
 	MassActionNetwork * net;
