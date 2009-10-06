@@ -22,7 +22,7 @@ double fitness(GAindividual p);
 
 #define INITIAL_POPULATION_SIZE 800
 #define SUCCESSIVE_POPULATION_SIZE 100
-#define NUM_GENERATIONS 30
+#define NUM_GENERATIONS 40
 
 /* main */
 int main()
@@ -37,11 +37,11 @@ int main()
 	
 	setNetworkType( MASS_ACTION_NETWORK );  // Use this network type
 	setMutationRatesForMassActionNetwork(0.5,0.2,0.2);
-	setCrossoverRate(0.0);
+	setCrossoverRate(1.0);
 	setDistributionOfMassActionNetwork(0.5,0.25,0.25,0.0,0.1,0.1);
 	setRateConstantForMassActionNetwork(1.0,100.0);
 	
-	setNetworkSize(3,10,3,20);  //network size
+	setNetworkSize(3,10,3,24);  //network size
 	
 	printf ("Oscillator Evolution\n\n");
 

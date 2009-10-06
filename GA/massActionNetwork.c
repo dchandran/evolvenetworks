@@ -21,7 +21,7 @@ static double PROB_BI_BI = 0.2;
 static double PROB_NO_REACTANTS = 0.2;
 static double PROB_NO_PRODUCTS = 0.2;
 static double MIN_RATE_CONSTANT = 0.0;
-static double MAX_RATE_CONSTANT = 2.0;
+static double MAX_RATE_CONSTANT = 100.0;
 static int MIN_NUM_SPECIES = 2;
 static int MAX_NUM_SPECIES = 16;
 static int MIN_NUM_REACTIONS = 2;
@@ -252,13 +252,14 @@ GAindividual mutateMassActionNetwork(GAindividual individual)
 
 	i = (int)(mtrand() * m);  //pick random reaction
 
-	if ((mtrand() < MUTATE_COEFF_PROB) ||
-		(m >= MAX_NUM_REACTIONS && m <= MIN_NUM_REACTIONS)) //mutate coefficient
+	if (mtrand() < MUTATE_COEFF_PROB ||
+		m >= MAX_NUM_REACTIONS || 
+		m <= MIN_NUM_REACTIONS) //mutate coefficient
 	{
 		net->k[i] *= (mtrand() * 2.0);
 		if ((net->k[i] < MIN_RATE_CONSTANT) || (net->k[i] > MAX_RATE_CONSTANT))
 		{
-			net2->k[j] = MIN_RATE_CONSTANT + (MAX_RATE_CONSTANT-MIN_RATE_CONSTANT) * mtrand();
+			net->k[i] = MIN_RATE_CONSTANT + (MAX_RATE_CONSTANT-MIN_RATE_CONSTANT) * mtrand();
 		}
 		
 		return (GAindividual)(net);
