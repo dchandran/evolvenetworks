@@ -72,8 +72,8 @@ int main()
 /* Fitness function that tests for oscillations by counting the number of peaks*/
 double fitness(GAindividual net)
 {
-	int i, N, peaks, troughs;
-	double * y, time, f, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0, dx = 0.01;
+	int i, N;
+	double peaks, troughs, * y, time, f, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0, dx = 0.01;
 
 	N = getNumSpecies(net);
 	
@@ -106,7 +106,7 @@ double fitness(GAindividual net)
 				 (getValue(y,N+1,i+3,1) < getValue(y,N+1,i+2,1))
 				)
 			{
-				 ++peaks;
+				 peaks += 10.0 * (double)i / time;
 				 mX += y[i];
 				 mX2 += y[i]*y[i];
 			}
@@ -123,15 +123,11 @@ double fitness(GAindividual net)
 				 (getValue(y,N+1,i+3,1) > getValue(y,N+1,i+2,1))
 				)
 			{
-				 ++troughs;
+				 peaks += 10.0 * (double)i / time;
 			}
 		}
 		
-		if ((troughs+peaks) > 20)
-		{
-			f = 25.0 + (double)10.0/(1.0 + mX2 - mX*mX);
-		}
-		else
+		if ((troughs+peaks) < 20)
 		{
 			mXY = mX = mY = mX2 = mY2 = 0;
 			
@@ -158,8 +154,14 @@ double fitness(GAindividual net)
 				f = ( (mXY - mX*mY)/(sqrt(mX2 - mX*mX)*sqrt(mY2 - mY*mY)) );   // Correlation formula
 				if (f < 0) f = -f; // Negative correlation is just as good as positive (for oscillations)
 			}
-			f += (double)troughs + (double)peaks;
 		}
+		else
+		{
+			f = 1.0;
+		}
+
+		f += (double)troughs + (double)peaks;
+		
 		
 		free(y);
 	}

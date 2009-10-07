@@ -250,6 +250,8 @@ namespace NetworkEvolutionLib
 		settings.setValue("allNetworkLineage2",allNetworkLineage2);
 		settings.setValue("seeds2",seeds2);
 		
+		settings.setValue("max_fitness",max_fitness);
+		
 		settings.endGroup();
 	}
 	
@@ -1017,6 +1019,17 @@ namespace NetworkEvolutionLib
 		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(setGenerations(int)));
 		intSpinBox->setValue(generations);
 		
+		QTreeWidgetItem * generation = new QTreeWidgetItem;
+		generation->setText(0,"Stop criterion");
+		generation->setToolTip(0,"Stop the evolution when best individual reaches this fitness level. Use 0 to disable.");
+		treeWidget->addTopLevelItem(generation);
+		treeWidget->setItemWidget(generation,1,doubleSpinBox = new QDoubleSpinBox);
+		//doubleSpinBox->setRange(1,1000000);
+		doubleSpinBox->setSingleStep(0.01);
+		doubleSpinBox->setDecimal(5);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setMaxFitness(double)));
+		doubleSpinBox->setValue(max_fitness);
+		
 		log->setText(0,"Log file");
 		log->setToolTip(0,"Keep a log file with information about each generation and the final results");
 		
@@ -1299,11 +1312,20 @@ namespace NetworkEvolutionLib
 	
 	QString MainWindow::callbackFunction()
 	{
-		QString s = tr("int callback(int iter, GApopulation P, int popSz)\n")
+		if (max_fitness > 0)
+		{
+			return 
+			tr("int callback(int iter, GApopulation P, int popSz)\n")
+			+ tr("{\n")
+			+ tr("    return (fitness(P[0]) > ")
+			+ QString::number(max_fitness)
+			+ tr(");\n}\n");
+		}
+		
+		return 
+			tr("int callback(int iter, GApopulation P, int popSz)\n")
 			+ tr("{\n")
 			+ tr("    return 0;\n}\n");
-		
-		return s;
 	}
 	
 	QString MainWindow::mainFunction()
@@ -1446,6 +1468,8 @@ namespace NetworkEvolutionLib
 		allNetworkLineage2 = 1;
 		seeds2 = 1;
 		
+		max_fitness = 0.0;
+		
 		/***********************/
 		
 		QSettings settings("UWashington","NetworkEvolutionLib");
@@ -1548,6 +1572,8 @@ namespace NetworkEvolutionLib
 		allFitness2 = settings.value("allFitness2",allFitness2).toInt();
 		allNetworkLineage2 = settings.value("allNetworkLineage2",allNetworkLineage2).toInt();
 		seeds2 = settings.value("seeds2",seeds2).toInt();
+		
+		max_fitness = settings.value("max_fitness",max_fitness).toDouble();
 		
 #ifdef Q_WS_WIN
 		compileCommand = tr("win32\\tcc -Iwin32\\include -Isource\\include -Isource -Lwin32\\lib source\\*.c -run ") + codeFile;

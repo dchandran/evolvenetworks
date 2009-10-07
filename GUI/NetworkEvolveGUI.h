@@ -111,6 +111,7 @@ namespace NetworkEvolutionLib
 			bestNetworkSize2, bestNetworkLineage2,
 			allFitness2, allNetworkLineage2, seeds2;
 
+		double max_fitness;
 		
 	private slots:
 	
@@ -219,21 +220,22 @@ namespace NetworkEvolutionLib
 		
 		void setCompileCommand(const QString& s) { compileCommand = s; }
 		
-		int setBestNetworkFitness1(bool value) { bestNetworkFitness1 = (int)value; }
-		int setBestNetworkScript1(bool value) { bestNetworkScript1 = (int)value; }
-		int setBestNetworkSize1(bool value) { bestNetworkSize1 = (int)value; }
-		int setBestNetworkLineage1(bool value) { bestNetworkLineage1 = (int)value; }
-		int setAllFitness1(bool value) { allFitness1 = (int)value; }
-		int setAllNetworkLineage1(bool value) { allNetworkLineage1 = (int)value; }
+		void setBestNetworkFitness1(bool value) { bestNetworkFitness1 = (int)value; }
+		void setBestNetworkScript1(bool value) { bestNetworkScript1 = (int)value; }
+		void setBestNetworkSize1(bool value) { bestNetworkSize1 = (int)value; }
+		void setBestNetworkLineage1(bool value) { bestNetworkLineage1 = (int)value; }
+		void setAllFitness1(bool value) { allFitness1 = (int)value; }
+		void setAllNetworkLineage1(bool value) { allNetworkLineage1 = (int)value; }
 		
-		int setBestNetworkFitness2(bool value) { bestNetworkFitness2 = (int)value; }
-		int setBestNetworkScript2(bool value) { bestNetworkScript2 = (int)value; }
-		int setBestNetworkSize2(bool value) { bestNetworkSize2 = (int)value; }
-		int setBestNetworkLineage2(bool value) { bestNetworkLineage2 = (int)value; }
-		int setAllFitness2(bool value) { allFitness2 = (int)value; }
-		int setAllNetworkLineage2(bool value) { allNetworkLineage2 = (int)value; }
+		void setBestNetworkFitness2(bool value) { bestNetworkFitness2 = (int)value; }
+		void setBestNetworkScript2(bool value) { bestNetworkScript2 = (int)value; }
+		void setBestNetworkSize2(bool value) { bestNetworkSize2 = (int)value; }
+		void setBestNetworkLineage2(bool value) { bestNetworkLineage2 = (int)value; }
+		void setAllFitness2(bool value) { allFitness2 = (int)value; }
+		void setAllNetworkLineage2(bool value) { allNetworkLineage2 = (int)value; }
 		
-		int showSeed(bool value) { seeds = (int)value; }
+		void showSeed(bool value) { seeds = (int)value; }
+		void setMaxFitness(double value) { max_fitness = (int)value; }
 	};
 }
 
