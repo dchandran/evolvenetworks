@@ -127,9 +127,9 @@ double fitness(GAindividual net)
 			}
 		}
 		
-		if ((troughs+peaks) > 10)
+		if ((troughs+peaks) > 30)
 		{
-			f = (double)10.0 + 1.0/(1.0 + mX2 - mX*mX);
+			f = (double)30.0 + 1.0/(1.0 + mX2 - mX*mX);
 		}
 		else
 		{
