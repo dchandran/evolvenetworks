@@ -1,4 +1,3 @@
-
 /* Fitness function that tests for oscillations by counting the number of peaks*/
 double fitness(GAindividual net)
 {
@@ -57,9 +56,9 @@ double fitness(GAindividual net)
 			}
 		}
 		
-		if ((troughs+peaks) > 30)
+		if ((troughs+peaks) > 20)
 		{
-			f = (double)30.0 + 1.0/(1.0 + mX2 - mX*mX);
+			f = 25.0 + (double)10.0/(1.0 + mX2 - mX*mX);
 		}
 		else
 		{

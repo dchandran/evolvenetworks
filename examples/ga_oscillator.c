@@ -20,9 +20,9 @@
 /* Fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(GAindividual p);
 
-#define INITIAL_POPULATION_SIZE 800
+#define INITIAL_POPULATION_SIZE 500
 #define SUCCESSIVE_POPULATION_SIZE 100
-#define NUM_GENERATIONS 40
+#define NUM_GENERATIONS 30
 
 /* main */
 int main()
@@ -127,9 +127,9 @@ double fitness(GAindividual net)
 			}
 		}
 		
-		if ((troughs+peaks) > 30)
+		if ((troughs+peaks) > 20)
 		{
-			f = (double)30.0 + 1.0/(1.0 + mX2 - mX*mX);
+			f = 25.0 + (double)10.0/(1.0 + mX2 - mX*mX);
 		}
 		else
 		{
