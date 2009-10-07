@@ -521,18 +521,30 @@ GApopulation randomMassActionNetworks(int num)
 	int i,j,n;
 	double u;
 	MassActionNetwork * net;
-	MassActionNetwork ** array;
-	
+	MassActionNetwork ** array;	
+	double logMaxRate = log(MAX_RATE_CONSTANT)/log(2);
+
 	initMTrand(); /*initialize seeds for MT random number generator*/
 	array = (MassActionNetwork**)malloc(num * sizeof(MassActionNetwork*));
 	for (i=0; i < num; ++i)
 	{
-		n = (int)(MIN_NUM_SPECIES + (MAX_NUM_SPECIES - MIN_NUM_SPECIES) * mtrand());
-		net = newMassActionNetwork(n,(int)(MIN_NUM_REACTIONS + (MAX_NUM_REACTIONS - MIN_NUM_REACTIONS) * mtrand()));
+		if (MAX_NUM_SPECIES > (3*MIN_NUM_SPECIES))
+			n = (int)(MIN_NUM_SPECIES + (2 * MIN_NUM_SPECIES) * mtrand());
+		else
+			n = (int)(MIN_NUM_SPECIES + (MAX_NUM_SPECIES - MIN_NUM_SPECIES) * mtrand());
+
+		if ((MAX_NUM_REACTIONS - MIN_NUM_REACTIONS) > (2*n))
+			net = newMassActionNetwork(n,(int)(MIN_NUM_REACTIONS + (2*n) * mtrand()));
+		else
+			net = newMassActionNetwork(n,(int)(MIN_NUM_REACTIONS + (MAX_NUM_REACTIONS - MIN_NUM_REACTIONS) * mtrand()));
 		
 		for (j=0; j < net->reactions; ++j)
 		{
-			net->k[j] = MIN_RATE_CONSTANT + (MAX_RATE_CONSTANT-MIN_RATE_CONSTANT) * mtrand();   //reaction rate constant
+			net->k[j] = MIN_RATE_CONSTANT;
+			if (MAX_RATE_CONSTANT > MIN_RATE_CONSTANT)
+			{
+				net->k[j] += pow(2.0,logMaxRate * (2.0 * mtrand() - 1.0));
+			}
 			net->reactant1[j] = net->reactant2[j] = net->product1[j] = net->product2[j] = -1;
 
 			u = mtrand();
