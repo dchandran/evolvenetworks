@@ -22,7 +22,7 @@ double fitness(GAindividual p);
 
 #define INITIAL_POPULATION_SIZE 800
 #define SUCCESSIVE_POPULATION_SIZE 100
-#define NUM_GENERATIONS 12
+#define NUM_GENERATIONS 50
 
 /* main */
 int main()
@@ -72,7 +72,7 @@ int main()
 /* Fitness function that tests for oscillations by counting the number of peaks*/
 double fitness(GAindividual net)
 {
-	int i, N, peaks;
+	int i, N, peaks, troughs;
 	double * y, time, f, mX = 0, mX2 = 0, dx = 0.01;
 	
 	N = getNumSpecies(net);
@@ -85,9 +85,10 @@ double fitness(GAindividual net)
 	if (y != 0)
 	{
 		peaks = 0;
+		troughs = 0;
 		for (i = 5; i < (time-3); ++i)
 		{
-			if ( (getValue(y,N+1,i,1) > 1.0) &&
+			if ( (getValue(y,N+1,i,1) > 0.1) &&
 				 (getValue(y,N+1,i,1) < 1000.0) &&
 				 (getValue(y,N+1,i,1) > (dx + getValue(y,N+1,i-3,1))) &&
 				 (getValue(y,N+1,i,1) > (dx + getValue(y,N+1,i+3,1))) &&
@@ -103,20 +104,34 @@ double fitness(GAindividual net)
 				 mX += y[i];
 				 mX2 += y[i]*y[i];
 			}
+
+			if ( (getValue(y,N+1,i,1) > 0.1) &&
+				 (getValue(y,N+1,i,1) < 1000.0) &&
+				 (getValue(y,N+1,i,1) < (getValue(y,N+1,i-3,1) - dx)) &&
+				 (getValue(y,N+1,i,1) < (getValue(y,N+1,i+3,1) - dx)) &&
+				 (getValue(y,N+1,i-3,1) > getValue(y,N+1,i-2,1)) && 
+				 (getValue(y,N+1,i-2,1) > getValue(y,N+1,i-1,1)) && 
+				 (getValue(y,N+1,i-1,1) > getValue(y,N+1,i,1)) && 
+				 (getValue(y,N+1,i+1,1) > getValue(y,N+1,i,1)) && 
+				 (getValue(y,N+1,i+2,1) > getValue(y,N+1,i+1,1)) && 
+				 (getValue(y,N+1,i+3,1) > getValue(y,N+1,i+2,1))
+				)
+			{
+				 ++troughs;
+			}
 		}
 		
 		if (peaks < 1 || ((mX2 - mX*mX) < 0.0))
 			f = 0.0;
 		else
 		{
-			if (peaks > 7)
+			if ((troughs+peaks) > 10)
 			{
-				peaks = 7;
+				f = (double)10.0 + 1.0/(1.0 + mX2 - mX*mX);
 			}
-			f = (double)peaks + 1.0/(1.0 + mX2 - mX*mX);
-			if (f > 7.0)
+			else
 			{
-				peaks = 7;
+				f = (double)troughs + (double)peaks;
 			}
 		}
 		free(y);
