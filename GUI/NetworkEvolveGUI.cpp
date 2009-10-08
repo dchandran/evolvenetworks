@@ -1019,14 +1019,14 @@ namespace NetworkEvolutionLib
 		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(setGenerations(int)));
 		intSpinBox->setValue(generations);
 		
-		QTreeWidgetItem * generation = new QTreeWidgetItem;
-		generation->setText(0,"Stop criterion");
-		generation->setToolTip(0,"Stop the evolution when best individual reaches this fitness level. Use 0 to disable.");
-		treeWidget->addTopLevelItem(generation);
-		treeWidget->setItemWidget(generation,1,doubleSpinBox = new QDoubleSpinBox);
+		QTreeWidgetItem * stopcrit = new QTreeWidgetItem;
+		stopcrit->setText(0,"Stop criterion");
+		stopcrit->setToolTip(0,"Stop the evolution when best individual reaches this fitness level. Use 0 to disable.");
+		treeWidget->addTopLevelItem(stopcrit);
+		treeWidget->setItemWidget(stopcrit,1,doubleSpinBox = new QDoubleSpinBox);
 		//doubleSpinBox->setRange(1,1000000);
 		doubleSpinBox->setSingleStep(0.01);
-		doubleSpinBox->setDecimal(5);
+		doubleSpinBox->setDecimals(5);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setMaxFitness(double)));
 		doubleSpinBox->setValue(max_fitness);
 		
