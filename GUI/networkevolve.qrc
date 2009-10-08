@@ -4,5 +4,6 @@
 	<file>exit.png</file>
 	<file>save.png</file>
 	<file>play.png</file>
+	<file>stop.png</file>
     </qresource>
 </RCC>

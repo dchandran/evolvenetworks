@@ -57,10 +57,10 @@ namespace NetworkEvolutionLib
 		groupC->setTitle(" Compile command ");
 		
 		QString appDir = QCoreApplication::applicationDirPath();
-		QProcess proc;
+/*		QProcess proc;
 		proc.setWorkingDirectory(appDir);
 		proc.setProcessChannelMode(QProcess::ForwardedChannels);
-/*		
+		
 #ifdef Q_WS_WIN
 		proc.start(tr("win32\\tcc -r -Iwin32\\include -Isource\\include -Isource -Lwin32\\lib source\\*.c -o netga.o"));
 		proc.waitForFinished();
@@ -124,6 +124,13 @@ namespace NetworkEvolutionLib
 		button->setIcon(QIcon(":/play.png"));
 		connect(button,SIGNAL(pressed()),this,SLOT(run()));
 		toolbar->addWidget(button);
+		
+		button = new QPushButton(toolbar);
+		button->setText("STOP");
+		button->setIcon(QIcon(":/stop.png"));
+		connect(button,SIGNAL(pressed()),&proc,SLOT(terminate()));
+		toolbar->addWidget(button);
+		
 		
 		button = new QPushButton(toolbar);
 		button->setText("Quit");
@@ -1341,6 +1348,7 @@ namespace NetworkEvolutionLib
 			+ tr("    init();\n")
 			+ tr("    for (i=0; i < runs; ++i)\n")
 			+ tr("    {\n")
+			+ tr("       printf(\"run #%i\",i+1);\n")
 			+ tr("       P = evolveNetworks(popSz*5,popSz,generations,&callback);\n")
 			+ tr("       GAfree(P);\n")
 			+ tr("    }\n")
@@ -1365,24 +1373,27 @@ namespace NetworkEvolutionLib
 
 		qfile.close();
 		
-		QProcess proc;
 		proc.setWorkingDirectory(appDir);
 		proc.setProcessChannelMode(QProcess::ForwardedChannels);
 		
 #ifdef Q_WS_WIN
 		proc.start(tr("echo \"running...\""));
+		proc.waitForFinished();
 		proc.start(compileCommand);
 		proc.waitForFinished();
 		proc.start(tr("echo \"...done\""));
 		proc.waitForFinished();
 #else
 		proc.start(tr("echo \"compiling...\""));
+		proc.waitForFinished();
 		proc.start(compileCommand);
 		proc.waitForFinished();
 		proc.start(tr("./a.out"));
+		proc.waitForFinished();
 		proc.start(tr("echo \"running...\""));
 		proc.waitForFinished();
 		proc.start(tr("echo \"...done\""));
+		proc.waitForFinished();
 #endif
 
 	}

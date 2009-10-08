@@ -113,6 +113,11 @@ namespace NetworkEvolutionLib
 
 		double max_fitness;
 		
+		QProcess proc;
+	
+	signals:
+		void terminate();
+	
 	private slots:
 	
 		void clear();
