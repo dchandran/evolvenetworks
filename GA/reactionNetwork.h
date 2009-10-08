@@ -270,13 +270,12 @@ void setNetworkSize(int min_vars,int max_vars,int min_reactions,int max_reaction
  \param int number of individuals in the initial population (use large number here)
  \param int number of individuals in each successive population (use relatively small number for speed)
  \param int number of generations for evolution
- \param double stop evolution if best fitness reaching this level. Use 0 or -1 for none.
  \param GACallbackFnc a callback function (optional, use 0 for none)
  \return GApopulation the final evolved population of networks. Population is sorted by fitness of individuals.
 		The first individual in the population (index 0) will be the best individual.
  \ingroup genericNetwork
 */
-GApopulation evolveNetworks(int init_popSz,int final_popSz,int iterations,double max_fitness,GACallbackFnc callback);
+GApopulation evolveNetworks(int init_popSz,int final_popSz,int iterations,GACallbackFnc callback);
 
 /*!
   \}
