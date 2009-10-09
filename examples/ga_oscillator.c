@@ -24,6 +24,11 @@ double fitness(GAindividual p);
 #define SUCCESSIVE_POPULATION_SIZE 100
 #define NUM_GENERATIONS 30
 
+int callback(int iter, GApopulation P, int popSz)
+{
+	return (fitness(P[0]) > 100.0);
+}
+
 /* main */
 int main()
 {	
@@ -46,7 +51,7 @@ int main()
 	printf ("Oscillator Evolution\n\n");
 
 	enableLogFile("log.txt");
-	pop = evolveNetworks(INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, 0);  
+	pop = evolveNetworks(INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, &callback);  
 	
 	best = pop[0]; // Get the best network
 	
