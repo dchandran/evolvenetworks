@@ -23,6 +23,9 @@ int main(int argc, char *argv[])
 
     int output = app.exec();
 	
+	if (mainWindow.proc.isRunning())
+		mainWindow.proc.terminate();
+		
     return output;
 }
 
