@@ -113,6 +113,7 @@ namespace NetworkEvolutionLib
 
 		double max_fitness;
 		
+	public:	
 		QProcess proc;
 	
 	signals:

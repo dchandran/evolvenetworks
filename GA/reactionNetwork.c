@@ -749,12 +749,12 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 	
 	if (iter == 0) //header
 	{
-		printf("generation");
-		fprintf(LOGFILE,"generation");
+		printf("gen");
+		fprintf(LOGFILE,"gen");
 		if (PRINT_EACH_FITNESS && !PRINT_EACH_ALL_FITNESS)
 		{
-			printf("\tbest_fitness");
-			fprintf(LOGFILE,"\tbest_fitness");
+			printf("\tfitness");
+			fprintf(LOGFILE,"\tfitness");
 		}
 		
 		if (PRINT_EACH_ALL_FITNESS)
@@ -786,7 +786,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 
 		if (PRINT_EACH_FITNESS && !PRINT_EACH_ALL_FITNESS)
 		{
-			//printf("\t------------");
+			printf("\t------------");
 			fprintf(LOGFILE,"\t------------");
 		}
 		
@@ -978,7 +978,7 @@ void finalCallBackWithLogKepping(int iter, GApopulation pop, int popSz)
 	if (LOGFILE && PRINT_SEEDS)
 	{
 		seeds = getMTseeds();
-		fprintf(LOGFILE,"random number generator seeds: %lf,%lf,%lf,%lf\n",seeds[0],seeds[1],seeds[2],seeds[3]);
+		fprintf(LOGFILE,"random number generator seeds: %llf,%llf,%llf,%llf\n",seeds[0],seeds[1],seeds[2],seeds[3]);
 	}
 }
 

@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 
     int output = app.exec();
 	
-	if (mainWindow.proc.isRunning())
+	if (mainWindow.proc.state() == QProcess::Running)
 		mainWindow.proc.terminate();
 		
     return output;
@@ -1380,23 +1380,21 @@ namespace NetworkEvolutionLib
 		proc.setProcessChannelMode(QProcess::ForwardedChannels);
 		
 #ifdef Q_WS_WIN
-		proc.start(tr("echo \"running...\""));
-		proc.waitForFinished();
+		//proc.start(tr("echo \"running...\""));
+		//proc.waitForFinished();
 		proc.start(compileCommand);
-		proc.waitForFinished();
-		proc.start(tr("echo \"...done\""));
-		proc.waitForFinished();
+		//proc.waitForFinished();
+		//proc.start(tr("echo \"...done\""));
+		//proc.waitForFinished();
 #else
 		proc.start(tr("echo \"compiling...\""));
 		proc.waitForFinished();
 		proc.start(compileCommand);
 		proc.waitForFinished();
 		proc.start(tr("./a.out"));
-		proc.waitForFinished();
-		proc.start(tr("echo \"running...\""));
-		proc.waitForFinished();
-		proc.start(tr("echo \"...done\""));
-		proc.waitForFinished();
+		//proc.waitForFinished();
+		//proc.start(tr("echo \"...done\""));
+		//proc.waitForFinished();
 #endif
 
 	}

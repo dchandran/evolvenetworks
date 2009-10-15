@@ -26,7 +26,7 @@ double fitness(GAindividual p);
 
 int callback(int iter, GApopulation P, int popSz)
 {
-	return (fitness(P[0]) > 100.0);
+	return (fitness(P[0]) > 5.0);
 }
 
 /* main */
