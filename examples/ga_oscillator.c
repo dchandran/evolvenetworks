@@ -19,10 +19,19 @@
 
 void init()
 {
-    setNetworkTypeProbability(0,0);
+    setNetworkTypeProbability(0,1);
     setNetworkTypeProbability(1,0);
     setNetworkTypeProbability(2,0);
-    setNetworkTypeProbability(3,1);
+    setNetworkTypeProbability(3,0);
+	
+	//setNetworkType( MASS_ACTION_NETWORK );  // Use this network type
+	//setMutationRatesForMassActionNetwork(0.5,0.2,0.2);
+	//setCrossoverRate(1.0);
+	//setDistributionOfMassActionNetwork(0.5,0.25,0.25,0.0,0.1,0.1);
+	//setRateConstantForMassActionNetwork(0.001,100.0);
+	
+	//setNetworkSize(3,16,3,30);  //network size
+	//enableLogFile("log.txt");
 
     setDistributionOfMassActionNetwork(0.2,0.2,0.2,0.2,0.2,0.2);
     setRateConstantForMassActionNetwork(0.01,100);
@@ -35,8 +44,8 @@ void init()
     setRateConstantsForGeneRegulationNetwork(1,4,0.001,100,0.1,20,0.1,10);
     setMutationRatesForGeneRegulationNetwork(0.2,0.2,0.2,0.2,0.2);
     setNetworkSize(4,12,5,24);
-    setCrossoverRate(1);
-    setAverageInitialValue(1);
+    setCrossoverRate(1.0);
+    setAverageInitialValue(1.0);
     setMutationRateOfInitialValues(0.05);
     configureContinuousLog(1,0,1,0,0,1);
     configureFinalLog(1,1,1,0,1,1,1);
@@ -53,7 +62,7 @@ double fitness(GAindividual p);
 
 int callback(int iter, GApopulation P, int popSz)
 {
-	return (fitness(P[0]) > 5.0);
+	return (fitness(P[0]) > 100.0);
 }
 
 /* main */
@@ -64,20 +73,19 @@ int main()
 	GApopulation pop;
 	GAindividual * best;
 	
-	lineageTrackingON();
+	init();
 	setFitnessFunction( &fitness );    // Set the fitness function	
 	
-	setNetworkType( MASS_ACTION_NETWORK );  // Use this network type
-	setMutationRatesForMassActionNetwork(0.5,0.2,0.2);
-	setCrossoverRate(1.0);
-	setDistributionOfMassActionNetwork(0.5,0.25,0.25,0.0,0.1,0.1);
-	setRateConstantForMassActionNetwork(0.001,100.0);
+	//setNetworkType( MASS_ACTION_NETWORK );  // Use this network type
+	//setMutationRatesForMassActionNetwork(0.5,0.2,0.2);
+	//setCrossoverRate(1.0);
+	//setDistributionOfMassActionNetwork(0.5,0.25,0.25,0.0,0.1,0.1);
+	//setRateConstantForMassActionNetwork(0.001,100.0);
 	
-	setNetworkSize(3,16,3,30);  //network size
+	//setNetworkSize(3,16,3,30);  //network size
+	//enableLogFile("log.txt");
 	
 	printf ("Oscillator Evolution\n\n");
-
-	enableLogFile("log.txt");
 	pop = evolveNetworks(INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, &callback);  
 	
 	best = pop[0]; // Get the best network
@@ -111,7 +119,7 @@ double fitness(GAindividual net)
 	
 	time = 500.0;
 
-	y = simulateNetworkODE(net,time,1);  //simulate
+	y = simulateNetworkODE(net,time,0.1);  //simulate
 
 	N = getNumSpecies(net);
 	
