@@ -17,6 +17,33 @@
 
 /****************************************************/
 
+void init()
+{
+    setNetworkTypeProbability(0,0);
+    setNetworkTypeProbability(1,0);
+    setNetworkTypeProbability(2,0);
+    setNetworkTypeProbability(3,1);
+
+    setDistributionOfMassActionNetwork(0.2,0.2,0.2,0.2,0.2,0.2);
+    setRateConstantForMassActionNetwork(0.01,100);
+    setMutationRatesForMassActionNetwork(0.5,0.25,0.25);
+    setRateConstantsForProteinInteractionNetwork(0.001,100,0.1,100,0.1,100);
+    setMutationRatesForProteinInteractionNetwork(0.2,0.4,0.2,0.2);
+    setRateConstantsForEnzymeNetwork(0.001,100,-4,4,-4,4,1,4,0.001,20,0.001,20);
+    setMutationRatesForEnzymeNetwork(0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1);
+    setResourceRestriction(0,0);
+    setRateConstantsForGeneRegulationNetwork(1,4,0.001,100,0.1,20,0.1,10);
+    setMutationRatesForGeneRegulationNetwork(0.2,0.2,0.2,0.2,0.2);
+    setNetworkSize(4,12,5,24);
+    setCrossoverRate(1);
+    setAverageInitialValue(1);
+    setMutationRateOfInitialValues(0.05);
+    configureContinuousLog(1,0,1,0,0,1);
+    configureFinalLog(1,1,1,0,1,1,1);
+    enableLogFile("evolution.log");
+    lineageTrackingON();
+}
+
 /* Fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(GAindividual p);
 
