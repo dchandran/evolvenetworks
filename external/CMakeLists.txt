@@ -1,2 +1,3 @@
 ADD_SUBDIRECTORY( cvode_src )
 ADD_SUBDIRECTORY( optim )
+ADD_SUBDIRECTORY( lapack )
