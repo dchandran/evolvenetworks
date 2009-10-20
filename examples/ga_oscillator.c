@@ -76,15 +76,6 @@ int main()
 	init();
 	setFitnessFunction( &fitness );    // Set the fitness function	
 	
-	//setNetworkType( MASS_ACTION_NETWORK );  // Use this network type
-	//setMutationRatesForMassActionNetwork(0.5,0.2,0.2);
-	//setCrossoverRate(1.0);
-	//setDistributionOfMassActionNetwork(0.5,0.25,0.25,0.0,0.1,0.1);
-	//setRateConstantForMassActionNetwork(0.001,100.0);
-	
-	//setNetworkSize(3,16,3,30);  //network size
-	//enableLogFile("log.txt");
-	
 	printf ("Oscillator Evolution\n\n");
 	pop = evolveNetworks(INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, &callback);  
 	
@@ -132,18 +123,18 @@ double fitness(GAindividual net)
 	{
 		peaks = 0;
 		troughs = 0;
-		for (i = 5; i < (time-3); ++i)
+		for (i = 50; i < (time-30); i+=10)
 		{
 			if ( (getValue(y,N+1,i,1) > 0.1) &&
 				 (getValue(y,N+1,i,1) < 1000.0) &&
 				 (getValue(y,N+1,i,1) > (dx + getValue(y,N+1,i-3,1))) &&
 				 (getValue(y,N+1,i,1) > (dx + getValue(y,N+1,i+3,1))) &&
-				 (getValue(y,N+1,i-3,1) < getValue(y,N+1,i-2,1)) && 
-				 (getValue(y,N+1,i-2,1) < getValue(y,N+1,i-1,1)) && 
-				 (getValue(y,N+1,i-1,1) < getValue(y,N+1,i,1)) && 
-				 (getValue(y,N+1,i+1,1) < getValue(y,N+1,i,1)) && 
-				 (getValue(y,N+1,i+2,1) < getValue(y,N+1,i+1,1)) && 
-				 (getValue(y,N+1,i+3,1) < getValue(y,N+1,i+2,1))
+				 (getValue(y,N+1,i-30,1) < getValue(y,N+1,i-2,1)) && 
+				 (getValue(y,N+1,i-20,1) < getValue(y,N+1,i-1,1)) && 
+				 (getValue(y,N+1,i-10,1) < getValue(y,N+1,i,1)) && 
+				 (getValue(y,N+1,i+10,1) < getValue(y,N+1,i,1)) && 
+				 (getValue(y,N+1,i+20,1) < getValue(y,N+1,i+1,1)) && 
+				 (getValue(y,N+1,i+30,1) < getValue(y,N+1,i+2,1))
 				)
 			{
 				 peaks += 10.0 * (double)i / time;
@@ -155,12 +146,12 @@ double fitness(GAindividual net)
 				 (getValue(y,N+1,i,1) < 1000.0) &&
 				 (getValue(y,N+1,i,1) < (getValue(y,N+1,i-3,1) - dx)) &&
 				 (getValue(y,N+1,i,1) < (getValue(y,N+1,i+3,1) - dx)) &&
-				 (getValue(y,N+1,i-3,1) > getValue(y,N+1,i-2,1)) && 
-				 (getValue(y,N+1,i-2,1) > getValue(y,N+1,i-1,1)) && 
-				 (getValue(y,N+1,i-1,1) > getValue(y,N+1,i,1)) && 
-				 (getValue(y,N+1,i+1,1) > getValue(y,N+1,i,1)) && 
-				 (getValue(y,N+1,i+2,1) > getValue(y,N+1,i+1,1)) && 
-				 (getValue(y,N+1,i+3,1) > getValue(y,N+1,i+2,1))
+				 (getValue(y,N+1,i-30,1) > getValue(y,N+1,i-2,1)) && 
+				 (getValue(y,N+1,i-20,1) > getValue(y,N+1,i-1,1)) && 
+				 (getValue(y,N+1,i-10,1) > getValue(y,N+1,i,1)) && 
+				 (getValue(y,N+1,i+10,1) > getValue(y,N+1,i,1)) && 
+				 (getValue(y,N+1,i+20,1) > getValue(y,N+1,i+1,1)) && 
+				 (getValue(y,N+1,i+30,1) > getValue(y,N+1,i+2,1))
 				)
 			{
 				 peaks += 10.0 * (double)i / time;

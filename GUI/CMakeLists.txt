@@ -72,7 +72,7 @@ ELSE( APPLE AND BUILD_BUNDLE )
 
 		  ENDIF( MINGW )
 	
-    ADD_EXECUTABLE( NetworkEvolverGUI
+    ADD_EXECUTABLE( NetworkEvolverGUI 
       ${SOURCE_FILES}
       ${HEADER_MOC}
       ${NETWORK_EVOLVE_GUI_QRC}

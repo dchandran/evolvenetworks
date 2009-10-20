@@ -2,10 +2,14 @@
    background-color: white;
 }
 
-QMainWindow::separator {
+ QMainWindow::separator {
      background: #B2B2B2;
      width: 4px; /* when vertical */
      height: 4px; /* when horizontal */
+ }
+ 
+ QTextEdit {
+     tabStopWidth: 20
  }
 
  QMainWindow::separator:hover {

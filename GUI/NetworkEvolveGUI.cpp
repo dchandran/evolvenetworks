@@ -1,6 +1,7 @@
 #include "NetworkEvolveGUI.h"
 
 using namespace NetworkEvolutionLib;
+using namespace Tinkercell;
 
 
 int main(int argc, char *argv[])
@@ -23,9 +24,6 @@ int main(int argc, char *argv[])
 
     int output = app.exec();
 	
-	if (mainWindow.proc.state() == QProcess::Running)
-		mainWindow.proc.terminate();
-		
     return output;
 }
 
@@ -60,20 +58,6 @@ namespace NetworkEvolutionLib
 		groupC->setTitle(" Compile command ");
 		
 		QString appDir = QCoreApplication::applicationDirPath();
-/*		QProcess proc;
-		proc.setWorkingDirectory(appDir);
-		proc.setProcessChannelMode(QProcess::ForwardedChannels);
-		
-#ifdef Q_WS_WIN
-		proc.start(tr("win32\\tcc -r -Iwin32\\include -Isource\\include -Isource -Lwin32\\lib source\\*.c -o netga.o"));
-		proc.waitForFinished();
-#else
-		proc.start(tr("gcc -Isource/include -Isource source/*.c"));
-		proc.waitForFinished();
-		proc.start(tr("ar -r libnetga.a *.o"));
-		proc.waitForFinished();
-#endif
-*/
 		QLineEdit * compile = new QLineEdit(compileCommand);
 		layoutC->addWidget(compile);
 		
@@ -128,12 +112,12 @@ namespace NetworkEvolutionLib
 		connect(button,SIGNAL(pressed()),this,SLOT(run()));
 		toolbar->addWidget(button);
 		
-		button = new QPushButton(toolbar);
+		/*button = new QPushButton(toolbar);
 		button->setText("STOP");
 		button->setIcon(QIcon(":/stop.png"));
 		connect(button,SIGNAL(pressed()),&proc,SLOT(terminate()));
 		toolbar->addWidget(button);
-		
+		*/
 		
 		button = new QPushButton(toolbar);
 		button->setText("Quit");
@@ -1163,6 +1147,7 @@ namespace NetworkEvolutionLib
 		
 		codeEditor = new Tinkercell::CodeEditor;
 		codeEditor->setStyleSheet("background-color: #F9F7E4");
+		codeEditor->setTabStopWidth(20);
 		
 		CSyntaxHighlighter * syntaxHighlighter = new CSyntaxHighlighter(codeEditor->document());
 		
@@ -1376,25 +1361,21 @@ namespace NetworkEvolutionLib
 
 		qfile.close();
 		
-		proc.setWorkingDirectory(appDir);
-		proc.setProcessChannelMode(QProcess::ForwardedChannels);
-		
 #ifdef Q_WS_WIN
-		//proc.start(tr("echo \"running...\""));
-		//proc.waitForFinished();
-		proc.start(compileCommand);
-		//proc.waitForFinished();
-		//proc.start(tr("echo \"...done\""));
-		//proc.waitForFinished();
+		
+		ProcessThread * thread = new ProcessThread(compileCommand,tr(""),this);
+		ProcessThread::dialog(this, thread, tr("Running"));
+		thread->start();
 #else
 		proc.start(tr("echo \"compiling...\""));
 		proc.waitForFinished();
 		proc.start(compileCommand);
 		proc.waitForFinished();
-		proc.start(tr("./a.out"));
-		//proc.waitForFinished();
-		//proc.start(tr("echo \"...done\""));
-		//proc.waitForFinished();
+		
+		ProcessThread * thread = new ProcessThread(tr("./a.out"),tr(""),this);
+		ProcessThread::dialog(this, thread, tr("Running"));
+		thread->start();
+
 #endif
 
 	}

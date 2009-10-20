@@ -30,6 +30,8 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QFileDialog>
+#include <QThread>
+#include "CThread.h"
 #include "CodeEditor.h"
 #include "SyntaxHighlighter.h"
 
@@ -113,9 +115,6 @@ namespace NetworkEvolutionLib
 
 		double max_fitness;
 		
-	public:	
-		QProcess proc;
-	
 	signals:
 		void terminate();
 	
