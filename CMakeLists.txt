@@ -52,7 +52,7 @@ LINK_DIRECTORIES(
 #---------------------------------------------------------------------------
 #---------------------------------------------------------------------------
 
-#ADD_SUBDIRECTORY( external )
+ADD_SUBDIRECTORY( external/lapack )
 
 #---------------------------------------------------------------------------
 #Nelder-Mead algorithm
@@ -96,6 +96,9 @@ ADD_LIBRARY( ode
   ${NVECSER_SRC}
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/cvodesim.c
 )
+
+TARGET_LINK_LIBRARIES( ode ode  optim )
+
 SET_TARGET_PROPERTIES(ode PROPERTIES LINKER_LANGUAGE C)
 
 #---------------------------------------------------------------------------
@@ -209,7 +212,7 @@ ADD_EXECUTABLE( evolveChemotaxis ${NETWORKEVOLUTION_SOURCE_DIR}/chemotaxis/evolv
 TARGET_LINK_LIBRARIES( evolveChemotaxis netga loops )
 
 ADD_EXECUTABLE( bistabilize ${NETWORKEVOLUTION_SOURCE_DIR}/bistability/test_bistable.c )
-TARGET_LINK_LIBRARIES( bistabilize gaBistabilize optim )
+TARGET_LINK_LIBRARIES( bistabilize gaBistabilize )
 
 ADD_EXECUTABLE( evolveOscillator ${NETWORKEVOLUTION_SOURCE_DIR}/examples/ga_oscillator.c )
 TARGET_LINK_LIBRARIES( evolveOscillator netga )

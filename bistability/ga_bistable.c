@@ -195,7 +195,6 @@ static double * findZeros(Parameters * p, double * x, double * fopt)
    int i;
    double * ss = 0;
    
-   _DU = (double*)malloc(p->numVars*sizeof(double));
    _PARAM = p;
    
    for (i=0; i < p->numVars; ++i)
@@ -206,12 +205,8 @@ static double * findZeros(Parameters * p, double * x, double * fopt)
    if (NelderMeadSimplexMethod(p->numVars, &(FMIN), _U, 10.00, fopt, 1000.0, 1.0e-10) == success)
    {
          if ((*fopt) <= 1.0e-5)
-              ss = _DU;
-          else
-              free(_DU);
+              ss = _U;
    }
-   else
-      free(_DU);
 
    return ss;
 }
@@ -259,7 +254,7 @@ double fitness(void * individual)
        ss2 = unstableSteadyState(p,ss1);   //is it really a stable state
        if (ss2 == 0)   //(simu != findZero) so this is a stable state
        {
-           free(ss1);
+           //free(ss1);
            ss1 = 0;
            //setBad(p); //stay away from untra-sensitive points!
            return 0.0;
@@ -344,7 +339,7 @@ double fitness(void * individual)
        if (ss1[i] < 0.0) //negative steady state
        {
            free(ss0);
-           free(ss1);
+           //free(ss1);
            return (0.0);
        }
     }
@@ -352,7 +347,7 @@ double fitness(void * individual)
     if (distance(ss1,ss0,N) < MIN_ERROR)
     {
         free(ss0);
-        free(ss1);
+        //free(ss1);
         return (0.0);
     }
 
@@ -361,9 +356,7 @@ double fitness(void * individual)
     else
        STABLE_PT = ss0;
 
-    if (UNSTABLE_PT)
-        free(ss1);
-    else
+    if (!UNSTABLE_PT)
         UNSTABLE_PT = ss1;
     return 1.0;
 }
@@ -561,6 +554,8 @@ BistablePoint makeBistable(int n, int p,double* iv, int maxIter, int popSz, void
    
    _U0 = (double*)malloc( n * sizeof(double));
    _U = (double*)malloc( n * sizeof(double));
+   _DU = (double*)malloc( n * sizeof(double));
+
    ODE_FNC = odefnc;
    popsz1 = popSz/5;
    INIT_VALUE = iv;
