@@ -168,29 +168,33 @@ TARGET_LINK_LIBRARIES( netga
 # SWIG
 #---------------------------------------------------------------------------
 
-OPTION( SWIG_BINDINGS
-    "make SWIG bindings" 
-    OFF )
+OPTION( SWIG_BINDINGS "make SWIG bindings" OFF )
 
 IF (SWIG_BINDINGS)
-  FIND_PACKAGE(SWIG)
-  INCLUDE(${SWIG_USE_FILE})
+    FIND_PACKAGE(SWIG)
+    INCLUDE(${SWIG_USE_FILE})
 
-  FIND_PACKAGE(PythonLibs)
-  INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+    ADD_CUSTOM_COMMAND( 
+	    OUTPUT ga_wrap.c
+	    WORKING_DIRECTORY ${NETWORKEVOLUTION_SOURCE_DIR}/GA
+        COMMAND `swig -python ga.i`
+    )
+	ADD_LIBRARY( pyga
+      SHARED
+	  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/ga_wrap.c
+      ${NETWORKEVOLUTION_SOURCE_DIR}/GA/massActionNetwork.c
+      ${NETWORKEVOLUTION_SOURCE_DIR}/GA/proteinInteractionNetwork.c
+      ${NETWORKEVOLUTION_SOURCE_DIR}/GA/enzymeNetwork.c
+      ${NETWORKEVOLUTION_SOURCE_DIR}/GA/geneRegulationNetwork.c
+      ${NETWORKEVOLUTION_SOURCE_DIR}/GA/reactionNetwork.c
+   )
 
-  SET(CMAKE_SWIG_FLAGS "")
-
-  SWIG_ADD_MODULE(ga python 
-    ${NETWORKEVOLUTION_SOURCE_DIR}/GA/ga.i 
-    ${NETWORKEVOLUTION_SOURCE_DIR}/GA/ga.c
-    ${NETWORKEVOLUTION_SOURCE_DIR}/GA/massActionNetwork.c
-    ${NETWORKEVOLUTION_SOURCE_DIR}/GA/proteinInteractionNetwork.c
-    ${NETWORKEVOLUTION_SOURCE_DIR}/GA/enzymeNetwork.c
-    ${NETWORKEVOLUTION_SOURCE_DIR}/GA/geneRegulationNetwork.c
-    ${NETWORKEVOLUTION_SOURCE_DIR}/GA/reactionNetwork.c)
-  
-  SWIG_LINK_LIBRARIES(ga ${PYTHON_LIBRARIES})
+   TARGET_LINK_LIBRARIES( netga
+      netga
+      ga
+      ode
+      ssa
+   )
 ENDIF(SWIG_BINDINGS)
 #---------------------------------------------------------------------------
 # Bistability finder
