@@ -68,13 +68,12 @@ namespace Tinkercell
 	{
 		if (!exe.isEmpty())
 		{
-			//setPriority(QThread::LowestPriority);
+			process.setWorkingDirectory ( QCoreApplication::applicationDirPath() );
 			connect(this,SIGNAL(terminated()),&process,SLOT(kill()));
 			process.start(exe,QStringList() << args);
 			process.waitForFinished();
 			errStream = process.readAllStandardError();
 			outputStream = process.readAllStandardOutput();
-			//ConsoleWindow::error(errors);
 		}
 	}
 

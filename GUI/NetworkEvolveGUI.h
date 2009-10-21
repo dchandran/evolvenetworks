@@ -31,7 +31,6 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QThread>
-#include "CThread.h"
 #include "CodeEditor.h"
 #include "SyntaxHighlighter.h"
 
@@ -48,6 +47,7 @@ namespace NetworkEvolutionLib
 		
 	private:
 	
+		QProcess proc;
 		QComboBox * fitnessComboBox;
 		Tinkercell::CodeEditor * codeEditor;
 		QWidget * setupNetworkOptions();
@@ -101,7 +101,7 @@ namespace NetworkEvolutionLib
 		double mass_action_prob, enzyme_prob, protein_net_prob, grn_prob;
 		
 		QString codeFile, logFile;
-		int runs, generations, popSz;
+		int runs, generations, popSz, initPopSz;
 		QString seeds;
 		QString compileCommand;
 		
@@ -213,6 +213,7 @@ namespace NetworkEvolutionLib
 		void setRuns(int i) { runs = i; }
 		void setGenerations(int i) { generations = i; }
 		void setPopSz(int i) { popSz = i; }
+		void setInitPopSz(int i) { initPopSz = i; }
 		
 		void set_min_species(int value) { species_min = value; }
 		void set_min_reactions(int value) { reactions_min = value; }

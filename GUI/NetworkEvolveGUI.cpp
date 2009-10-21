@@ -143,6 +143,8 @@ namespace NetworkEvolutionLib
 	
 	MainWindow::~MainWindow()
 	{
+		proc.terminate();
+		
 		QSettings settings("UWashington","NetworkEvolutionLib");
 		settings.beginGroup("parameters");
 		
@@ -227,6 +229,7 @@ namespace NetworkEvolutionLib
 		settings.setValue("runs",runs);
 		settings.setValue("generations",generations);
 		settings.setValue("popSz",popSz);
+		settings.setValue("initPopSz",initPopSz);
 		settings.setValue("compileCommand",compileCommand);
 		
 		settings.setValue("bestNetworkFitness1",bestNetworkFitness1);
@@ -995,13 +998,23 @@ namespace NetworkEvolutionLib
 		
 		QTreeWidgetItem * popSz = new QTreeWidgetItem;
 		popSz->setText(0,"Population Size");
-		popSz->setToolTip(0,"The initial population size for each run");
+		popSz->setToolTip(0,"The final population size for each run");
 		treeWidget->addTopLevelItem(popSz);
 		treeWidget->setItemWidget(popSz,1,intSpinBox = new QSpinBox);
 		intSpinBox->setRange(1,1000000);
 		intSpinBox->setSingleStep(1);
 		intSpinBox->setValue(this->popSz);
 		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(setPopSz(int)));
+		
+		QTreeWidgetItem * initPopSz = new QTreeWidgetItem;
+		popSz->setText(0,"Initial Population Size");
+		popSz->setToolTip(0,"The initial parent population size for each run");
+		treeWidget->addTopLevelItem(initPopSz);
+		treeWidget->setItemWidget(initPopSz,1,intSpinBox = new QSpinBox);
+		intSpinBox->setRange(1,1000000);
+		intSpinBox->setSingleStep(1);
+		intSpinBox->setValue(this->initPopSz);
+		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(setInitPopSz(int)));
 		
 		QTreeWidgetItem * generation = new QTreeWidgetItem;
 		generation->setText(0,"Generations");
@@ -1330,6 +1343,7 @@ namespace NetworkEvolutionLib
 			+ tr("    int runs = ") + QString::number(runs) + tr(";\n")
 			+ tr("    int generations = ") + QString::number(generations) + tr(";\n")
 			+ tr("    int popSz = ") + QString::number(popSz) + tr(";\n")
+			+ tr("    int initPopSz = ") + QString::number(initPopSz) + tr(";\n")
 			+ tr("    GApopulation P;\n")
 			+ tr("    int i,j;\n\n")
 			+ tr("    setFitnessFunction(&fitness);\n")
@@ -1337,7 +1351,7 @@ namespace NetworkEvolutionLib
 			+ tr("    for (i=0; i < runs; ++i)\n")
 			+ tr("    {\n")
 			+ tr("       printf(\"run #%i\",i+1);\n")
-			+ tr("       P = evolveNetworks(popSz*5,popSz,generations,&callback);\n")
+			+ tr("       P = evolveNetworks(initPopSz,popSz,generations,&callback);\n")
 			+ tr("       GAfree(P);\n")
 			+ tr("    }\n")
 			+ tr("    return 0;\n}\n");
@@ -1361,20 +1375,25 @@ namespace NetworkEvolutionLib
 
 		qfile.close();
 		
+		proc.setWorkingDirectory(appDir);
+		
 #ifdef Q_WS_WIN
 		
-		ProcessThread * thread = new ProcessThread(compileCommand,tr(""),this);
-		ProcessThread::dialog(this, thread, tr("Running"));
-		thread->start();
-#else
-		proc.start(tr("echo \"compiling...\""));
-		proc.waitForFinished();
 		proc.start(compileCommand);
 		proc.waitForFinished();
+		proc.start(tr("a.exe"));
+		proc.waitForFinished();
 		
-		ProcessThread * thread = new ProcessThread(tr("./a.out"),tr(""),this);
+		
+#else
+		proc.start(compileCommand);
+		proc.waitForFinished();
+		proc.start(tr("./a.out"));
+		proc.waitForFinished();
+		
+		/*ProcessThread * thread = new ProcessThread(tr("./a.out"),tr(""),this);
 		ProcessThread::dialog(this, thread, tr("Running"));
-		thread->start();
+		thread->start();*/
 
 #endif
 
@@ -1436,6 +1455,7 @@ namespace NetworkEvolutionLib
 		logFile = tr("evolution.log");
 		runs = 10;
 		popSz = 200;
+		initPopSz = 200;
 		generations = 50;
 		
 		species_min = 4;
@@ -1550,6 +1570,7 @@ namespace NetworkEvolutionLib
 		runs = settings.value("runs",runs).toInt();
 		generations = settings.value("generations",generations).toInt();
 		popSz = settings.value("popSz",popSz).toInt();
+		initPopSz = settings.value("initPopSz",initPopSz).toInt();
 		
 		bestNetworkFitness1 = settings.value("bestNetworkFitness1",bestNetworkFitness1).toInt();
 		bestNetworkScript1 = settings.value("bestNetworkScript1",bestNetworkScript1).toInt();
@@ -1569,7 +1590,8 @@ namespace NetworkEvolutionLib
 		max_fitness = settings.value("max_fitness",max_fitness).toDouble();
 		
 #ifdef Q_WS_WIN
-		compileCommand = tr("win32\\tcc -Iwin32\\include -Isource\\include -Isource -Lwin32\\lib source\\*.c -run ") + codeFile;
+		compileCommand = tr("gcc -Isource source\\*.c ") + codeFile + tr(" -o a.exe");
+		//compileCommand = tr("win32\\tcc -Iwin32\\include -Isource\\include -Isource -Lwin32\\lib source\\*.c -run ") + codeFile;
 #else
 		compileCommand =  tr("gcc -Isource/include -Isource source/*.c ") + codeFile + tr(" -o a.out");
 #endif

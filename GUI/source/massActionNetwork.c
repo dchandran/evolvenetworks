@@ -21,7 +21,7 @@ static double PROB_BI_BI = 0.2;
 static double PROB_NO_REACTANTS = 0.2;
 static double PROB_NO_PRODUCTS = 0.2;
 static double MIN_RATE_CONSTANT = 0.0;
-static double MAX_RATE_CONSTANT = 2.0;
+static double MAX_RATE_CONSTANT = 100.0;
 static int MIN_NUM_SPECIES = 2;
 static int MAX_NUM_SPECIES = 16;
 static int MIN_NUM_REACTIONS = 2;
@@ -252,13 +252,14 @@ GAindividual mutateMassActionNetwork(GAindividual individual)
 
 	i = (int)(mtrand() * m);  //pick random reaction
 
-	if ((mtrand() < MUTATE_COEFF_PROB) ||
-		(m >= MAX_NUM_REACTIONS && m <= MIN_NUM_REACTIONS)) //mutate coefficient
+	if (mtrand() < MUTATE_COEFF_PROB ||
+		m >= MAX_NUM_REACTIONS || 
+		m <= MIN_NUM_REACTIONS) //mutate coefficient
 	{
 		net->k[i] *= (mtrand() * 2.0);
 		if ((net->k[i] < MIN_RATE_CONSTANT) || (net->k[i] > MAX_RATE_CONSTANT))
 		{
-			net2->k[j] = MIN_RATE_CONSTANT + (MAX_RATE_CONSTANT-MIN_RATE_CONSTANT) * mtrand();
+			net->k[i] = MIN_RATE_CONSTANT + (MAX_RATE_CONSTANT-MIN_RATE_CONSTANT) * mtrand();
 		}
 		
 		return (GAindividual)(net);
@@ -520,18 +521,30 @@ GApopulation randomMassActionNetworks(int num)
 	int i,j,n;
 	double u;
 	MassActionNetwork * net;
-	MassActionNetwork ** array;
-	
+	MassActionNetwork ** array;	
+	double logMaxRate = log(MAX_RATE_CONSTANT)/log(2);
+
 	initMTrand(); /*initialize seeds for MT random number generator*/
 	array = (MassActionNetwork**)malloc(num * sizeof(MassActionNetwork*));
 	for (i=0; i < num; ++i)
 	{
-		n = (int)(MIN_NUM_SPECIES + (MAX_NUM_SPECIES - MIN_NUM_SPECIES) * mtrand());
-		net = newMassActionNetwork(n,(int)(MIN_NUM_REACTIONS + (MAX_NUM_REACTIONS - MIN_NUM_REACTIONS) * mtrand()));
+		if (MAX_NUM_SPECIES > (3*MIN_NUM_SPECIES))
+			n = (int)(MIN_NUM_SPECIES + (2 * MIN_NUM_SPECIES) * mtrand());
+		else
+			n = (int)(MIN_NUM_SPECIES + (MAX_NUM_SPECIES - MIN_NUM_SPECIES) * mtrand());
+
+		if ((MAX_NUM_REACTIONS - MIN_NUM_REACTIONS) > (2*n))
+			net = newMassActionNetwork(n,(int)(MIN_NUM_REACTIONS + (2*n) * mtrand()));
+		else
+			net = newMassActionNetwork(n,(int)(MIN_NUM_REACTIONS + (MAX_NUM_REACTIONS - MIN_NUM_REACTIONS) * mtrand()));
 		
 		for (j=0; j < net->reactions; ++j)
 		{
-			net->k[j] = MIN_RATE_CONSTANT + (MAX_RATE_CONSTANT-MIN_RATE_CONSTANT) * mtrand();   //reaction rate constant
+			net->k[j] = MIN_RATE_CONSTANT;
+			if (MAX_RATE_CONSTANT > MIN_RATE_CONSTANT)
+			{
+				net->k[j] += pow(2.0,logMaxRate * (2.0 * mtrand() - 1.0));
+			}
 			net->reactant1[j] = net->reactant2[j] = net->product1[j] = net->product2[j] = -1;
 
 			u = mtrand();
