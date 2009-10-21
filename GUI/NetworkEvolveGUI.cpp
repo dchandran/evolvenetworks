@@ -22,7 +22,10 @@ int main(int argc, char *argv[])
 
     mainWindow.show();
 
-    int output = app.exec();
+    
+	int output = app.exec();
+	
+	mainWindow.proc.terminate();
 	
     return output;
 }
@@ -143,8 +146,6 @@ namespace NetworkEvolutionLib
 	
 	MainWindow::~MainWindow()
 	{
-		proc.terminate();
-		
 		QSettings settings("UWashington","NetworkEvolutionLib");
 		settings.beginGroup("parameters");
 		
@@ -1007,8 +1008,8 @@ namespace NetworkEvolutionLib
 		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(setPopSz(int)));
 		
 		QTreeWidgetItem * initPopSz = new QTreeWidgetItem;
-		popSz->setText(0,"Initial Population Size");
-		popSz->setToolTip(0,"The initial parent population size for each run");
+		initPopSz->setText(0,"Initial Population Size");
+		initPopSz->setToolTip(0,"The initial parent population size for each run");
 		treeWidget->addTopLevelItem(initPopSz);
 		treeWidget->setItemWidget(initPopSz,1,intSpinBox = new QSpinBox);
 		intSpinBox->setRange(1,1000000);

@@ -3,6 +3,15 @@ cmake_minimum_required(VERSION 2.0)
 PROJECT( NETWORKEVOLUTION )
 
 #---------------------------------------------------------------------------
+# Python
+#---------------------------------------------------------------------------
+FIND_PACKAGE( PythonLibs )
+
+IF( NOT PYTHONLIBS_FOUND )
+  MESSAGE( SEND_ERROR "TinkerCell requires python to be installed" )
+ENDIF( NOT PYTHONLIBS_FOUND )
+
+#---------------------------------------------------------------------------
 # Doxygen documentation
 #---------------------------------------------------------------------------
 OPTION( DOXYGENDOC "Generate Doxygen Documentation" OFF )
@@ -23,6 +32,7 @@ ENDIF( DOXYGENDOC )
 #---------------------------------------------------------------------------
 
 INCLUDE_DIRECTORIES( BEFORE
+	${PYTHON_INCLUDE_PATH}
     ${NETWORKEVOLUTION_SOURCE_DIR}/external/
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/optim/
@@ -154,24 +164,34 @@ TARGET_LINK_LIBRARIES( netga
   ssa
 )
 
-#shared (for Python)
+#---------------------------------------------------------------------------
+# SWIG
+#---------------------------------------------------------------------------
 
-ADD_LIBRARY( evolvenet
-  SHARED
-  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/massActionNetwork.c
-  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/proteinInteractionNetwork.c
-  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/enzymeNetwork.c
-  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/geneRegulationNetwork.c
-  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/reactionNetwork.c
-)
+OPTION( SWIG_BINDINGS
+    "make SWIG bindings" 
+    OFF )
 
-TARGET_LINK_LIBRARIES( evolvenet
-  evolvenet
-  ga
-  ode
-  ssa
-)
+IF (SWIG_BINGINGS)
+  FIND_PACKAGE(SWIG)
+  INCLUDE(${SWIG_USE_FILE})
 
+  FIND_PACKAGE(PythonLibs)
+  INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
+
+  SET(CMAKE_SWIG_FLAGS "")
+
+  SWIG_ADD_MODULE(ga python 
+    ${NETWORKEVOLUTION_SOURCE_DIR}/GA/ga.i 
+    ${NETWORKEVOLUTION_SOURCE_DIR}/GA/ga.c
+    ${NETWORKEVOLUTION_SOURCE_DIR}/GA/massActionNetwork.c
+    ${NETWORKEVOLUTION_SOURCE_DIR}/GA/proteinInteractionNetwork.c
+    ${NETWORKEVOLUTION_SOURCE_DIR}/GA/enzymeNetwork.c
+    ${NETWORKEVOLUTION_SOURCE_DIR}/GA/geneRegulationNetwork.c
+    ${NETWORKEVOLUTION_SOURCE_DIR}/GA/reactionNetwork.c)
+  
+  SWIG_LINK_LIBRARIES(ga ${PYTHON_LIBRARIES})
+ENDIF(SWIG_BINDINGS)
 #---------------------------------------------------------------------------
 # Bistability finder
 #---------------------------------------------------------------------------

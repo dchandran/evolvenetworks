@@ -43,11 +43,11 @@ namespace NetworkEvolutionLib
 	public:
 		MainWindow();
 		~MainWindow();
+		QProcess proc;
 		QSize sizeHint() const;
 		
 	private:
 	
-		QProcess proc;
 		QComboBox * fitnessComboBox;
 		Tinkercell::CodeEditor * codeEditor;
 		QWidget * setupNetworkOptions();

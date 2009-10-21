@@ -164,7 +164,7 @@ void recursiveLoopSearch(int n, int index, int * path, double * values, int N, i
 		if (!alreadyExistsInLoops(temp,N))
 		{
 			//copy old loops
-			int * newLoops = (int**) malloc((1+numLoops) * N * sizeof(int));
+			int * newLoops = (int*) malloc((1+numLoops) * N * sizeof(int));
 			for (i=0; i < (numLoops * N); ++i)	
 				newLoops[i] = Loops[i];
 			if (Loops) free(Loops);

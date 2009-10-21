@@ -113,7 +113,7 @@ double fitness(GAindividual net)
 	{
 		peaks = 0;
 		troughs = 0;
-		for (i = 3; i < (time-3); i+=10)
+		for (i = 50; i < (time-3); i+=1)
 		{
 			if ( (getValue(y,N+1,i,1) > 0.1) &&
 				 (getValue(y,N+1,i,1) < 1000.0) &&
@@ -127,7 +127,7 @@ double fitness(GAindividual net)
 				 (getValue(y,N+1,i+3,1) < getValue(y,N+1,i+2,1))
 				)
 			{
-				 peaks += (double)i * time/100.0;
+				 peaks += (double)i;
 				 mX += y[i];
 				 mX2 += y[i]*y[i];
 			}
@@ -144,7 +144,7 @@ double fitness(GAindividual net)
 				 (getValue(y,N+1,i+3,1) > getValue(y,N+1,i+2,1))
 				)
 			{
-				 peaks += (double)i * time/100.0;
+				 peaks += (double)i;
 			}
 		}
 		
