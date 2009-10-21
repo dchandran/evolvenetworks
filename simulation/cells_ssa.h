@@ -37,6 +37,11 @@
 #include <stdlib.h>
 #include "mtrand.h"
 
+#ifndef _PropensityFunction
+#define _PropensityFunction
+typedef void (*PropensityFunction)(double time,double* y,double* rates,void* params);
+#endif
+
 #ifndef getValue
 /*! \brief
 * get the i,j th value from a 2D array stored as a single 1D array with N columns
@@ -60,6 +65,6 @@
 * \return double** two linearized 2D dimentional arrays: [0] cell growth data [1] concentrations data
 * \ingroup gillespie
 */
-double ** cells_ssa(int, int, double *, void (*f)(double,double*,double*,void*), double*, double, int, void*, int, double, double, double);
+double ** cells_ssa(int, int, double *, PropensityFunction, double*, double, int, void*, int, double, double, double);
 
 #endif

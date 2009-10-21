@@ -37,7 +37,10 @@ typedef void (*ODEFunction)(double time,double* y,double* dydt,void* params);
 /*!
  * \brief The type for the user defined propensity function
  */
+#ifndef _PropensityFunction
+#define _PropensityFunction
 typedef void (*PropensityFunction)(double time,double* y,double* rates,void* params);
+#endif
 
 /*!
  * \brief The type for the user defined event function

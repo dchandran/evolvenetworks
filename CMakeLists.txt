@@ -115,19 +115,13 @@ SET_TARGET_PROPERTIES(ode PROPERTIES LINKER_LANGUAGE C)
 #stochastic simulation
 #---------------------------------------------------------------------------
 
-#Gillespie
+#Gillespie, Langevin, and custom multi-cell simulation
 
 ADD_LIBRARY( ssa
   STATIC
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/ssa.c
-  ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/mtrand.c
-)
-
-#Multi-cell stochastic simulation
-
-ADD_LIBRARY( cells_ssa
-  STATIC
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/cells_ssa.c
+  ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/langevin.c
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/mtrand.c
 )
 
@@ -175,25 +169,29 @@ IF (SWIG_BINDINGS)
     INCLUDE(${SWIG_USE_FILE})
 
     ADD_CUSTOM_COMMAND( 
-	    OUTPUT ga_wrap.c
-	    WORKING_DIRECTORY ${NETWORKEVOLUTION_SOURCE_DIR}/GA
+	    OUTPUT NotAFile
+	    WORKING_DIRECTORY ${NETWORKEVOLUTION_SOURCE_DIR}/simulation
+        COMMAND `swig -python sim.i`
+		WORKING_DIRECTORY ${NETWORKEVOLUTION_SOURCE_DIR}/GA
         COMMAND `swig -python ga.i`
     )
+	ADD_LIBRARY( _sim
+      SHARED
+	  ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/sim_wrap.c
+   )
+   TARGET_LINK_LIBRARIES( _sim
+      _sim
+	  ode
+	  ssa
+	  ${PYTHON_LIBRARIES}
+   )
 	ADD_LIBRARY( _ga
       SHARED
 	  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/ga_wrap.c
-      ${NETWORKEVOLUTION_SOURCE_DIR}/GA/massActionNetwork.c
-      ${NETWORKEVOLUTION_SOURCE_DIR}/GA/proteinInteractionNetwork.c
-      ${NETWORKEVOLUTION_SOURCE_DIR}/GA/enzymeNetwork.c
-      ${NETWORKEVOLUTION_SOURCE_DIR}/GA/geneRegulationNetwork.c
-      ${NETWORKEVOLUTION_SOURCE_DIR}/GA/reactionNetwork.c
    )
-
    TARGET_LINK_LIBRARIES( _ga
       _ga
-      ga
-      ode
-      ssa
+      netga
 	  ${PYTHON_LIBRARIES}
    )
 ENDIF(SWIG_BINDINGS)
