@@ -3,7 +3,6 @@
 using namespace NetworkEvolutionLib;
 using namespace Tinkercell;
 
-
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
@@ -31,7 +30,7 @@ int main(int argc, char *argv[])
 }
 
 namespace NetworkEvolutionLib
-{	
+{
 	MainWindow::MainWindow()
 	{
 		reset();

@@ -207,7 +207,7 @@ void GAsetMutationFunction(GAMutateFnc);
  * \param GASelectionFnc function pointer (cannot be 0)
  * \ingroup ga
 */
-void setSelectionFunction(GASelectionFnc);
+void GAsetSelectionFunction(GASelectionFnc);
 
 /*! \}
   \name functions that are being used by the GA

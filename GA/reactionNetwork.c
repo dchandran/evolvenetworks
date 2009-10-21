@@ -1268,3 +1268,26 @@ void configureFinalLog(int bestNetworkFitness,
 	if (PRINT_FINAL_BEST_LINEAGE || PRINT_FINAL_ALL_LINEAGE)
 		TRACK_NETWORK_PARENTS = 1;
 }
+
+void setInitialValues( GAindividual x, double * values)
+{
+	int i,n;
+	ReactionNetwork * rnet = (ReactionNetwork*)x;
+	
+	if (!rnet || !values) return;
+	
+	n = getNumSpecies(rnet);
+	
+	for (i=0; i < n; ++i)
+		rnet->initialValues[i] = values[i];
+}
+
+double * getInitialValues( GAindividual x)
+{
+	int i,n;
+	ReactionNetwork * rnet = (ReactionNetwork*)x;
+	
+	if (!rnet) return 0;
+	
+	return rnet->initialValues;
+}

@@ -179,7 +179,7 @@ IF (SWIG_BINDINGS)
 	    WORKING_DIRECTORY ${NETWORKEVOLUTION_SOURCE_DIR}/GA
         COMMAND `swig -python ga.i`
     )
-	ADD_LIBRARY( pyga
+	ADD_LIBRARY( _ga
       SHARED
 	  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/ga_wrap.c
       ${NETWORKEVOLUTION_SOURCE_DIR}/GA/massActionNetwork.c
@@ -189,11 +189,12 @@ IF (SWIG_BINDINGS)
       ${NETWORKEVOLUTION_SOURCE_DIR}/GA/reactionNetwork.c
    )
 
-   TARGET_LINK_LIBRARIES( netga
-      netga
+   TARGET_LINK_LIBRARIES( _ga
+      _ga
       ga
       ode
       ssa
+	  ${PYTHON_LIBRARIES}
    )
 ENDIF(SWIG_BINDINGS)
 #---------------------------------------------------------------------------
