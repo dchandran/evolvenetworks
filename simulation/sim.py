@@ -67,6 +67,26 @@ except AttributeError:
 
 
 
+def new_array(*args):
+  return _sim.new_array(*args)
+new_array = _sim.new_array
+
+def get_value(*args):
+  return _sim.get_value(*args)
+get_value = _sim.get_value
+
+def get_value2D(*args):
+  return _sim.get_value2D(*args)
+get_value2D = _sim.get_value2D
+
+def set_value(*args):
+  return _sim.set_value(*args)
+set_value = _sim.set_value
+
+def set_value2D(*args):
+  return _sim.set_value2D(*args)
+set_value2D = _sim.set_value2D
+
 def ODEevents(*args):
   return _sim.ODEevents(*args)
 ODEevents = _sim.ODEevents

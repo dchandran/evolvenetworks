@@ -178,8 +178,9 @@ double* getDerivatives(int N, double * initValues, ODEFunction function, double 
  */
 double* getDerivatives2(int m, int n, double * N, PropensityFunction f, double * initValues, double startTime, double endTime, double stepSize, void * params);
 
-
+#ifndef getValue
 #define getValue(array, N, i, j) ( array[ (((i)*(N)) + (j)) ] )
+#endif
 
 /*!
 * \brief print a linearized 2D table to a file
