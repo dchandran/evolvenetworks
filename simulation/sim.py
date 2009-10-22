@@ -111,10 +111,6 @@ def getDerivatives2(*args):
   return _sim.getDerivatives2(*args)
 getDerivatives2 = _sim.getDerivatives2
 
-def writeToFile(*args):
-  return _sim.writeToFile(*args)
-writeToFile = _sim.writeToFile
-
 def SSA(*args):
   return _sim.SSA(*args)
 SSA = _sim.SSA
