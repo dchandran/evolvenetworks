@@ -66,7 +66,7 @@ typedef double (*EventFunction)(double time,double * y,void* params);
 /* convert a python ODE callback function to C*/
 static PyObject * SIM_PYTHON_ODE_FUNCTION_CALLBACK = NULL;
 
-void SIM_PYTHON_ODE_FUNCTION(double time,double * y,double* dydt,void* params)
+void SIM_PYTHON_ODE_FUNCTION(double time,double * y,double* dy,void* params)
 {
 	PyObject *arglist;
 	if (SIM_PYTHON_ODE_FUNCTION_CALLBACK)

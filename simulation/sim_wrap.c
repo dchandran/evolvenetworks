@@ -2887,7 +2887,7 @@ void set_value2D(double * array, int N, int i, int j, double value) {
 /* convert a python ODE callback function to C*/
 static PyObject * SIM_PYTHON_ODE_FUNCTION_CALLBACK = NULL;
 
-void SIM_PYTHON_ODE_FUNCTION(double time,double * y,double* dydt,void* params)
+void SIM_PYTHON_ODE_FUNCTION(double time,double * y,double* dy,void* params)
 {
 	PyObject *arglist;
 	if (SIM_PYTHON_ODE_FUNCTION_CALLBACK)
