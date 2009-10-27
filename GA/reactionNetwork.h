@@ -177,7 +177,7 @@ double * simulateNetworkStochastically( GAindividual, double, int* );
   \{
 */
 
-/*! \brief set the fitness function for the GA. Use before calling evolveNetworks.
+/*! \brief set the fitness function for the GA. 
 	IMPORTANT: higher fitness = better. If you want to minimize a function, simple invert
 	the value, e.g. 1/(1+x) or something similar. Otherwise, you will need to override the selection function using
 	GAsetSelectionFunction, because the default selection function assumes higher fitness is better. 
@@ -185,6 +185,12 @@ double * simulateNetworkStochastically( GAindividual, double, int* );
  \ingroup genericNetwork
 */
 void setFitnessFunction(GAFitnessFnc);
+
+/*! \brief set the callback function for the GA.
+ * \param GACallbackFnc function pointer
+ \ingroup genericNetwork
+*/
+void setCallbackFunction(GACallbackFnc);
 
 /*! \brief set the crossover function for one network type. Use before calling evolveNetworks.
  \param int type of the network, e.g. e.g. MASS_ACTION_NETWORK | PROTEIN_INTERACTION_NETWORK
@@ -231,12 +237,13 @@ void setNetworkSize(int min_vars,int max_vars,int min_reactions,int max_reaction
  \param int number of individuals in the initial population (use large number here)
  \param int number of individuals in each successive population (use relatively small number for speed)
  \param int number of generations for evolution
+ \param GAFitnessFnc the fitness function (must not be 0)
  \param GACallbackFnc a callback function (optional, use 0 for none)
  \return GApopulation the final evolved population of networks. Population is sorted by fitness of individuals.
 		The first individual in the population (index 0) will be the best individual.
  \ingroup genericNetwork
 */
-GApopulation evolveNetworks(int init_popSz,int final_popSz,int iterations,GACallbackFnc callback);
+GApopulation evolveNetworks(int init_popSz,int final_popSz,int iterations,GAFitnessFnc fitness, GACallbackFnc callback);
 
 /*!
   \}
@@ -400,6 +407,43 @@ void configureSteadyStateFunction(double tolerance,
 									double maxTime);
 
 
-/*!\}*/
+/*!
+  \}
+  @name Related to lineage tracking
+  \{
+*/
+/*! \brief turn on lineage tracking. This will track the parents of each individual when crossover occurs
+ \ingroup ga
+*/
+void lineageTrackingON();
+/*! \brief turn on lineage tracking. 
+	This will prevent tracking of the parents of each individual when crossover occurs
+	ReactioNetwork's parent field will be 0.
+ \ingroup ga
+*/
+void lineageTrackingOFF();
+/*! \brief check if lineage tracking is on
+ \return int 0 if off, 1 if on
+ \ingroup ga
+*/
+int isLineageTrackingOn();
+/*! \brief get the IDs for all the original parents of this individual. IDs = (1 + indices of the original population)
+ \param int index of an individual
+ \param int generation from which this individual is selected
+ \return int* NULL TERMINATED array with IDs of parents. Free this array after use.
+ \ingroup ga
+*/
+int* getOriginalParents(int, int);
+/*! \brief get the ID for all immediate parents of this individual. IDs = (1 + indices of the previous population)
+ \param int index of an individual
+ \param int generation from which this individual is selected
+ \return int* NULL TERMINATED array with IDs of parents. Free this array after use.
+ \ingroup ga
+*/
+int* getImmediateParents(int, int);
+
+/*!
+  \}
+*/
 
 #endif

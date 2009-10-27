@@ -40,6 +40,7 @@ static double MUTATE_INIT_VALUE_PROB = 1.0;
 static double AVG_INIT_VALUES = 2.0;
 static int NUMBER_OF_NETWORK_TYPES = 4;
 static double CROSSOVER_PROB = 1.0;
+static int TRACK_NETWORK_PARENTS = 0;
 
 void setCrossoverRate(double d)
 {
@@ -740,6 +741,11 @@ void setFitnessFunction(GAFitnessFnc f)
 	GAsetFitnessFunction(f);
 }
 
+void setCallbackFunction(GACallbackFnc f)
+{
+	GAsetCallbackFunction(f);
+}
+
 static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 {
 	GAFitnessFnc fitness = GAgetFitnessFunction();
@@ -747,7 +753,6 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 	int i,j,k,*parents, num = 10*popSz, max = 0;
 	int * temp = 0, * ids = 0;
 	GAindividual * p;
-	int TRACK_NETWORK_PARENTS = isLineageTrackingOn();
 	
 	if (iter == 0) //header
 	{
@@ -830,7 +835,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 
 			if (!p) continue;
 
-			parents = getOriginalParents(i,iter);
+			parents = GAgetOriginalParents(i,iter);
 			if (parents)
 			{
 				for (j=0; parents[j] > 0; ++j)
@@ -984,10 +989,16 @@ void finalCallBackWithLogKepping(int iter, GApopulation pop, int popSz)
 	}
 }
 
-GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GACallbackFnc callbackFunc)
+GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GAFitnessFnc fitness, GACallbackFnc callbackFunc)
 {
 	GApopulation P;
-	if (!GAgetFitnessFunction()) return 0;
+	
+	if (fitness) return 0;
+	
+	GAsetFitnessFunction(fitness);
+	GAsetCallbackFunction(callbackFunc);
+	
+	TRACK_NETWORK_PARENTS = GAisLineageTrackingOn();
 	
 	if (LOGFILE)
 	{
@@ -1256,4 +1267,29 @@ double * getInitialValues( GAindividual x)
 	if (!rnet) return 0;
 	
 	return rnet->initialValues;
+}
+
+void lineageTrackingON()
+{
+	GAlineageTrackingON();
+}
+
+void lineageTrackingOFF()
+{
+	GAlineageTrackingOFF();
+}
+
+int isLineageTrackingOn()
+{
+	return GAisLineageTrackingOn();
+}
+
+int* getOriginalParents(int i, int j)
+{
+	return GAgetOriginalParents(i,j);
+}
+
+int* getImmediateParents(int i, int j)
+{
+	return GAgetImmediateParents(i,j);
 }

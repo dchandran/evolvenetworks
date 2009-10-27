@@ -17,6 +17,7 @@ static GAFitnessFnc fitness = 0;
 static GACrossoverFnc crossover = 0;
 static GAMutateFnc mutate = 0;
 static GASelectionFnc selection = 0;
+static GACallbackFnc callback = 0;
 
 /*******************
 * parents (lineage)
@@ -59,7 +60,17 @@ void GAsetFitnessFunction(GAFitnessFnc f)
 
 GAFitnessFnc GAgetFitnessFunction()
 {
-	return fitness;
+	return callback;
+}
+
+void GAsetCallbackFunction(GACallbackFnc f)
+{
+	callback = f;
+}
+
+GACallbackFnc GAgetCallbackFunction()
+{
+	return callback;
 }
 
 void GAsetCrossoverFunction(GACrossoverFnc f)
@@ -264,7 +275,13 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 * \param: mutation function pointer (can bt 0, but not recommended)
 * \param: selection function pointer (can be 0)
 */
-void GAinit(GADeleteFnc deleteGAindividualPtr, GACloneFnc clonePtr,GAFitnessFnc fitnessPtr, GACrossoverFnc crossoverPtr, GAMutateFnc mutatePtr, GASelectionFnc selectionPtr)
+void GAinit(GADeleteFnc deleteGAindividualPtr, 
+			GACloneFnc clonePtr,
+			GAFitnessFnc fitnessPtr, 
+			GACrossoverFnc crossoverPtr, 
+			GAMutateFnc mutatePtr, 
+			GASelectionFnc selectionPtr,
+			GACallbackFnc callbackPtr)
 {
 	deleteGAindividual = deleteGAindividualPtr;
 	clone = clonePtr;
@@ -275,6 +292,7 @@ void GAinit(GADeleteFnc deleteGAindividualPtr, GACloneFnc clonePtr,GAFitnessFnc 
 		selection = &(GArouletteWheelSelection);
 	else
 		selection = selectionPtr;
+	callback = callbackPtr;
 }
 
 /*
@@ -286,11 +304,12 @@ void GAinit(GADeleteFnc deleteGAindividualPtr, GACloneFnc clonePtr,GAFitnessFnc 
 * \param: callback function pointer
 * @ret: final array of individuals (sorted)
 */
-GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, int numGenerations,
-				   GACallbackFnc callback)
+GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, int numGenerations)
 {
 	int i = 0, j = 0, stop = 0;
 	GApopulation population = initialGApopulation;
+	
+	callback = cbk;
 
 	FILE * errfile = freopen("GArun_errors.log", "w", stderr);
 	
@@ -485,7 +504,7 @@ int* getParentIDs(GAindividual individual)
 	return r->parents;
 }*/
 
-int* getOriginalParents(int individual, int generation)
+int* GAgetOriginalParents(int individual, int generation)
 {
 	int maxSz = 1, i=0, j=0;
 	int sz = 0;
@@ -552,7 +571,7 @@ int* getOriginalParents(int individual, int generation)
 	return parents;
 }
 
-int* getImmediateParents(int individual, int generation)
+int* GAgetImmediateParents(int individual, int generation)
 {
 	int p1=0, p2=0;
 	int * parents, * clone;

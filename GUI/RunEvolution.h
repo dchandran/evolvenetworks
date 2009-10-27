@@ -51,8 +51,8 @@ namespace NetworkEvolutionLib
 		QSize sizeHint() const;
 
 	public slots:
-		void loadFile(const QString&);
-		void
+		void go();
+		void updateScene(int iter, GApopulation P, int popSz);
 		
 	private:
 		

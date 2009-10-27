@@ -4,8 +4,21 @@
 using namespace NetworkEvolutionLib;
 using namespace Tinkercell;
 
-int main(int argc, char *argv[])
+char * File = 0;
+int Generations = 0;
+int PopulaionSize = 0;
+int StartingPopulaionSize = 0;
+GACallbackFnc callback = 0;
+
+int main(int args, char *argv[])
 {
+	if (args < 4) return 0;
+	
+	File = argv[0];
+	Generations = atoi(argv[1]);
+	PopulaionSize = atoi(argv[2]);
+	StartingPopulaionSize = atoi(argv[3]);
+	
     QApplication app(argc, argv);
 	
 	QString appDir = QCoreApplication::applicationDirPath();
@@ -29,6 +42,9 @@ int main(int argc, char *argv[])
 
 namespace NetworkEvolutionLib
 {
+	
+	void MainWindow::MainCallback
+	
 	QSize MainWindow::sizeHint() const
 	{
 		return QSize(400,400);
@@ -112,8 +128,26 @@ namespace NetworkEvolutionLib
 		}
 	}
 	
-	void MainWindow::loadFile(const QString& filename)
+	typedef (*InitFunc)(void);
+	
+	void MainWindow::go()
 	{
+		if (!File) return;
 		
+		QString filename(File);
+		void * f0 = QLibrary::resolve(filename, "init");
+		void * f1 = QLibrary::resolve(filename, "fitness");
+		void * f2 = QLibrary::resolve(filename, "callback");
+		if (f0 && f1 && f2)
+		{
+			InitFunc initFunc = (InitFunc)f0;
+			GAFitnessFnc fitnessFunc = (GAFitnessFnc)f1;
+			callback = (GACallbackFnc)f2;
+				
+			GApopulation P;
+			initFunc();
+			P = evolveNetworks(StartingPopulationSize,PopulationSize,Generations,&fitnessFunc,&MainCallback);
+			GAfree(P);
+		}
 	}	
 }

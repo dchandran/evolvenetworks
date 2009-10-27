@@ -132,9 +132,10 @@ typedef int(*GACallbackFnc)(int iter,GApopulation,int popSz);
  * \param GACrossoverFnc crossover function pointer (can be 0, but not recommended)
  * \param GAMutateFnc mutation function pointer (can be 0, but not recommended)
  * \param GASelectionFnc selection function pointer (can be 0)
+ * \param GACallbackFnc callback function pointer (can be 0)
  * \ingroup ga
 */
-void GAinit(GADeleteFnc, GACloneFnc ,GAFitnessFnc, GACrossoverFnc, GAMutateFnc, GASelectionFnc);
+void GAinit(GADeleteFnc, GACloneFnc ,GAFitnessFnc, GACrossoverFnc, GAMutateFnc, GASelectionFnc, GACallbackFnc);
 
 /*! \brief The main GA loop. Must call GAinit before calling GArun. Uses GAnextGen to make new generation of individuals.
  * \param GApopulation initial population (array of individuals)
@@ -208,6 +209,11 @@ void GAsetMutationFunction(GAMutateFnc);
  * \ingroup ga
 */
 void GAsetSelectionFunction(GASelectionFnc);
+/*! \brief set the callback function for the GA
+ * \param GACallbackFnc function pointer (can be 0)
+ * \ingroup ga
+*/
+void GAsetCallbackFunction(GACallbackFnc);
 
 /*! \}
   \name functions that are being used by the GA
@@ -234,7 +240,11 @@ GAMutateFnc GAgetMutationFunction();
  * \ingroup ga
 */
 GASelectionFnc GAgetSelectionFunction();
-
+/*! \brief get the callback function for the GA
+ * \return GACallbackFnc function pointer (can be 0)
+ * \ingroup ga
+*/
+void GAgetCallbackFunction();
 /*! \}
   \name Helper functions used by GArun.
   \{
