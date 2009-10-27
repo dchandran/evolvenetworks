@@ -35,7 +35,7 @@ int main()
 	GAindividual * best;
 	double ** table, ** table2;
 
-	lineageTrackingON();
+	GAlineageTrackingON();
 	setFitnessFunction( &fitness );  //set the fitness function
 	setNetworkType( MASS_ACTION_NETWORK );  //use this network type
 	setNetworkSize(2,10,3,20);  //network size

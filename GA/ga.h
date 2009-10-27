@@ -282,28 +282,32 @@ void GAfree(GApopulation population);
 /*! \brief turn on lineage tracking. This will track the parents of each individual when crossover occurs
  \ingroup ga
 */
-void lineageTrackingON();
-
+void GAlineageTrackingON();
 /*! \brief turn on lineage tracking. 
 	This will prevent tracking of the parents of each individual when crossover occurs
 	ReactioNetwork's parent field will be 0.
  \ingroup ga
 */
-void lineageTrackingOFF();
+void GAlineageTrackingOFF();
+/*! \brief check if lineage tracking is on
+ \return int 0 if off, 1 if on
+ \ingroup ga
+*/
+int GAisLineageTrackingOn();
 /*! \brief get the IDs for all the original parents of this individual. IDs = (1 + indices of the original population)
  \param int index of an individual
  \param int generation from which this individual is selected
  \return int* NULL TERMINATED array with IDs of parents. Free this array after use.
  \ingroup ga
 */
-int* getOriginalParents(int, int);
+int* GAgetOriginalParents(int, int);
 /*! \brief get the ID for all immediate parents of this individual. IDs = (1 + indices of the previous population)
  \param int index of an individual
  \param int generation from which this individual is selected
  \return int* NULL TERMINATED array with IDs of parents. Free this array after use.
  \ingroup ga
 */
-int* getImmediateParents(int, int);
+int* GAgetImmediateParents(int, int);
 
 /*!
   \}

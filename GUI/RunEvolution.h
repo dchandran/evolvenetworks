@@ -52,10 +52,11 @@ namespace NetworkEvolutionLib
 
 	public slots:
 		void loadFile(const QString&);
-	
+		void
+		
 	private:
 		
-		void insertTextItem(double, int, int, int);
+		void insertTextItem(double, int, int, int, int);
 		QGraphicsScene * scene;
 		QList<QGraphicsItem*> previousLine;
 		

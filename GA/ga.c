@@ -25,7 +25,7 @@ static GASelectionFnc selection = 0;
 static int *** _PARENTS = 0;
 static int _CURRENT_GENERATION = 0;
 static int _POPULATION_SIZE = 0;
-static TRACK_NETWORK_PARENTS = 0;
+static int _TRACK_PARENTS = 0;
 
 static void FREE_PARENTS()
 {
@@ -446,15 +446,21 @@ void GAsort(GApopulation population, GAFitnessFnc fitness, int populationSz)
   Related to lineage tracking
 *******************************/
 
-void lineageTrackingON()
+void GAlineageTrackingON()
 {
-	TRACK_NETWORK_PARENTS = 1;
+	_TRACK_PARENTS = 1;
 }
 
-void lineageTrackingOFF()
+void GAlineageTrackingOFF()
 {
-	TRACK_NETWORK_PARENTS = 0;
+	_TRACK_PARENTS = 0;
 }
+
+int GAisLineageTrackingOn()
+{
+	return _TRACK_PARENTS;
+}
+
 /*
 void setID(GAindividual individual,int i)
 {

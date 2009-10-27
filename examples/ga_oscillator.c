@@ -40,7 +40,7 @@ void init()
     configureContinuousLog(1,0,1,0,0,1);
     configureFinalLog(1,1,1,0,1,1,1);
     enableLogFile("evolution.log");
-    lineageTrackingON();
+    GAlineageTrackingON();
 }
 
 /* Fitness function that tests for oscillations by using correlation to a sine wave */

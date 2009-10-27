@@ -38,7 +38,6 @@ static GACallbackFnc USER_CALLBACK_FNC = 0;
 
 static double MUTATE_INIT_VALUE_PROB = 1.0;
 static double AVG_INIT_VALUES = 2.0;
-static int TRACK_NETWORK_PARENTS = 1;
 static int NUMBER_OF_NETWORK_TYPES = 4;
 static double CROSSOVER_PROB = 1.0;
 
@@ -748,6 +747,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 	int i,j,k,*parents, num = 10*popSz, max = 0;
 	int * temp = 0, * ids = 0;
 	GAindividual * p;
+	int TRACK_NETWORK_PARENTS = isLineageTrackingOn();
 	
 	if (iter == 0) //header
 	{
