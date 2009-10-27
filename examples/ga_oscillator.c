@@ -46,13 +46,13 @@ void init()
 /* Fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(GAindividual p);
 
-#define INITIAL_POPULATION_SIZE 500
-#define SUCCESSIVE_POPULATION_SIZE 100
+#define INITIAL_POPULATION_SIZE 100
+#define SUCCESSIVE_POPULATION_SIZE 50
 #define NUM_GENERATIONS 30
 
 int callback(int iter, GApopulation P, int popSz)
 {
-	return (fitness(P[0]) > 100.0);
+	return (fitness(P[0]) > 10.0);
 }
 
 /* main */
@@ -127,9 +127,9 @@ double fitness(GAindividual net)
 				 (getValue(y,N+1,i+3,1) < getValue(y,N+1,i+2,1))
 				)
 			{
-				 peaks += (double)i;
-				 mX += y[i];
-				 mX2 += y[i]*y[i];
+				 peaks += (double)i/time;
+				 //mX += y[i];
+				 //mX2 += y[i]*y[i];
 			}
 
 			if ( (getValue(y,N+1,i,1) > 0.1) &&
@@ -144,11 +144,11 @@ double fitness(GAindividual net)
 				 (getValue(y,N+1,i+3,1) > getValue(y,N+1,i+2,1))
 				)
 			{
-				 peaks += (double)i;
+				 troughs += (double)i/time;
 			}
 		}
 		
-		if ((troughs+peaks) < 20)
+		if ((troughs+peaks) < 1)
 		{
 			mXY = mX = mY = mX2 = mY2 = 0;
 			

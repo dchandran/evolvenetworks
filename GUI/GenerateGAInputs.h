@@ -1,5 +1,5 @@
-#ifndef NETWORK_EVOLVE_GUI_H
-#define NETWORK_EVOLVE_GUI_H
+#ifndef NETWORK_EVOLVUTION_INPUT_GUI_H
+#define NETWORK_EVOLVUTION_INPUT_GUI_H
 
 #include <QApplication>
 #include <QCoreApplication>

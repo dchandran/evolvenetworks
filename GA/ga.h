@@ -241,6 +241,7 @@ GASelectionFnc GAgetSelectionFunction();
 */
 
 /*! \brief Generates the next population from current population
+ * \param int generation
  * \param GApopulation array of individuals
  * \param int number of individual in population currently
  * \param int number of individual in the new population (returned array)
@@ -248,7 +249,7 @@ GASelectionFnc GAgetSelectionFunction();
  * \return int new array of individual (size = 3rd parameter)
  * \ingroup ga
 */
-GApopulation GAnextGen(GApopulation,int,int,short);
+GApopulation GAnextGen(int,GApopulation,int,int,short);
 
 /*! \brief sort (Quicksort) a population by its fitness (used at the end of GArun)
  * \param GApopulation population to sort

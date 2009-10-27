@@ -3405,46 +3405,55 @@ fail:
 
 SWIGINTERN PyObject *_wrap_GAnextGen(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  GApopulation arg1 = (GApopulation) 0 ;
-  int arg2 ;
+  int arg1 ;
+  GApopulation arg2 = (GApopulation) 0 ;
   int arg3 ;
-  short arg4 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
+  int arg4 ;
+  short arg5 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
   int val3 ;
   int ecode3 = 0 ;
-  short val4 ;
+  int val4 ;
   int ecode4 = 0 ;
+  short val5 ;
+  int ecode5 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
   GApopulation result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:GAnextGen",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_p_void, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GAnextGen" "', argument " "1"" of type '" "GApopulation""'"); 
-  }
-  arg1 = (GApopulation)(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "GAnextGen" "', argument " "2"" of type '" "int""'");
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:GAnextGen",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "GAnextGen" "', argument " "1"" of type '" "int""'");
   } 
-  arg2 = (int)(val2);
+  arg1 = (int)(val1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_p_void, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "GAnextGen" "', argument " "2"" of type '" "GApopulation""'"); 
+  }
+  arg2 = (GApopulation)(argp2);
   ecode3 = SWIG_AsVal_int(obj2, &val3);
   if (!SWIG_IsOK(ecode3)) {
     SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "GAnextGen" "', argument " "3"" of type '" "int""'");
   } 
   arg3 = (int)(val3);
-  ecode4 = SWIG_AsVal_short(obj3, &val4);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
   if (!SWIG_IsOK(ecode4)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "GAnextGen" "', argument " "4"" of type '" "short""'");
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "GAnextGen" "', argument " "4"" of type '" "int""'");
   } 
-  arg4 = (short)(val4);
-  result = (GApopulation)GAnextGen(arg1,arg2,arg3,arg4);
+  arg4 = (int)(val4);
+  ecode5 = SWIG_AsVal_short(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "GAnextGen" "', argument " "5"" of type '" "short""'");
+  } 
+  arg5 = (short)(val5);
+  result = (GApopulation)GAnextGen(arg1,arg2,arg3,arg4,arg5);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_p_void, 0 |  0 );
   return resultobj;
 fail:
@@ -3607,110 +3616,6 @@ SWIGINTERN PyObject *_wrap_ReactionNetwork_network_get(PyObject *SWIGUNUSEDPARM(
   arg1 = (ReactionNetwork *)(argp1);
   result = (GAindividual) ((arg1)->network);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_void, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_ReactionNetwork_id_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  ReactionNetwork *arg1 = (ReactionNetwork *) 0 ;
-  int arg2 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val2 ;
-  int ecode2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:ReactionNetwork_id_set",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_ReactionNetwork, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ReactionNetwork_id_set" "', argument " "1"" of type '" "ReactionNetwork *""'"); 
-  }
-  arg1 = (ReactionNetwork *)(argp1);
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "ReactionNetwork_id_set" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = (int)(val2);
-  if (arg1) (arg1)->id = arg2;
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_ReactionNetwork_id_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  ReactionNetwork *arg1 = (ReactionNetwork *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:ReactionNetwork_id_get",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_ReactionNetwork, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ReactionNetwork_id_get" "', argument " "1"" of type '" "ReactionNetwork *""'"); 
-  }
-  arg1 = (ReactionNetwork *)(argp1);
-  result = (int) ((arg1)->id);
-  resultobj = SWIG_From_int((int)(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_ReactionNetwork_parents_set(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  ReactionNetwork *arg1 = (ReactionNetwork *) 0 ;
-  int *arg2 = (int *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  void *argp2 = 0 ;
-  int res2 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:ReactionNetwork_parents_set",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_ReactionNetwork, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ReactionNetwork_parents_set" "', argument " "1"" of type '" "ReactionNetwork *""'"); 
-  }
-  arg1 = (ReactionNetwork *)(argp1);
-  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_int, SWIG_POINTER_DISOWN |  0 );
-  if (!SWIG_IsOK(res2)) {
-    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "ReactionNetwork_parents_set" "', argument " "2"" of type '" "int *""'"); 
-  }
-  arg2 = (int *)(argp2);
-  if (arg1) (arg1)->parents = arg2;
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_ReactionNetwork_parents_get(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  ReactionNetwork *arg1 = (ReactionNetwork *) 0 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  PyObject * obj0 = 0 ;
-  int *result = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:ReactionNetwork_parents_get",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_ReactionNetwork, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "ReactionNetwork_parents_get" "', argument " "1"" of type '" "ReactionNetwork *""'"); 
-  }
-  arg1 = (ReactionNetwork *)(argp1);
-  result = (int *) ((arg1)->parents);
-  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_int, 0 |  0 );
   return resultobj;
 fail:
   return NULL;
@@ -3982,67 +3887,61 @@ fail:
 }
 
 
-SWIGINTERN PyObject *_wrap_setID(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+SWIGINTERN PyObject *_wrap_getOriginalParents(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
   PyObject *resultobj = 0;
-  GAindividual arg1 = (GAindividual) 0 ;
+  int arg1 ;
   int arg2 ;
-  int res1 ;
+  int val1 ;
+  int ecode1 = 0 ;
   int val2 ;
   int ecode2 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OO:setID",&obj0,&obj1)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0,SWIG_as_voidptrptr(&arg1), 0, 0);
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "setID" "', argument " "1"" of type '" "GAindividual""'"); 
-  }
-  ecode2 = SWIG_AsVal_int(obj1, &val2);
-  if (!SWIG_IsOK(ecode2)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "setID" "', argument " "2"" of type '" "int""'");
-  } 
-  arg2 = (int)(val2);
-  setID(arg1,arg2);
-  resultobj = SWIG_Py_Void();
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_getID(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  GAindividual arg1 = (GAindividual) 0 ;
-  int res1 ;
-  PyObject * obj0 = 0 ;
-  int result;
-  
-  if (!PyArg_ParseTuple(args,(char *)"O:getID",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0,SWIG_as_voidptrptr(&arg1), 0, 0);
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "getID" "', argument " "1"" of type '" "GAindividual""'"); 
-  }
-  result = (int)getID(arg1);
-  resultobj = SWIG_From_int((int)(result));
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_getParentIDs(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  GAindividual arg1 = (GAindividual) 0 ;
-  int res1 ;
-  PyObject * obj0 = 0 ;
   int *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"O:getParentIDs",&obj0)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0,SWIG_as_voidptrptr(&arg1), 0, 0);
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "getParentIDs" "', argument " "1"" of type '" "GAindividual""'"); 
-  }
-  result = (int *)getParentIDs(arg1);
+  if (!PyArg_ParseTuple(args,(char *)"OO:getOriginalParents",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "getOriginalParents" "', argument " "1"" of type '" "int""'");
+  } 
+  arg1 = (int)(val1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "getOriginalParents" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = (int)(val2);
+  result = (int *)getOriginalParents(arg1,arg2);
+  resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_int, 0 |  0 );
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_getImmediateParents(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  int arg1 ;
+  int arg2 ;
+  int val1 ;
+  int ecode1 = 0 ;
+  int val2 ;
+  int ecode2 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  int *result = 0 ;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OO:getImmediateParents",&obj0,&obj1)) SWIG_fail;
+  ecode1 = SWIG_AsVal_int(obj0, &val1);
+  if (!SWIG_IsOK(ecode1)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "getImmediateParents" "', argument " "1"" of type '" "int""'");
+  } 
+  arg1 = (int)(val1);
+  ecode2 = SWIG_AsVal_int(obj1, &val2);
+  if (!SWIG_IsOK(ecode2)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "getImmediateParents" "', argument " "2"" of type '" "int""'");
+  } 
+  arg2 = (int)(val2);
+  result = (int *)getImmediateParents(arg1,arg2);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_int, 0 |  0 );
   return resultobj;
 fail:
@@ -4968,10 +4867,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"ReactionNetwork_type_get", _wrap_ReactionNetwork_type_get, METH_VARARGS, NULL},
 	 { (char *)"ReactionNetwork_network_set", _wrap_ReactionNetwork_network_set, METH_VARARGS, NULL},
 	 { (char *)"ReactionNetwork_network_get", _wrap_ReactionNetwork_network_get, METH_VARARGS, NULL},
-	 { (char *)"ReactionNetwork_id_set", _wrap_ReactionNetwork_id_set, METH_VARARGS, NULL},
-	 { (char *)"ReactionNetwork_id_get", _wrap_ReactionNetwork_id_get, METH_VARARGS, NULL},
-	 { (char *)"ReactionNetwork_parents_set", _wrap_ReactionNetwork_parents_set, METH_VARARGS, NULL},
-	 { (char *)"ReactionNetwork_parents_get", _wrap_ReactionNetwork_parents_get, METH_VARARGS, NULL},
 	 { (char *)"ReactionNetwork_initialValues_set", _wrap_ReactionNetwork_initialValues_set, METH_VARARGS, NULL},
 	 { (char *)"ReactionNetwork_initialValues_get", _wrap_ReactionNetwork_initialValues_get, METH_VARARGS, NULL},
 	 { (char *)"new_ReactionNetwork", _wrap_new_ReactionNetwork, METH_VARARGS, NULL},
@@ -4985,9 +4880,8 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"getReactionRates", _wrap_getReactionRates, METH_VARARGS, NULL},
 	 { (char *)"lineageTrackingON", _wrap_lineageTrackingON, METH_VARARGS, NULL},
 	 { (char *)"lineageTrackingOFF", _wrap_lineageTrackingOFF, METH_VARARGS, NULL},
-	 { (char *)"setID", _wrap_setID, METH_VARARGS, NULL},
-	 { (char *)"getID", _wrap_getID, METH_VARARGS, NULL},
-	 { (char *)"getParentIDs", _wrap_getParentIDs, METH_VARARGS, NULL},
+	 { (char *)"getOriginalParents", _wrap_getOriginalParents, METH_VARARGS, NULL},
+	 { (char *)"getImmediateParents", _wrap_getImmediateParents, METH_VARARGS, NULL},
 	 { (char *)"setRatesFunction", _wrap_setRatesFunction, METH_VARARGS, NULL},
 	 { (char *)"setStoichiometryFunction", _wrap_setStoichiometryFunction, METH_VARARGS, NULL},
 	 { (char *)"setInitialValues", _wrap_setInitialValues, METH_VARARGS, NULL},

@@ -1,8 +1,11 @@
-FILE( GLOB HEADER_FILES *.h )
+FILE( GLOB INPUTS_HEADER_FILES GenerateGAInputs.h CodeEditor.h SyntaxHighlighter.h )
+FILE( GLOB INPUTS_SOURCE_FILES GenerateGAInputs.cpp CodeEditor.cpp SyntaxHighlighter.cpp )
 
-FILE( GLOB SOURCE_FILES *.cpp )
+FILE( GLOB RUN_HEADER_FILES RunEvolution.h CodeEditor.h SyntaxHighlighter.h )
+FILE( GLOB RUN_SOURCE_FILES RunEvolution.cpp CodeEditor.cpp SyntaxHighlighter.cpp )
 
-QT4_WRAP_CPP( HEADER_MOC ${HEADER_FILES} )
+QT4_WRAP_CPP( INPUTS_HEADER_MOC ${INPUTS_HEADER_FILES} )
+QT4_WRAP_CPP( RUN_HEADER_MOC ${RUN_HEADER_FILES} )
 
 QT4_ADD_RESOURCES( NETWORK_EVOLVE_GUI_QRC networkevolve.qrc )
 
@@ -20,38 +23,60 @@ IF( APPLE AND BUILD_BUNDLE )
       Version ${NETWORKEVOLUTIONL_VERSION}
   )
 
-  ADD_EXECUTABLE( NetworkEvolverGUI 
+  ADD_EXECUTABLE( GenerateInputs 
     MACOSX_BUNDLE
-    ${SOURCE_FILES}
-    ${HEADER_MOC}
+    ${INPUTS_SOURCE_FILES}
+    ${INPUTS_HEADER_MOC}
     ${NETWORK_EVOLVE_GUI_QRC}
   )
   
-  TARGET_LINK_LIBRARIES( NetworkEvolverGUI
+  TARGET_LINK_LIBRARIES( GenerateInputs
+	${QT_LIBRARIES}
+  )
+  
+  ADD_EXECUTABLE( RunEvolution 
+    MACOSX_BUNDLE
+    ${RUN_SOURCE_FILES}
+    ${RUN_HEADER_MOC}
+    ${NETWORK_EVOLVE_GUI_QRC}
+  )
+  
+  TARGET_LINK_LIBRARIES( RunEvolution
 	${QT_LIBRARIES}
 	netga
   )
 
-  ADD_CUSTOM_COMMAND( TARGET NetworkEvolverGUI POST_BUILD
+  ADD_CUSTOM_COMMAND( TARGET GenerateInputs POST_BUILD
       COMMAND mkdir ARGS -p
-        ${EXECUTABLE_OUTPUT_PATH}/NetworkEvolverGUI.app/Contents/Resources
-        ${EXECUTABLE_OUTPUT_PATH}/NetworkEvolverGUI.app/Contents/Frameworks
-        ${EXECUTABLE_OUTPUT_PATH}/NetworkEvolverGUI.app/Contents/MacOS
+        ${EXECUTABLE_OUTPUT_PATH}/GenerateInputs.app/Contents/Resources
+        ${EXECUTABLE_OUTPUT_PATH}/GenerateInputs.app/Contents/Frameworks
+        ${EXECUTABLE_OUTPUT_PATH}/GenerateInputs.app/Contents/MacOS
       COMMAND cp ARGS -rf ${QT_LIBRARY_DIR}/QtXml.framework
-        ${EXECUTABLE_OUTPUT_PATH}/NetworkEvolverGUI.app/Contents/Frameworks/
+        ${EXECUTABLE_OUTPUT_PATH}/GenerateInputs.app/Contents/Frameworks/
       COMMAND cp ARGS ${MACOSX_NETWORKEVOLUTION_BUNDLE_ICON_FILE}
-        ${EXECUTABLE_OUTPUT_PATH}/NetworkEvolverGUI.app/Contents/Resources
+        ${EXECUTABLE_OUTPUT_PATH}/GenerateInputs.app/Contents/Resources
   )
 
 ELSE( APPLE AND BUILD_BUNDLE )
   IF( UNIX OR ( APPLE AND NOT BUILD_BUNDLE ) )
-    ADD_EXECUTABLE( NetworkEvolverGUI 
-      ${SOURCE_FILES}
-      ${HEADER_MOC}
+  
+    ADD_EXECUTABLE( GenerateInputs 
+      ${INPUTS_SOURCE_FILES}
+      ${INPUTS_HEADER_MOC}
       ${NETWORK_EVOLVE_GUI_QRC}
     )
 	
-	TARGET_LINK_LIBRARIES( NetworkEvolverGUI
+	TARGET_LINK_LIBRARIES( GenerateInputs
+		${QT_LIBRARIES}
+	)
+	
+    ADD_EXECUTABLE( RunEvolution 
+      ${RUN_SOURCE_FILES}
+      ${RUN_HEADER_MOC}
+      ${NETWORK_EVOLVE_GUI_QRC}
+    )
+	
+	TARGET_LINK_LIBRARIES( RunEvolution
 		${QT_LIBRARIES}
 		netga
 	)
@@ -60,9 +85,9 @@ ELSE( APPLE AND BUILD_BUNDLE )
     IF( WIN32 )
 		  IF( MINGW )
 
-			  # resource compilation for mingw
+			# resource compilation for mingw
   			ADD_CUSTOM_COMMAND( OUTPUT 
-          ${CMAKE_CURRENT_BINARY_DIR}/networkevolve_rc.o
+			${CMAKE_CURRENT_BINARY_DIR}/networkevolve_rc.o
 				COMMAND windres.exe -I${CMAKE_CURRENT_SOURCE_DIR} 
 					-i${CMAKE_CURRENT_SOURCE_DIR}/networkevolve.rc
 					-o ${CMAKE_CURRENT_BINARY_DIR}/networkevolve_rc.o )		
@@ -74,14 +99,25 @@ ELSE( APPLE AND BUILD_BUNDLE )
 
 		ENDIF( MINGW )
 	
-    ADD_EXECUTABLE( NetworkEvolverGUI
-      ${SOURCE_FILES}
-      ${HEADER_MOC}
+    ADD_EXECUTABLE( GenerateInputs
+      ${INPUTS_SOURCE_FILES}
+      ${INPUTS_HEADER_MOC}
       ${NETWORK_EVOLVE_GUI_QRC}
       ${NETWORKEVOLVE_RC}
     )
 	
-	TARGET_LINK_LIBRARIES( NetworkEvolverGUI
+	TARGET_LINK_LIBRARIES( GenerateInputs
+		${QT_LIBRARIES}
+	)
+	
+	ADD_EXECUTABLE( RunEvolution
+      ${RUN_SOURCE_FILES}
+      ${RUN_HEADER_MOC}
+      ${NETWORK_EVOLVE_GUI_QRC}
+      ${NETWORKEVOLVE_RC}
+    )
+	
+	TARGET_LINK_LIBRARIES( RunEvolution
 		${QT_LIBRARIES}
 		netga
 	)
@@ -92,10 +128,13 @@ ELSE( APPLE AND BUILD_BUNDLE )
 ENDIF( APPLE AND BUILD_BUNDLE )
 
 #---------------------------------------------------------------------
-#  INSTALL NetworkEvolverGUI executable and required files and folders
+#  INSTALL GenerateInputs executable and required files and folders
 #---------------------------------------------------------------------
 
-INSTALL(TARGETS NetworkEvolverGUI 
+INSTALL(TARGETS GenerateInputs 
    RUNTIME DESTINATION bin/../)
    
-#INSTALL(FILES networkevolve.qss DESTINATION bin/../)
+INSTALL(TARGETS RunEvolution 
+   RUNTIME DESTINATION bin/../)
+   
+INSTALL(FILES networkevolve.qss DESTINATION bin/../)

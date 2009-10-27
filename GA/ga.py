@@ -146,12 +146,6 @@ class ReactionNetwork(_object):
     __swig_setmethods__["network"] = _ga.ReactionNetwork_network_set
     __swig_getmethods__["network"] = _ga.ReactionNetwork_network_get
     if _newclass:network = _swig_property(_ga.ReactionNetwork_network_get, _ga.ReactionNetwork_network_set)
-    __swig_setmethods__["id"] = _ga.ReactionNetwork_id_set
-    __swig_getmethods__["id"] = _ga.ReactionNetwork_id_get
-    if _newclass:id = _swig_property(_ga.ReactionNetwork_id_get, _ga.ReactionNetwork_id_set)
-    __swig_setmethods__["parents"] = _ga.ReactionNetwork_parents_set
-    __swig_getmethods__["parents"] = _ga.ReactionNetwork_parents_get
-    if _newclass:parents = _swig_property(_ga.ReactionNetwork_parents_get, _ga.ReactionNetwork_parents_set)
     __swig_setmethods__["initialValues"] = _ga.ReactionNetwork_initialValues_set
     __swig_getmethods__["initialValues"] = _ga.ReactionNetwork_initialValues_get
     if _newclass:initialValues = _swig_property(_ga.ReactionNetwork_initialValues_get, _ga.ReactionNetwork_initialValues_set)
@@ -197,17 +191,13 @@ def lineageTrackingOFF():
   return _ga.lineageTrackingOFF()
 lineageTrackingOFF = _ga.lineageTrackingOFF
 
-def setID(*args):
-  return _ga.setID(*args)
-setID = _ga.setID
+def getOriginalParents(*args):
+  return _ga.getOriginalParents(*args)
+getOriginalParents = _ga.getOriginalParents
 
-def getID(*args):
-  return _ga.getID(*args)
-getID = _ga.getID
-
-def getParentIDs(*args):
-  return _ga.getParentIDs(*args)
-getParentIDs = _ga.getParentIDs
+def getImmediateParents(*args):
+  return _ga.getImmediateParents(*args)
+getImmediateParents = _ga.getImmediateParents
 
 def setRatesFunction(*args):
   return _ga.setRatesFunction(*args)

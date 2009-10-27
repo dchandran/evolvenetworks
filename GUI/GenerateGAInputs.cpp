@@ -1,4 +1,4 @@
-#include "NetworkEvolveGUI.h"
+#include "GenerateGAInputs.h"
 
 using namespace NetworkEvolutionLib;
 using namespace Tinkercell;

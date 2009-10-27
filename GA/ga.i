@@ -26,15 +26,13 @@ extern GAFitnessFnc GAgetFitnessFunction();
 extern GACrossoverFnc GAgetCrossoverFunction();
 extern GAMutateFnc GAgetMutationFunction();
 extern GASelectionFnc GAgetSelectionFunction();
-extern GApopulation GAnextGen(GApopulation,int,int,short);
+extern GApopulation GAnextGen(int,GApopulation,int,int,short);
 extern void GAsort(GApopulation, GAFitnessFnc, int);
 extern void GAfree(GApopulation population);
 typedef struct 
 {
 	int type;
 	GAindividual network;
-	int id;
-	int * parents;
 	double * initialValues;
 }
 ReactionNetwork;
@@ -46,9 +44,8 @@ extern double* getStoichiometryMatrix(GAindividual);
 extern double* getReactionRates(GAindividual, double*);
 extern void lineageTrackingON();
 extern void lineageTrackingOFF();
-extern void setID(GAindividual,int);
-extern int getID(GAindividual);
-extern int* getParentIDs(GAindividual);
+extern int* getOriginalParents(int,int);
+extern int* getImmediateParents(int,int);
 extern void setRatesFunction( int, PropensityFunction );
 extern void setStoichiometryFunction( int, double* (*f)(GAindividual) );
 extern void setInitialValues( GAindividual, double *);

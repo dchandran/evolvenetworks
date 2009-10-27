@@ -712,9 +712,7 @@ GAindividual cloneNetwork(GAindividual p)
 	i = 0;
 	/*if (r->parents)
 		while (r->parents[i]) 
-			++i;*/
-	
-
+			++i;
 	r2->parents = 0;
 	if (TRACK_NETWORK_PARENTS && (i > 0))
 	{
@@ -723,8 +721,10 @@ GAindividual cloneNetwork(GAindividual p)
 			r2->parents[j] = r->parents[j];
 		r2->parents[i] = 0;
 	}
-	//r2->id = r->id;
-	//r2->type = r->type;
+	r2->id = r->id;
+	*/
+	r2->type = r->type;
+	
 	r2->network = cloneFunctions[r->type](r->network);
 
 	j = getNumSpecies(r2);
@@ -755,8 +755,8 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 		fprintf(LOGFILE,"gen");
 		if (PRINT_EACH_FITNESS && !PRINT_EACH_ALL_FITNESS)
 		{
-			printf("\tfitness");
-			fprintf(LOGFILE,"\tfitness");
+			printf("\tfitness ");
+			fprintf(LOGFILE,"\tfitness ");
 		}
 		
 		if (PRINT_EACH_ALL_FITNESS)
@@ -770,8 +770,8 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 	
 		if (PRINT_EACH_SIZE)
 		{
-			printf("\tspecies\treactions");
-			fprintf(LOGFILE,"\tspecies\treactions");
+			printf("\tspecies \treactions");
+			fprintf(LOGFILE,"\tspecies \treactions");
 		}
 	
 		if (TRACK_NETWORK_PARENTS && (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE))
@@ -783,13 +783,13 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 		printf("\n");
 		fprintf(LOGFILE,"\n");
 		
-		printf("----------");
-		fprintf(LOGFILE,"----------");
+		printf("---");
+		fprintf(LOGFILE,"---");
 
 		if (PRINT_EACH_FITNESS && !PRINT_EACH_ALL_FITNESS)
 		{
-			printf("\t------------");
-			fprintf(LOGFILE,"\t------------");
+			printf("\t ------ ");
+			fprintf(LOGFILE,"\t ------ ");
 		}
 		
 		if (PRINT_EACH_ALL_FITNESS)
@@ -797,7 +797,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 			for (i=0; i < popSz; ++i)
 			{
 				//printf("\t----------",i);
-				fprintf(LOGFILE,"\t----------",i);
+				fprintf(LOGFILE,"\t -------- ",i);
 			}
 		}
 	
@@ -830,7 +830,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 
 			if (!p) continue;
 
-			parents = getOriginalParent(p);
+			parents = getOriginalParents(i,iter);
 			if (parents)
 			{
 				for (j=0; parents[j] > 0; ++j)

@@ -25,6 +25,23 @@ static GASelectionFnc selection = 0;
 static int *** _PARENTS = 0;
 static int _CURRENT_GENERATION = 0;
 static int _POPULATION_SIZE = 0;
+static TRACK_NETWORK_PARENTS = 0;
+
+static void FREE_PARENTS()
+{
+	int i,j;
+	if (!_PARENTS) return;
+	for (i=0; i < _CURRENT_GENERATION; ++i)
+	{
+		for (j=0; j < _POPULATION_SIZE; ++j)
+		{
+			free (_PARENTS[i][j]);
+			
+		}
+		free(_PARENTS[i]);
+	}
+}
+
 /*********************************************
 * get and set the above function pointers
 **********************************************/
@@ -143,7 +160,7 @@ int GAeliteSelection(GApopulation population, double * fitnessValues, double sum
 * \param: 0 = delete old population, 1 = keep old population (warning: user must delete it later)
 * @ret: new array of individual (size = 3rd parameter)
 */
-GApopulation GAnextGen(GApopulation currentGApopulation, int oldPopSz, int newPopSz,
+GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, int newPopSz,
 					   short keepOldGApopulation)
 {
 	int i,k,best,k2;
@@ -178,6 +195,11 @@ GApopulation GAnextGen(GApopulation currentGApopulation, int oldPopSz, int newPo
 
 	//keep the best
 	nextGApopulation[0] = clone(currentGApopulation[best]);
+	if (gen > 0)
+	{
+		_PARENTS[gen][0][0] = best;
+		_PARENTS[gen][0][1] = 0;
+	}
 
 	//select the fit individuals
 	x1 = NULL;
@@ -187,6 +209,9 @@ GApopulation GAnextGen(GApopulation currentGApopulation, int oldPopSz, int newPo
 		k = selection(currentGApopulation,fitnessArray,totalFitness,oldPopSz);
 
 		x1 = currentGApopulation[k];
+		_PARENTS[gen][i][0] = k;
+		_PARENTS[gen][i][1] = 0;
+		
 		if (crossover != NULL) 
 		{
 			double temp = fitnessArray[k];
@@ -200,6 +225,8 @@ GApopulation GAnextGen(GApopulation currentGApopulation, int oldPopSz, int newPo
 			{
 				x1 = clone(x1); //cannot allow the same x1
 			}
+			
+			_PARENTS[gen][i][1] = k2;
 		}
 		else
 		{
@@ -268,6 +295,7 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 	FILE * errfile = freopen("GArun_errors.log", "w", stderr);
 	
 	_PARENTS = 0;
+	_POPULATION_SIZE = popSz;
 
 	/*function pointers*/
 	if (!deleteGAindividual || !clone || !fitness || (!crossover && !mutate) || !selection) return 0;
@@ -275,8 +303,9 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 	if (!MTrandHasBeenInitialized())
 		initMTrand(); /*initialize seeds for MT random number generator*/
 		
-	_PARENTS = (int***)malloc(numGenerations * sizeof(int**));
-	for (i=0; i < numGenerations; ++i)
+	FREE_PARENTS();
+	_PARENTS = (int***)malloc((1+numGenerations) * sizeof(int**));
+	for (i=0; i <= numGenerations; ++i)
 	{
 		_PARENTS[i] = (int**)malloc(popSz * sizeof(int*));
 		for (j=0; j < popSz; ++j)
@@ -287,19 +316,27 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 		}
 	}
 
+	i = 0;
 	while (stop == 0) //keep going until max iterations or until callback function signals a stop
-	{ 
+	{
 		if (i == 0)  //initial population
-			population = GAnextGen(population, initPopSz, popSz, 0);
+			population = GAnextGen(i, population, initPopSz, popSz, 0);
 		else        //successive populations
-			population = GAnextGen(population, popSz, popSz, 0);
+			population = GAnextGen(i, population, popSz, popSz, 0);
 
 		if (callback != NULL)
 			stop = callback(i,population,popSz);   //callback function can stop the GA
 
 		++i;
-		if (i >= numGenerations) stop = 1;  //max number of iterations
+
+		_CURRENT_GENERATION = i;
+
+		if (i >= numGenerations) 
+			stop = 1;  //max number of iterations
 	}
+	
+	_CURRENT_GENERATION = i;
+	
 	GAsort(population,fitness,popSz);  //sort by fitness (Quicksort)
 
 	if (population[popSz-1])
@@ -315,11 +352,15 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 void GAfree(GApopulation pop)
 {
 	int i=0;
-	while (pop[i]) 
+	if (pop)
 	{
-		deleteGAindividual(pop[i]);
-		++i;
+		while (pop[i]) 
+		{
+			deleteGAindividual(pop[i]);
+			++i;
+		}
 	}
+	FREE_PARENTS();
 }
 
 /***********************************************************************
@@ -327,7 +368,8 @@ void GAfree(GApopulation pop)
 ***********************************************************************/
 
 // is x < y ?
-static int less(double x, double y) {
+static int less(double x, double y) 
+{
 	return (x > y);
 }
 
@@ -442,8 +484,8 @@ int* getOriginalParents(int individual, int generation)
 	int maxSz = 1, i=0, j=0;
 	int sz = 0;
 	int * parents, * clone;
-
-	if (_PARENTS == 0 || generation > 0 || individual > 0 || _CURRENT_GENERATION < generation || _POPULATION_SIZE < individual)
+	
+	if (_PARENTS == 0 || generation < 0 || individual <= 0 || _CURRENT_GENERATION < generation || _POPULATION_SIZE < individual)
 	{
 		parents = (int*)malloc(1 * sizeof(int));
 		parents[0] = 0;
@@ -512,7 +554,7 @@ int* getImmediateParents(int individual, int generation)
 	if (_PARENTS == 0 || generation > 0 || individual > 0 || _CURRENT_GENERATION < generation || _POPULATION_SIZE < individual)
 	{
 		parents = (int*)malloc(1 * sizeof(int));
-		parents[sz] = 0;
+		parents[0] = 0;
 		return parents;
 	}
 	
