@@ -8,9 +8,9 @@
 #include "ga.h"
 #include <stdio.h>
 
-/*
-* functions for the GA
-*/
+/****************************
+* functions required for the GA
+****************************/
 static GADeleteFnc deleteGAindividual = 0;
 static GACloneFnc clone = 0;
 static GAFitnessFnc fitness = 0;
@@ -18,9 +18,16 @@ static GACrossoverFnc crossover = 0;
 static GAMutateFnc mutate = 0;
 static GASelectionFnc selection = 0;
 
-/*************************************************
-get and set the above function pointers
-*************************************************/
+/*******************
+* parents (lineage)
+********************/
+
+static int *** _PARENTS = 0;
+static int _CURRENT_GENERATION = 0;
+static int _POPULATION_SIZE = 0;
+/*********************************************
+* get and set the above function pointers
+**********************************************/
 
 void GAsetupNewStruct(GADeleteFnc f, GACloneFnc g)
 {
@@ -255,16 +262,30 @@ void GAinit(GADeleteFnc deleteGAindividualPtr, GACloneFnc clonePtr,GAFitnessFnc 
 GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, int numGenerations,
 				   GACallbackFnc callback)
 {
-	int i = 0, stop = 0;
+	int i = 0, j = 0, stop = 0;
 	GApopulation population = initialGApopulation;
 
 	FILE * errfile = freopen("GArun_errors.log", "w", stderr);
+	
+	_PARENTS = 0;
 
 	/*function pointers*/
 	if (!deleteGAindividual || !clone || !fitness || (!crossover && !mutate) || !selection) return 0;
 
 	if (!MTrandHasBeenInitialized())
 		initMTrand(); /*initialize seeds for MT random number generator*/
+		
+	_PARENTS = (int***)malloc(numGenerations * sizeof(int**));
+	for (i=0; i < numGenerations; ++i)
+	{
+		_PARENTS[i] = (int**)malloc(popSz * sizeof(int*));
+		for (j=0; j < popSz; ++j)
+		{
+			_PARENTS[i][j] = (int*)malloc(2 * sizeof(int));
+			_PARENTS[i][j][0] = 0;
+			_PARENTS[i][j][1] = 0;
+		}
+	}
 
 	while (stop == 0) //keep going until max iterations or until callback function signals a stop
 	{ 
@@ -379,3 +400,152 @@ void GAsort(GApopulation population, GAFitnessFnc fitness, int populationSz)
 	population[0] = best;
 }
 
+/*******************************
+  Related to lineage tracking
+*******************************/
+
+void lineageTrackingON()
+{
+	TRACK_NETWORK_PARENTS = 1;
+}
+
+void lineageTrackingOFF()
+{
+	TRACK_NETWORK_PARENTS = 0;
+}
+/*
+void setID(GAindividual individual,int i)
+{
+	ReactionNetwork * r = (ReactionNetwork*)individual;
+	if (r)
+		r->id = i;
+}
+
+int getID(GAindividual individual)
+{
+	ReactionNetwork * r = (ReactionNetwork*)individual;
+	if (!r) return -1;
+
+	return r->id;
+}
+
+int* getParentIDs(GAindividual individual)
+{
+	ReactionNetwork * r = (ReactionNetwork*)individual;
+
+	if (!r) return 0;
+	return r->parents;
+}*/
+
+int* getOriginalParents(int individual, int generation)
+{
+	int maxSz = 1, i=0, j=0;
+	int sz = 0;
+	int * parents, * clone;
+
+	if (_PARENTS == 0 || generation > 0 || individual > 0 || _CURRENT_GENERATION < generation || _POPULATION_SIZE < individual)
+	{
+		parents = (int*)malloc(1 * sizeof(int));
+		parents[0] = 0;
+		return parents;
+	}
+	
+	maxSz = 100;
+	parents = (int*)malloc(maxSz * sizeof(int));
+	sz = 0;
+	parents[sz] = 0;
+	if (_PARENTS[generation][individual][0])
+	{
+		parents[sz] = _PARENTS[generation][individual][0];
+		++sz;
+	}
+	if (_PARENTS[generation][individual][1])
+	{
+		parents[sz] = _PARENTS[generation][individual][1];
+		++sz;
+	}
+	
+	i = 0;
+	while (i < sz && parents[i] && generation > 0)
+	{
+		--generation;
+		
+		if (sz >= (maxSz-1))
+		{
+			clone = parents;
+			parents = (int*)malloc((2*sz) * sizeof(int));
+			for (j=0; j < sz; ++j)
+				parents[j] = clone[j];
+			free(clone);
+			maxSz = sz*2;
+		}
+		
+		individual = parents[i];
+		if (_PARENTS[generation][individual][0])
+		{
+			parents[sz] = _PARENTS[generation][individual][0];
+			++sz;
+		}
+		
+		if (_PARENTS[generation][individual][1])
+		{
+			parents[sz] = _PARENTS[generation][individual][1];
+			++sz;
+		}
+	}
+	
+	clone = parents;
+	parents = (int*)malloc((1+sz) * sizeof(int));
+	parents[sz] = 0;
+	for (j=0; j < sz; ++j)
+		parents[j] = clone[j];
+	
+	free(clone);
+	return parents;
+}
+
+int* getImmediateParents(int individual, int generation)
+{
+	int p1=0, p2=0;
+	int * parents, * clone;
+
+	if (_PARENTS == 0 || generation > 0 || individual > 0 || _CURRENT_GENERATION < generation || _POPULATION_SIZE < individual)
+	{
+		parents = (int*)malloc(1 * sizeof(int));
+		parents[sz] = 0;
+		return parents;
+	}
+	
+	p1 = _PARENTS[generation][individual][0];
+	p2 = _PARENTS[generation][individual][1];
+	
+	if (p1 > 0 && p2 > 0)
+	{
+		parents = (int*)malloc(3 * sizeof(int));
+		parents[0] = p1;
+		parents[1] = p2;
+		parents[2] = 0;
+		return parents;
+	}
+	
+	if (p1 > 0)
+	{
+		parents = (int*)malloc(2 * sizeof(int));
+		parents[0] = p1;
+		parents[1] = 0;
+		return parents;
+	}
+	
+	if (p2 > 0)
+	{
+		parents = (int*)malloc(2 * sizeof(int));
+		parents[0] = p2;
+		parents[1] = 0;
+		return parents;
+	}
+	
+	parents = (int*)malloc(1 * sizeof(int));
+	parents[0] = 0;
+	
+	return parents;
+}

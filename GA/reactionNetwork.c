@@ -206,8 +206,8 @@ GApopulation randomNetworks(int sz0)
 			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
 			rnet->type = MASS_ACTION_NETWORK;
 			rnet->network = P0[i];
-			rnet->id = i+total;
-			rnet->parents = 0;
+			//rnet->id = i+total;
+			//rnet->parents = 0;
 			n = getNumSpecies(rnet);
 			rnet->initialValues = (double*)malloc(n*sizeof(double));
 			for (j=0; j < n; ++j)
@@ -228,8 +228,8 @@ GApopulation randomNetworks(int sz0)
 			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
 			rnet->type = ENZYME_NETWORK;
 			rnet->network = P0[i];
-			rnet->id = i+total;
-			rnet->parents = 0;
+			//rnet->id = i+total;
+			//rnet->parents = 0;
 			n = getNumSpecies(rnet);
 			rnet->initialValues = (double*)malloc(n*sizeof(double));
 			for (j=0; j < n; ++j)
@@ -248,14 +248,14 @@ GApopulation randomNetworks(int sz0)
 		{
 			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
 			rnet->type = PROTEIN_INTERACTION_NETWORK;
-			rnet->network = P0[i];
-			rnet->parents = 0;
+			//rnet->network = P0[i];
+			//rnet->parents = 0;
 			n = getNumSpecies(rnet);
 			rnet->initialValues = (double*)malloc(n*sizeof(double));
 			for (j=0; j < n; ++j)
 				rnet->initialValues[j] = AVG_INIT_VALUES * mtrand();
 
-			rnet->id = i+total;
+			//rnet->id = i+total;
 			P[i+total] = rnet;
 		}
 		total += r;
@@ -269,14 +269,14 @@ GApopulation randomNetworks(int sz0)
 		{
 			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
 			rnet->type = GENE_REGULATION_NETWORK;
-			rnet->network = P0[i];
-			rnet->parents = 0;
+			//rnet->network = P0[i];
+			//rnet->parents = 0;
 			n = getNumSpecies(rnet);
 			rnet->initialValues = (double*)malloc(n*sizeof(double));
 			for (j=0; j < n; ++j)
 				rnet->initialValues[j] = AVG_INIT_VALUES * mtrand();
 
-			rnet->id = i+total;
+			//rnet->id = i+total;
 			P[i+total] = rnet;
 		}
 	}
@@ -591,7 +591,7 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 		r = (ReactionNetwork*)malloc(sizeof(ReactionNetwork));
 		r->type = r1->type;
 		r->network = net;
-		r->id = r1->id;
+		//r->id = r1->id;
 
 		sz1 = getNumSpecies(r1);
 		sz2 = getNumSpecies(r2);
@@ -606,6 +606,7 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 		for (i=sz1+sz2; i < j; ++i)
 			r->initialValues[i] = AVG_INIT_VALUES * mtrand();
 
+		/*
 		i = j = sz1 = sz2 = 0;
 		if (r1->parents)
 		{
@@ -674,6 +675,7 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 				r->parents[1] = r2->id;
 			}
 		}
+		*/
 		return r;
 	}
 
@@ -688,8 +690,8 @@ void deleteNetwork(GAindividual p)
 	
 	deleteFunctions[r->type](r->network);
 	
-	if (r->parents)
-		free(r->parents);
+	//if (r->parents)
+		//free(r->parents);
 
 	if (r->initialValues)
 		free(r->initialValues);
@@ -708,9 +710,9 @@ GAindividual cloneNetwork(GAindividual p)
 	r2 = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
 	
 	i = 0;
-	if (r->parents)
+	/*if (r->parents)
 		while (r->parents[i]) 
-			++i;
+			++i;*/
 	
 
 	r2->parents = 0;
@@ -721,8 +723,8 @@ GAindividual cloneNetwork(GAindividual p)
 			r2->parents[j] = r->parents[j];
 		r2->parents[i] = 0;
 	}
-	r2->id = r->id;
-	r2->type = r->type;
+	//r2->id = r->id;
+	//r2->type = r->type;
 	r2->network = cloneFunctions[r->type](r->network);
 
 	j = getNumSpecies(r2);
@@ -828,7 +830,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 
 			if (!p) continue;
 
-			parents = getParentIDs(p);
+			parents = getOriginalParent(p);
 			if (parents)
 			{
 				for (j=0; parents[j] > 0; ++j)
@@ -856,7 +858,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 			}
 			else
 			{
-				j = getID(p);
+				/*j = getID(p);
 				
 				if (j < 0) continue;
 
@@ -877,7 +879,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 					free(temp);
 				}
 				
-				ids[j]++;
+				ids[j]++;*/
 			}
 			
 			if (PRINT_EACH_BEST_LINEAGE && !PRINT_EACH_ALL_LINEAGE)
@@ -1014,42 +1016,6 @@ GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GACallbackFnc callbackF
 	return P;
 }
 
-/*******************************
-  Related to lineage tracking
-*******************************/
-
-void lineageTrackingON()
-{
-	TRACK_NETWORK_PARENTS = 1;
-}
-
-void lineageTrackingOFF()
-{
-	TRACK_NETWORK_PARENTS = 0;
-}
-
-void setID(GAindividual individual,int i)
-{
-	ReactionNetwork * r = (ReactionNetwork*)individual;
-	if (r)
-		r->id = i;
-}
-
-int getID(GAindividual individual)
-{
-	ReactionNetwork * r = (ReactionNetwork*)individual;
-	if (!r) return -1;
-
-	return r->id;
-}
-
-int* getParentIDs(GAindividual individual)
-{
-	ReactionNetwork * r = (ReactionNetwork*)individual;
-
-	if (!r) return 0;
-	return r->parents;
-}
 
 /*******************************
    Special fitness function

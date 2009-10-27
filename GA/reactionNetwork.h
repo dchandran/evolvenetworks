@@ -54,11 +54,10 @@ typedef struct
 	/*! \brief the network itself*/
 	GAindividual network;
 
-	/*! \brief network ID*/
-	int id;
-
-	/*! \brief parent network IDs for following evolutionary lineage (null terminated)*/
-	int * parents;
+	/*\brief network ID*/
+	//int id;
+	/*\brief parent network IDs for following evolutionary lineage (null terminated)*/
+	//int * parents;
 
 	/*! \brief initial values*/
 	double * initialValues;
@@ -111,44 +110,6 @@ double* getStoichiometryMatrix(GAindividual);
  \ingroup genericNetwork
 */
 double* getReactionRates(GAindividual, double*);
-
-/*!
-  \}
-  @name Related to lineage tracking
-  \{
-*/
-/*! \brief turn on lineage tracking. This will track the parents of each individual when crossover occurs
- \ingroup genericNetwork
-*/
-void lineageTrackingON();
-
-/*! \brief turn on lineage tracking. 
-	This will prevent tracking of the parents of each individual when crossover occurs
-	ReactioNetwork's parent field will be 0.
- \ingroup genericNetwork
-*/
-void lineageTrackingOFF();
-
-/*! \brief set the ID of this individual
- \param ReactionNetwork network
- \param int ID for this individual
- \ingroup genericNetwork
-*/
-void setID(GAindividual,int);
-
-/*! \brief get the ID of this individual
- \param ReactionNetwork network
- \return int ID for this individual
- \ingroup genericNetwork
-*/
-int getID(GAindividual);
-
-/*! \brief get the ID for all ancestors of this individual
- \param ReactionNetwork network
- \return int* NULL TERMINATED array with IDs of parents. DO NOT FREE
- \ingroup genericNetwork
-*/
-int* getParentIDs(GAindividual);
 
 /*!
   \}
