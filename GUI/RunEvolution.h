@@ -50,6 +50,7 @@ namespace NetworkEvolutionLib
 		~MainWindow();
 		QSize sizeHint() const;
 	
+		static MainWindow * mainWindow;
 		static int MainCallback(int, void**, int);
 
 	public slots:

@@ -1,9 +1,11 @@
+#include <iostream>
 #include "RunEvolution.h"
 extern "C"
 {
 #include "reactionNetwork.h"
 }
 
+using namespace std;
 using namespace NetworkEvolutionLib;
 using namespace Tinkercell;
 
@@ -46,10 +48,12 @@ int main(int args, char *argv[])
 
 namespace NetworkEvolutionLib
 {
+	MainWindow * MainWindow::mainWindow = 0;
 
 	int MainWindow::MainCallback(int iter, GApopulation pop, int popSz)
 	{
-		
+		if (mainWindow)
+			mainWindow->updateScene(iter,pop,popSz);
 	}
 	
 	QSize MainWindow::sizeHint() const
@@ -59,17 +63,14 @@ namespace NetworkEvolutionLib
 
 	MainWindow::MainWindow()
 	{
+		mainWindow = this;
+		
 		QGraphicsView * view = new QGraphicsView(scene = new QGraphicsScene, this);
 		scene->setBackgroundBrush(QBrush(Qt::black));
 		view->setDragMode(QGraphicsView::ScrollHandDrag);
 		setCentralWidget(view);
 		
-		insertTextItem(5.0,1,5,0,0);
-		
-		insertTextItem(12.0,2,1,5,0);
-		insertTextItem(10.0,2,2,5,0);
-		insertTextItem(1.0,2,3,5,0);
-		insertTextItem(42.0,2,4,5,0);
+		go();
 	}
 	
 	MainWindow::~MainWindow()
@@ -143,12 +144,24 @@ namespace NetworkEvolutionLib
 	{
 		if (!File) return;
 		
+		cout << "go started\n";
+		
 		QString filename(File);
-		void * f0 = QLibrary::resolve(filename, "init");
-		void * f1 = QLibrary::resolve(filename, "fitness");
-		void * f2 = QLibrary::resolve(filename, "callback");
+		
+		QLibrary * lib = new QLibrary(tr(File),this);
+		
+		if (!lib->isLoaded())
+		{
+			delete lib;
+			return;
+		}
+		
+		void * f0 = lib->resolve(filename, "init");
+		void * f1 = lib->resolve(filename, "fitness");
+		void * f2 = lib->resolve(filename, "callback");
 		if (f0 && f1 && f2)
 		{
+			cout << "all three f's\n";
 			InitFunc initFunc = (InitFunc)f0;
 			fitness = (GAFitnessFnc)f1;
 			callback = (GACallbackFnc)f2;
@@ -158,5 +171,9 @@ namespace NetworkEvolutionLib
 			P = evolveNetworks(StartingPopulationSize,PopulationSize,Generations,fitness,&MainCallback);
 			GAfree(P);
 		}
+		
+		fitness = 0;
+		callback = 0;
+		delete lib;
 	}	
 }
