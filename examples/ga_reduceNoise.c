@@ -31,13 +31,11 @@ int main()
 	double * y;
 	GApopulation pop;
 	GAindividual * best;
-
-	setFitnessFunction( &fitness );  //set the fitness function	
 	setNetworkType( GENE_REGULATION_NETWORK );  //use this network type 
 	setNetworkSize(2,8,2,20);  //network size
 
 	//evolve using 1000 initial networks, 500 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(200,100,20,&callback);  
+	pop = evolveNetworks(200,100,20,&fitness,&callback);  
 
 	best = pop[0];  //get the best network
 

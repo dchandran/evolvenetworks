@@ -560,8 +560,8 @@ BistablePoint makeBistable(int n, int p,double* iv, int maxIter, int popSz, void
    popsz1 = popSz/5;
    INIT_VALUE = iv;
 
-   GAinit(&deleteGAindividual,&clone,&fitness,&crossover,&mutate,0);
-   pop = GArun((void**)initGApopulation(popSz,n,p),popSz,popsz1,maxIter,&callbackf);
+   GAinit(&deleteGAindividual,&clone,&fitness,&crossover,&mutate,0,&callbackf);
+   pop = GArun((void**)initGApopulation(popSz,n,p),popSz,popsz1,maxIter);
    
    param = pop[0];
  

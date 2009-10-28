@@ -64,10 +64,9 @@ int main()
 	GAindividual * best;
 	
 	init();
-	setFitnessFunction( &fitness );    // Set the fitness function	
 	
 	printf ("Oscillator Evolution\n\n");
-	pop = evolveNetworks(INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, &callback);  
+	pop = evolveNetworks(INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS,  &fitness, &callback);  
 	
 	best = pop[0]; // Get the best network
 	

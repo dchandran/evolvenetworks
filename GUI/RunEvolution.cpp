@@ -1,14 +1,18 @@
 #include "RunEvolution.h"
+extern "C"
+{
 #include "reactionNetwork.h"
+}
 
 using namespace NetworkEvolutionLib;
 using namespace Tinkercell;
 
 char * File = 0;
 int Generations = 0;
-int PopulaionSize = 0;
-int StartingPopulaionSize = 0;
+int PopulationSize = 0;
+int StartingPopulationSize = 0;
 GACallbackFnc callback = 0;
+GAFitnessFnc fitness = 0;
 
 int main(int args, char *argv[])
 {
@@ -16,10 +20,10 @@ int main(int args, char *argv[])
 	
 	File = argv[0];
 	Generations = atoi(argv[1]);
-	PopulaionSize = atoi(argv[2]);
-	StartingPopulaionSize = atoi(argv[3]);
+	PopulationSize = atoi(argv[2]);
+	StartingPopulationSize = atoi(argv[3]);
 	
-    QApplication app(argc, argv);
+    QApplication app(args, argv);
 	
 	QString appDir = QCoreApplication::applicationDirPath();
 	
@@ -42,8 +46,11 @@ int main(int args, char *argv[])
 
 namespace NetworkEvolutionLib
 {
-	
-	void MainWindow::MainCallback
+
+	int MainWindow::MainCallback(int iter, GApopulation pop, int popSz)
+	{
+		
+	}
 	
 	QSize MainWindow::sizeHint() const
 	{
@@ -113,6 +120,8 @@ namespace NetworkEvolutionLib
 	
 	void MainWindow::updateScene(int iter, GApopulation P, int popSz)
 	{
+		if (!fitness) return;
+		
 		for (int i=0; i < popSz; ++i)
 		{
 			double score = fitness(P[i]);
@@ -128,7 +137,7 @@ namespace NetworkEvolutionLib
 		}
 	}
 	
-	typedef (*InitFunc)(void);
+	typedef void (*InitFunc)(void);
 	
 	void MainWindow::go()
 	{
@@ -141,12 +150,12 @@ namespace NetworkEvolutionLib
 		if (f0 && f1 && f2)
 		{
 			InitFunc initFunc = (InitFunc)f0;
-			GAFitnessFnc fitnessFunc = (GAFitnessFnc)f1;
+			fitness = (GAFitnessFnc)f1;
 			callback = (GACallbackFnc)f2;
 				
 			GApopulation P;
 			initFunc();
-			P = evolveNetworks(StartingPopulationSize,PopulationSize,Generations,&fitnessFunc,&MainCallback);
+			P = evolveNetworks(StartingPopulationSize,PopulationSize,Generations,fitness,&MainCallback);
 			GAfree(P);
 		}
 	}	

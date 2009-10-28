@@ -1011,9 +1011,9 @@ GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GAFitnessFnc fitness, G
 
 	P = randomNetworks(sz0);
 
-	GAinit(&deleteNetwork, &cloneNetwork ,GAgetFitnessFunction(), &crossoverNetwork, &mutateNetwork, GAgetSelectionFunction());
+	GAinit(&deleteNetwork, &cloneNetwork ,GAgetFitnessFunction(), &crossoverNetwork, &mutateNetwork, GAgetSelectionFunction(), callbackFunc);
 
-	P = GArun(P,sz0,sz1,maxIter,callbackFunc);
+	P = GArun(P,sz0,sz1,maxIter);
 	
 	if (LOGFILE)
 	{

@@ -36,7 +36,6 @@ int main()
 	double ** table, ** table2;
 
 	GAlineageTrackingON();
-	setFitnessFunction( &fitness );  //set the fitness function
 	setNetworkType( MASS_ACTION_NETWORK );  //use this network type
 	setNetworkSize(2,10,3,20);  //network size
 
@@ -44,7 +43,7 @@ int main()
 
 	enableLogFile("log.txt");
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(1000,200,50,&callback);
+	pop = evolveNetworks(1000,200,50,&fitness,&callback);
 	
 	best = pop[0]; //get the best network
 	

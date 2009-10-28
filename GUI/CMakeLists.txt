@@ -1,3 +1,7 @@
+if(COMMAND cmake_policy) 
+cmake_policy(SET CMP0003 NEW) 
+endif(COMMAND cmake_policy) 
+
 FILE( GLOB INPUTS_HEADER_FILES GenerateGAInputs.h CodeEditor.h SyntaxHighlighter.h )
 FILE( GLOB INPUTS_SOURCE_FILES GenerateGAInputs.cpp CodeEditor.cpp SyntaxHighlighter.cpp )
 
@@ -118,8 +122,8 @@ ELSE( APPLE AND BUILD_BUNDLE )
     )
 	
 	TARGET_LINK_LIBRARIES( RunEvolution
-		${QT_LIBRARIES}
 		netga
+		${QT_LIBRARIES}
 	)
 
     ENDIF( WIN32 )

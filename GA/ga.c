@@ -60,7 +60,7 @@ void GAsetFitnessFunction(GAFitnessFnc f)
 
 GAFitnessFnc GAgetFitnessFunction()
 {
-	return callback;
+	return fitness;
 }
 
 void GAsetCallbackFunction(GACallbackFnc f)
@@ -309,8 +309,6 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 	int i = 0, j = 0, stop = 0;
 	GApopulation population = initialGApopulation;
 	
-	callback = cbk;
-
 	FILE * errfile = freopen("GArun_errors.log", "w", stderr);
 	
 	_PARENTS = 0;

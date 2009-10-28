@@ -49,10 +49,12 @@ namespace NetworkEvolutionLib
 		MainWindow();
 		~MainWindow();
 		QSize sizeHint() const;
+	
+		static int MainCallback(int, void**, int);
 
 	public slots:
 		void go();
-		void updateScene(int iter, GApopulation P, int popSz);
+		void updateScene(int , void** , int );
 		
 	private:
 		

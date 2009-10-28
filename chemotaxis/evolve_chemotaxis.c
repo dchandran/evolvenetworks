@@ -335,7 +335,6 @@ int main(int args, char ** argv)
 	printf(" simulation\n\tgenerations = %i\n\tinitial population size = %i\n\tinitial num. species = %i\n\tinitial num. reactions = %i\n\tmaximum fitness = %lf\n\tsimulation time = %lf\n\toutput file = %s\n",iter,initsz,numspecs,numreacs,MAX,TIME,outfile);
 	
 	
-	
 	/*****************************************************************************************
 	initialize and run the genetic algorithm with functions from the network evolution library 
 	******************************************************************************************/
@@ -343,12 +342,9 @@ int main(int args, char ** argv)
 	//GAinit(&deleteNetwork, &cloneNetwork ,&fitness, &crossover, &mutate, 0);
 	
 	setNetworkType(MASS_ACTION_NETWORK);
-	
-	setFitnessFunction(&fitness);
-	
 	setNetworkSize(3, numspecs, 3, numreacs);
 	
-	pop = evolveNetworks(initsz,initsz/2,iter, &callback);
+	pop = evolveNetworks(initsz,initsz/2,iter, &fitness, &callback);
 	
 	//pop = GArun(pop,initsz,initsz/2,iter, &callback);
 	

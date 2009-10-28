@@ -132,7 +132,8 @@ typedef int(*GACallbackFnc)(int iter,GApopulation,int popSz);
  * \param GACrossoverFnc crossover function pointer (can be 0, but not recommended)
  * \param GAMutateFnc mutation function pointer (can be 0, but not recommended)
  * \param GASelectionFnc selection function pointer (can be 0)
- * \param GACallbackFnc callback function pointer (can be 0)
+ * \param GACallbackFnc callback function pointer (can be 0).
+          This function can be used to monitor the GA progress or stopping the GA before reaching maximum iterations.
  * \ingroup ga
 */
 void GAinit(GADeleteFnc, GACloneFnc ,GAFitnessFnc, GACrossoverFnc, GAMutateFnc, GASelectionFnc, GACallbackFnc);
@@ -142,12 +143,10 @@ void GAinit(GADeleteFnc, GACloneFnc ,GAFitnessFnc, GACrossoverFnc, GAMutateFnc, 
  * \param int number of individuals in the initial population
  * \param int number of individuals to be kept in the successive populations (will affect speed of GA)
  * \param int maximum number of generations (iterations). Callback can be used to stop the GA at any iteration.
- * \param GACallbackFnc callback function (use 0 for none). 
-         This function can be used to monitor the GA progress or stopping the GA before reaching maximum iterations.
  * \return GApopulation null terminated array of individuals (sorted by increasing fitness)
  * \ingroup ga
 */
-GApopulation GArun(GApopulation,int sz0,int sz1,int maxIter, GACallbackFnc);
+GApopulation GArun(GApopulation,int sz0,int sz1,int maxIter);
 
 /*! \}
   \name Available selection functions
@@ -209,7 +208,8 @@ void GAsetMutationFunction(GAMutateFnc);
  * \ingroup ga
 */
 void GAsetSelectionFunction(GASelectionFnc);
-/*! \brief set the callback function for the GA
+/*! \brief set the callback function for the GA. 
+           This function can be used to monitor the GA progress or stopping the GA before reaching maximum iterations.
  * \param GACallbackFnc function pointer (can be 0)
  * \ingroup ga
 */
@@ -244,7 +244,7 @@ GASelectionFnc GAgetSelectionFunction();
  * \return GACallbackFnc function pointer (can be 0)
  * \ingroup ga
 */
-void GAgetCallbackFunction();
+GACallbackFnc GAgetCallbackFunction();
 /*! \}
   \name Helper functions used by GArun.
   \{
