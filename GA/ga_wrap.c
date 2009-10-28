@@ -2987,14 +2987,16 @@ SWIGINTERN PyObject *_wrap_GAinit(PyObject *SWIGUNUSEDPARM(self), PyObject *args
   GACrossoverFnc arg4 = (GACrossoverFnc) 0 ;
   GAMutateFnc arg5 = (GAMutateFnc) 0 ;
   GASelectionFnc arg6 = (GASelectionFnc) 0 ;
+  GACallbackFnc arg7 = (GACallbackFnc) 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
   PyObject * obj4 = 0 ;
   PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOOOO:GAinit",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOO:GAinit",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6)) SWIG_fail;
   {
     int res = SWIG_ConvertFunctionPtr(obj0, (void**)(&arg1), SWIGTYPE_p_f_p_void__void);
     if (!SWIG_IsOK(res)) {
@@ -3031,7 +3033,13 @@ SWIGINTERN PyObject *_wrap_GAinit(PyObject *SWIGUNUSEDPARM(self), PyObject *args
       SWIG_exception_fail(SWIG_ArgError(res), "in method '" "GAinit" "', argument " "6"" of type '" "GASelectionFnc""'"); 
     }
   }
-  GAinit(arg1,arg2,arg3,arg4,arg5,arg6);
+  {
+    int res = SWIG_ConvertFunctionPtr(obj6, (void**)(&arg7), SWIGTYPE_p_f_int_p_p_void_int__int);
+    if (!SWIG_IsOK(res)) {
+      SWIG_exception_fail(SWIG_ArgError(res), "in method '" "GAinit" "', argument " "7"" of type '" "GACallbackFnc""'"); 
+    }
+  }
+  GAinit(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
   resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
@@ -3045,7 +3053,6 @@ SWIGINTERN PyObject *_wrap_GArun(PyObject *SWIGUNUSEDPARM(self), PyObject *args)
   int arg2 ;
   int arg3 ;
   int arg4 ;
-  GACallbackFnc arg5 = (GACallbackFnc) 0 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   int val2 ;
@@ -3058,10 +3065,9 @@ SWIGINTERN PyObject *_wrap_GArun(PyObject *SWIGUNUSEDPARM(self), PyObject *args)
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
-  PyObject * obj4 = 0 ;
   GApopulation result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOOO:GArun",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOO:GArun",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_p_void, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GArun" "', argument " "1"" of type '" "GApopulation""'"); 
@@ -3082,13 +3088,7 @@ SWIGINTERN PyObject *_wrap_GArun(PyObject *SWIGUNUSEDPARM(self), PyObject *args)
     SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "GArun" "', argument " "4"" of type '" "int""'");
   } 
   arg4 = (int)(val4);
-  {
-    int res = SWIG_ConvertFunctionPtr(obj4, (void**)(&arg5), SWIGTYPE_p_f_int_p_p_void_int__int);
-    if (!SWIG_IsOK(res)) {
-      SWIG_exception_fail(SWIG_ArgError(res), "in method '" "GArun" "', argument " "5"" of type '" "GACallbackFnc""'"); 
-    }
-  }
-  result = (GApopulation)GArun(arg1,arg2,arg3,arg4,arg5);
+  result = (GApopulation)GArun(arg1,arg2,arg3,arg4);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_p_void, 0 |  0 );
   return resultobj;
 fail:
@@ -4340,7 +4340,8 @@ SWIGINTERN PyObject *_wrap_evolveNetworks(PyObject *SWIGUNUSEDPARM(self), PyObje
   int arg1 ;
   int arg2 ;
   int arg3 ;
-  GACallbackFnc arg4 = (GACallbackFnc) 0 ;
+  GAFitnessFnc arg4 = (GAFitnessFnc) 0 ;
+  GACallbackFnc arg5 = (GACallbackFnc) 0 ;
   int val1 ;
   int ecode1 = 0 ;
   int val2 ;
@@ -4351,9 +4352,10 @@ SWIGINTERN PyObject *_wrap_evolveNetworks(PyObject *SWIGUNUSEDPARM(self), PyObje
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
   GApopulation result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:evolveNetworks",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:evolveNetworks",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
   ecode1 = SWIG_AsVal_int(obj0, &val1);
   if (!SWIG_IsOK(ecode1)) {
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "evolveNetworks" "', argument " "1"" of type '" "int""'");
@@ -4370,12 +4372,18 @@ SWIGINTERN PyObject *_wrap_evolveNetworks(PyObject *SWIGUNUSEDPARM(self), PyObje
   } 
   arg3 = (int)(val3);
   {
-    int res = SWIG_ConvertFunctionPtr(obj3, (void**)(&arg4), SWIGTYPE_p_f_int_p_p_void_int__int);
+    int res = SWIG_ConvertFunctionPtr(obj3, (void**)(&arg4), SWIGTYPE_p_f_p_void__double);
     if (!SWIG_IsOK(res)) {
-      SWIG_exception_fail(SWIG_ArgError(res), "in method '" "evolveNetworks" "', argument " "4"" of type '" "GACallbackFnc""'"); 
+      SWIG_exception_fail(SWIG_ArgError(res), "in method '" "evolveNetworks" "', argument " "4"" of type '" "GAFitnessFnc""'"); 
     }
   }
-  result = (GApopulation)evolveNetworks(arg1,arg2,arg3,arg4);
+  {
+    int res = SWIG_ConvertFunctionPtr(obj4, (void**)(&arg5), SWIGTYPE_p_f_int_p_p_void_int__int);
+    if (!SWIG_IsOK(res)) {
+      SWIG_exception_fail(SWIG_ArgError(res), "in method '" "evolveNetworks" "', argument " "5"" of type '" "GACallbackFnc""'"); 
+    }
+  }
+  result = (GApopulation)evolveNetworks(arg1,arg2,arg3,arg4,arg5);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_p_void, 0 |  0 );
   return resultobj;
 fail:

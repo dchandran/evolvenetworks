@@ -152,6 +152,7 @@ namespace NetworkEvolutionLib
 		
 		if (!lib->isLoaded())
 		{
+			coud << "file not found " << File << "\n";
 			delete lib;
 			return;
 		}
