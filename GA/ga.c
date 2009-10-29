@@ -252,7 +252,6 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 
 		free(currentGApopulation);
 	}
-	free(fitnessArray);
 	return (nextGApopulation);
 }
 
@@ -317,7 +316,7 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 		for (i=0; i <= numGenerations; ++i)
 		{
 			parents[i] = (int**)malloc((1+popSz) * sizeof(int*));
-			parents[popSz] = 0;
+			parents[i][popSz] = 0;
 			
 			for (j=0; j < popSz; ++j)
 			{
@@ -368,7 +367,8 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 		}
 		free(parents);
 	}
-	
+	free(fitnessScores);
+
 	return (population);
 }
 

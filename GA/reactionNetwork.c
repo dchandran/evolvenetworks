@@ -1,9 +1,7 @@
 #include "reactionNetwork.h"
 
 /********************************************************
-
-		For keeping log file
-
+		Parameters for keeping log file
 *********************************************************/
 
 static FILE * LOGFILE = 0;
@@ -31,9 +29,7 @@ static int PRINT_FINAL_ALL_LINEAGE = 1;
 static GACallbackFnc USER_CALLBACK_FNC = 0;
 
 /********************************************************
-
 		Global parameters
-
 *********************************************************/
 
 static double MUTATE_INIT_VALUE_PROB = 1.0;
@@ -754,7 +750,6 @@ static int callBackWithLogKeeping(int iter, int popSz, GApopulation pop, double 
 	int i,j,k,*parents, num = 10*popSz, max = 0, stop = 0;
 	int * temp = 0, * ids = 0;
 	GAindividual * p;
-	
 	//save
 	int each_fitness = PRINT_EACH_FITNESS,
 		each_script = PRINT_EACH_SCRIPT,
@@ -766,7 +761,10 @@ static int callBackWithLogKeeping(int iter, int popSz, GApopulation pop, double 
 	if (USER_CALLBACK_FNC)
 		stop = USER_CALLBACK_FNC(iter,popSz,pop,fitnessArray, parentsArray);
 	
-	if (iter == _MAX_ITER)
+	if (!stop)
+		stop = (iter == _MAX_ITER);
+
+	if (stop)
 	{
 		//cheat
 		PRINT_EACH_FITNESS = PRINT_FINAL_FITNESS;
@@ -807,8 +805,8 @@ static int callBackWithLogKeeping(int iter, int popSz, GApopulation pop, double 
 	
 		if (PRINT_EACH_SIZE)
 		{
-			printf("\tspecies \treactions");
-			fprintf(LOGFILE,"\tspecies \treactions");
+			printf("\tspecies\treactions");
+			fprintf(LOGFILE,"\tspecies\treactions");
 		}
 	
 		if (TRACK_NETWORK_PARENTS && (PRINT_EACH_BEST_LINEAGE || PRINT_EACH_ALL_LINEAGE))
@@ -825,8 +823,8 @@ static int callBackWithLogKeeping(int iter, int popSz, GApopulation pop, double 
 
 		if (PRINT_EACH_FITNESS && !PRINT_EACH_ALL_FITNESS)
 		{
-			printf("\t ------ ");
-			fprintf(LOGFILE,"\t ------ ");
+			printf("\t------- ");
+			fprintf(LOGFILE,"\t------- ");
 		}
 		
 		if (PRINT_EACH_ALL_FITNESS)
