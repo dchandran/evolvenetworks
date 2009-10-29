@@ -61,23 +61,23 @@ namespace NetworkEvolutionLib
 		CurrentThread = this;
 	}
 	
-	void Thread::emitSignal(int iter, void** pop, int popsz)
+	void Thread::emitSignal(int iter, int popSz, void** pop, double * fitnessArray, int *** parents)
 	{
 		if (semaphore)
 		{
 			semaphore->acquire();
-			emit updateScene(iter,pop,popsz);
+			emit updateScene(iter,popSz,pop,fitnessArray,parents);
 			semaphore->acquire();
 			semaphore->release();
 		}
 	}
 	
-	int MainCallback(int iter, GApopulation pop, int popSz)
+	int MainCallback(int iter, int popSz, GApopulation pop, double * fitnessArray, int *** parents)
 	{
 		if (CurrentThread)
-			CurrentThread->emitSignal(iter,pop,popSz);
+			CurrentThread->emitSignal(iter,popSz,pop,fitnessArray,parents);
 		if (callback)
-			return callback(iter,pop,popSz);
+			return callback(iter,popSz,pop,fitnessArray,parents);
 		return 0;
 	}
 	
@@ -147,7 +147,7 @@ namespace NetworkEvolutionLib
 		
 		//textItem->scale(2.0,2.0);
 		
-		rectItem->setBrush(QBrush(QColor(255 * number,10,(1-number)*255)));
+		rectItem->setBrush(QBrush(QColor((int)(255 * number),10,(int)((1.0-number)*255))));
 		rectItem->setPen(QPen(QColor(100,255,100)));
 		
 		scene->addItem(rectItem);
@@ -173,16 +173,14 @@ namespace NetworkEvolutionLib
 		}
 	}
 	
-	void MainWindow::updateScene(int iter, GApopulation P, int popSz)
+	void MainWindow::updateScene(int iter, int popSz, GApopulation P, double * scores, int *** parents)
 	{
 		if (!fitness) return;
 		
-		double * scores = new double[popSz];
 		double min, max;
 		
 		for (int i=0; i < popSz; ++i)
 		{
-			scores[i] = fitness(P[i]);
 			if (i==0)
 				min = max = scores[i];
 			else
@@ -196,7 +194,7 @@ namespace NetworkEvolutionLib
 		
 		for (int i=0; i < popSz; ++i)
 		{
-			int * p = getImmediateParents(i,iter);
+			int * p = getImmediateParents(i,iter, parents);
 			if (p && p[0])
 			{
 				insertTextItem((scores[i]-min)/max, iter, i, p[0], p[1]);
@@ -205,6 +203,8 @@ namespace NetworkEvolutionLib
 			{
 				insertTextItem((scores[i]-min)/max, iter, i, 0, 0);
 			}
+			if (p)
+				delete p;
 		}
 		
 		delete scores;
@@ -220,7 +220,7 @@ namespace NetworkEvolutionLib
 		if (!File) return;
 		
 		Thread * thread = new Thread( tr(File) , this);
-		connect(thread,SIGNAL(updateScene(int , void** , int )),this,SLOT(updateScene(int , void** , int )));
+		connect(thread,SIGNAL(updateScene(int , int, void** , double *, int *** )),this,SLOT(updateScene(int , int, void** , double *, int ***)));
 		thread->start();
 	}	
 }

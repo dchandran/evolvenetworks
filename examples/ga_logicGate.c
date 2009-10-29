@@ -24,7 +24,7 @@ double ** XORtable(); //make XOR table
 double fitness(GAindividual p);
 
 /* print the number of each generation and the fitness of the best network */
-int callback(int iter,GApopulation pop,int popSz);
+int callback(int iter,int popSz, GApopulation pop,double *, int ***);
 
 /*main*/
 int main()
@@ -120,9 +120,9 @@ double fitness(GAindividual p)
 }
 
 /* print the number of each generation and the fitness of the best network */
-int callback(int iter,GApopulation pop,int popSz)
+int callback(int iter,int popSz,GApopulation pop,double * fitnessArray, int *** parents)
 {
-	double f = fitness(pop[0]);
+	double f = fitnessArray[0];
 	
 	if (f >= 0.9) return 1;  //stop if good enough
 	

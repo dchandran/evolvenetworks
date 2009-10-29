@@ -50,9 +50,9 @@ double fitness(GAindividual p);
 #define SUCCESSIVE_POPULATION_SIZE 50
 #define NUM_GENERATIONS 30
 
-int callback(int iter, GApopulation P, int popSz)
+int callback(int iter, int popSz, GApopulation P, double * fitnessArray, int *** parents)
 {
-	return (fitness(P[0]) > 10.0);
+	return (fitnessArray[0] > 10.0);
 }
 
 /* main */

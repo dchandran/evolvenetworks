@@ -432,7 +432,7 @@ Parameters ** initGApopulation(int sz, int n, int p)
 }
 
 /*Callback function that is called during each GA run*/
-int callbackf(int gen, void ** pop, int popsz)
+int callbackf(int gen, int popsz, void ** pop, double * fitnessArray, int *** parentsArray)
 {
    int i,j;
    double x;

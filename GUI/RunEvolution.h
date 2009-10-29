@@ -52,11 +52,11 @@ namespace NetworkEvolutionLib
 		~MainWindow();
 		QSize sizeHint() const;
 	
-		static int MainCallback(int, void**, int);
+		static int MainCallback(int, int, void**, double*, int ***);
 	
 	public slots:
 		void go();
-		void updateScene(int , void** , int );
+		void updateScene(int , int, void**, double*, int *** );
 		
 	private:
 		
@@ -72,9 +72,9 @@ namespace NetworkEvolutionLib
 			
 		public:
 			Thread(const QString&, QObject * );
-			void emitSignal(int, void**, int );
+			void emitSignal(int, int, void**, double*, int ***);
 		signals:
-			void updateScene(int , void** , int );
+			void updateScene(int , int, void**, double*, int *** );
 		protected:
 			QLibrary * lib;
 			void run();

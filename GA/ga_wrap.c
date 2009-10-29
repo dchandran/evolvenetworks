@@ -2663,7 +2663,7 @@ SWIG_Python_MustGetPtr(PyObject *obj, swig_type_info *ty, int argnum, int flags)
 #define SWIGTYPE_p_ReactionNetwork swig_types[2]
 #define SWIGTYPE_p_char swig_types[3]
 #define SWIGTYPE_p_double swig_types[4]
-#define SWIGTYPE_p_f_int_p_p_void_int__int swig_types[5]
+#define SWIGTYPE_p_f_int_int_p_p_void_p_double_p_p_p_int__int swig_types[5]
 #define SWIGTYPE_p_f_p_p_void_p_double_double_int__int swig_types[6]
 #define SWIGTYPE_p_f_p_void__double swig_types[7]
 #define SWIGTYPE_p_f_p_void__p_double swig_types[8]
@@ -2672,10 +2672,11 @@ SWIG_Python_MustGetPtr(PyObject *obj, swig_type_info *ty, int argnum, int flags)
 #define SWIGTYPE_p_f_p_void_p_void__p_void swig_types[11]
 #define SWIGTYPE_p_int swig_types[12]
 #define SWIGTYPE_p_p_double swig_types[13]
-#define SWIGTYPE_p_p_void swig_types[14]
-#define SWIGTYPE_p_void swig_types[15]
-static swig_type_info *swig_types[17];
-static swig_module_info swig_module = {swig_types, 16, 0, 0, 0, 0};
+#define SWIGTYPE_p_p_p_int swig_types[14]
+#define SWIGTYPE_p_p_void swig_types[15]
+#define SWIGTYPE_p_void swig_types[16]
+static swig_type_info *swig_types[18];
+static swig_module_info swig_module = {swig_types, 17, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3034,7 +3035,7 @@ SWIGINTERN PyObject *_wrap_GAinit(PyObject *SWIGUNUSEDPARM(self), PyObject *args
     }
   }
   {
-    int res = SWIG_ConvertFunctionPtr(obj6, (void**)(&arg7), SWIGTYPE_p_f_int_p_p_void_int__int);
+    int res = SWIG_ConvertFunctionPtr(obj6, (void**)(&arg7), SWIGTYPE_p_f_int_int_p_p_void_p_double_p_p_p_int__int);
     if (!SWIG_IsOK(res)) {
       SWIG_exception_fail(SWIG_ArgError(res), "in method '" "GAinit" "', argument " "7"" of type '" "GACallbackFnc""'"); 
     }
@@ -3410,6 +3411,8 @@ SWIGINTERN PyObject *_wrap_GAnextGen(PyObject *SWIGUNUSEDPARM(self), PyObject *a
   int arg3 ;
   int arg4 ;
   short arg5 ;
+  double *arg6 = (double *) 0 ;
+  int ***arg7 = (int ***) 0 ;
   int val1 ;
   int ecode1 = 0 ;
   void *argp2 = 0 ;
@@ -3420,14 +3423,20 @@ SWIGINTERN PyObject *_wrap_GAnextGen(PyObject *SWIGUNUSEDPARM(self), PyObject *a
   int ecode4 = 0 ;
   short val5 ;
   int ecode5 = 0 ;
+  void *argp6 = 0 ;
+  int res6 = 0 ;
+  void *argp7 = 0 ;
+  int res7 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
   PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
   GApopulation result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOOO:GAnextGen",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOO:GAnextGen",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6)) SWIG_fail;
   ecode1 = SWIG_AsVal_int(obj0, &val1);
   if (!SWIG_IsOK(ecode1)) {
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "GAnextGen" "', argument " "1"" of type '" "int""'");
@@ -3453,46 +3462,18 @@ SWIGINTERN PyObject *_wrap_GAnextGen(PyObject *SWIGUNUSEDPARM(self), PyObject *a
     SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "GAnextGen" "', argument " "5"" of type '" "short""'");
   } 
   arg5 = (short)(val5);
-  result = (GApopulation)GAnextGen(arg1,arg2,arg3,arg4,arg5);
+  res6 = SWIG_ConvertPtr(obj5, &argp6,SWIGTYPE_p_double, 0 |  0 );
+  if (!SWIG_IsOK(res6)) {
+    SWIG_exception_fail(SWIG_ArgError(res6), "in method '" "GAnextGen" "', argument " "6"" of type '" "double *""'"); 
+  }
+  arg6 = (double *)(argp6);
+  res7 = SWIG_ConvertPtr(obj6, &argp7,SWIGTYPE_p_p_p_int, 0 |  0 );
+  if (!SWIG_IsOK(res7)) {
+    SWIG_exception_fail(SWIG_ArgError(res7), "in method '" "GAnextGen" "', argument " "7"" of type '" "int ***""'"); 
+  }
+  arg7 = (int ***)(argp7);
+  result = (GApopulation)GAnextGen(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_p_void, 0 |  0 );
-  return resultobj;
-fail:
-  return NULL;
-}
-
-
-SWIGINTERN PyObject *_wrap_GAsort(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
-  PyObject *resultobj = 0;
-  GApopulation arg1 = (GApopulation) 0 ;
-  GAFitnessFnc arg2 = (GAFitnessFnc) 0 ;
-  int arg3 ;
-  void *argp1 = 0 ;
-  int res1 = 0 ;
-  int val3 ;
-  int ecode3 = 0 ;
-  PyObject * obj0 = 0 ;
-  PyObject * obj1 = 0 ;
-  PyObject * obj2 = 0 ;
-  
-  if (!PyArg_ParseTuple(args,(char *)"OOO:GAsort",&obj0,&obj1,&obj2)) SWIG_fail;
-  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_p_void, 0 |  0 );
-  if (!SWIG_IsOK(res1)) {
-    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GAsort" "', argument " "1"" of type '" "GApopulation""'"); 
-  }
-  arg1 = (GApopulation)(argp1);
-  {
-    int res = SWIG_ConvertFunctionPtr(obj1, (void**)(&arg2), SWIGTYPE_p_f_p_void__double);
-    if (!SWIG_IsOK(res)) {
-      SWIG_exception_fail(SWIG_ArgError(res), "in method '" "GAsort" "', argument " "2"" of type '" "GAFitnessFnc""'"); 
-    }
-  }
-  ecode3 = SWIG_AsVal_int(obj2, &val3);
-  if (!SWIG_IsOK(ecode3)) {
-    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "GAsort" "', argument " "3"" of type '" "int""'");
-  } 
-  arg3 = (int)(val3);
-  GAsort(arg1,arg2,arg3);
-  resultobj = SWIG_Py_Void();
   return resultobj;
 fail:
   return NULL;
@@ -3891,15 +3872,19 @@ SWIGINTERN PyObject *_wrap_getOriginalParents(PyObject *SWIGUNUSEDPARM(self), Py
   PyObject *resultobj = 0;
   int arg1 ;
   int arg2 ;
+  int ***arg3 = (int ***) 0 ;
   int val1 ;
   int ecode1 = 0 ;
   int val2 ;
   int ecode2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
   int *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OO:getOriginalParents",&obj0,&obj1)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOO:getOriginalParents",&obj0,&obj1,&obj2)) SWIG_fail;
   ecode1 = SWIG_AsVal_int(obj0, &val1);
   if (!SWIG_IsOK(ecode1)) {
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "getOriginalParents" "', argument " "1"" of type '" "int""'");
@@ -3910,7 +3895,12 @@ SWIGINTERN PyObject *_wrap_getOriginalParents(PyObject *SWIGUNUSEDPARM(self), Py
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "getOriginalParents" "', argument " "2"" of type '" "int""'");
   } 
   arg2 = (int)(val2);
-  result = (int *)getOriginalParents(arg1,arg2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_p_p_int, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "getOriginalParents" "', argument " "3"" of type '" "int ***""'"); 
+  }
+  arg3 = (int ***)(argp3);
+  result = (int *)getOriginalParents(arg1,arg2,arg3);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_int, 0 |  0 );
   return resultobj;
 fail:
@@ -3922,15 +3912,19 @@ SWIGINTERN PyObject *_wrap_getImmediateParents(PyObject *SWIGUNUSEDPARM(self), P
   PyObject *resultobj = 0;
   int arg1 ;
   int arg2 ;
+  int ***arg3 = (int ***) 0 ;
   int val1 ;
   int ecode1 = 0 ;
   int val2 ;
   int ecode2 = 0 ;
+  void *argp3 = 0 ;
+  int res3 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
   int *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OO:getImmediateParents",&obj0,&obj1)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOO:getImmediateParents",&obj0,&obj1,&obj2)) SWIG_fail;
   ecode1 = SWIG_AsVal_int(obj0, &val1);
   if (!SWIG_IsOK(ecode1)) {
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "getImmediateParents" "', argument " "1"" of type '" "int""'");
@@ -3941,7 +3935,12 @@ SWIGINTERN PyObject *_wrap_getImmediateParents(PyObject *SWIGUNUSEDPARM(self), P
     SWIG_exception_fail(SWIG_ArgError(ecode2), "in method '" "getImmediateParents" "', argument " "2"" of type '" "int""'");
   } 
   arg2 = (int)(val2);
-  result = (int *)getImmediateParents(arg1,arg2);
+  res3 = SWIG_ConvertPtr(obj2, &argp3,SWIGTYPE_p_p_p_int, 0 |  0 );
+  if (!SWIG_IsOK(res3)) {
+    SWIG_exception_fail(SWIG_ArgError(res3), "in method '" "getImmediateParents" "', argument " "3"" of type '" "int ***""'"); 
+  }
+  arg3 = (int ***)(argp3);
+  result = (int *)getImmediateParents(arg1,arg2,arg3);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_int, 0 |  0 );
   return resultobj;
 fail:
@@ -4378,7 +4377,7 @@ SWIGINTERN PyObject *_wrap_evolveNetworks(PyObject *SWIGUNUSEDPARM(self), PyObje
     }
   }
   {
-    int res = SWIG_ConvertFunctionPtr(obj4, (void**)(&arg5), SWIGTYPE_p_f_int_p_p_void_int__int);
+    int res = SWIG_ConvertFunctionPtr(obj4, (void**)(&arg5), SWIGTYPE_p_f_int_int_p_p_void_p_double_p_p_p_int__int);
     if (!SWIG_IsOK(res)) {
       SWIG_exception_fail(SWIG_ArgError(res), "in method '" "evolveNetworks" "', argument " "5"" of type '" "GACallbackFnc""'"); 
     }
@@ -4869,7 +4868,6 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"GAgetMutationFunction", _wrap_GAgetMutationFunction, METH_VARARGS, NULL},
 	 { (char *)"GAgetSelectionFunction", _wrap_GAgetSelectionFunction, METH_VARARGS, NULL},
 	 { (char *)"GAnextGen", _wrap_GAnextGen, METH_VARARGS, NULL},
-	 { (char *)"GAsort", _wrap_GAsort, METH_VARARGS, NULL},
 	 { (char *)"GAfree", _wrap_GAfree, METH_VARARGS, NULL},
 	 { (char *)"ReactionNetwork_type_set", _wrap_ReactionNetwork_type_set, METH_VARARGS, NULL},
 	 { (char *)"ReactionNetwork_type_get", _wrap_ReactionNetwork_type_get, METH_VARARGS, NULL},
@@ -4929,7 +4927,7 @@ static swig_type_info _swigt__p_PropensityFunction = {"_p_PropensityFunction", "
 static swig_type_info _swigt__p_ReactionNetwork = {"_p_ReactionNetwork", "ReactionNetwork *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_double = {"_p_double", "double *", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_f_int_p_p_void_int__int = {"_p_f_int_p_p_void_int__int", "GACallbackFnc|int (*)(int,void **,int)", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_f_int_int_p_p_void_p_double_p_p_p_int__int = {"_p_f_int_int_p_p_void_p_double_p_p_p_int__int", "int (*)(int,int,void **,double *,int ***)|GACallbackFnc", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_p_void_p_double_double_int__int = {"_p_f_p_p_void_p_double_double_int__int", "int (*)(void **,double *,double,int)|GASelectionFnc", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_void__double = {"_p_f_p_void__double", "double (*)(void *)|GAFitnessFnc", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_void__p_double = {"_p_f_p_void__p_double", "double *(*)(void *)|double *(*)(GAindividual)", 0, 0, (void*)0, 0};
@@ -4938,6 +4936,7 @@ static swig_type_info _swigt__p_f_p_void__void = {"_p_f_p_void__void", "GADelete
 static swig_type_info _swigt__p_f_p_void_p_void__p_void = {"_p_f_p_void_p_void__p_void", "GACrossoverFnc|void *(*)(void *,void *)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_int = {"_p_int", "int *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_double = {"_p_p_double", "double **", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_p_p_int = {"_p_p_p_int", "int ***", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_p_void = {"_p_p_void", "GApopulation|void **", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_void = {"_p_void", "void *|GAindividual", 0, 0, (void*)0, 0};
 
@@ -4947,7 +4946,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_ReactionNetwork,
   &_swigt__p_char,
   &_swigt__p_double,
-  &_swigt__p_f_int_p_p_void_int__int,
+  &_swigt__p_f_int_int_p_p_void_p_double_p_p_p_int__int,
   &_swigt__p_f_p_p_void_p_double_double_int__int,
   &_swigt__p_f_p_void__double,
   &_swigt__p_f_p_void__p_double,
@@ -4956,6 +4955,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_f_p_void_p_void__p_void,
   &_swigt__p_int,
   &_swigt__p_p_double,
+  &_swigt__p_p_p_int,
   &_swigt__p_p_void,
   &_swigt__p_void,
 };
@@ -4965,7 +4965,7 @@ static swig_cast_info _swigc__p_PropensityFunction[] = {  {&_swigt__p_Propensity
 static swig_cast_info _swigc__p_ReactionNetwork[] = {  {&_swigt__p_ReactionNetwork, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_double[] = {  {&_swigt__p_double, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_f_int_p_p_void_int__int[] = {  {&_swigt__p_f_int_p_p_void_int__int, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_f_int_int_p_p_void_p_double_p_p_p_int__int[] = {  {&_swigt__p_f_int_int_p_p_void_p_double_p_p_p_int__int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_p_void_p_double_double_int__int[] = {  {&_swigt__p_f_p_p_void_p_double_double_int__int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_void__double[] = {  {&_swigt__p_f_p_void__double, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_void__p_double[] = {  {&_swigt__p_f_p_void__p_double, 0, 0, 0},{0, 0, 0, 0}};
@@ -4974,6 +4974,7 @@ static swig_cast_info _swigc__p_f_p_void__void[] = {  {&_swigt__p_f_p_void__void
 static swig_cast_info _swigc__p_f_p_void_p_void__p_void[] = {  {&_swigt__p_f_p_void_p_void__p_void, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_int[] = {  {&_swigt__p_int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_double[] = {  {&_swigt__p_p_double, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_p_p_int[] = {  {&_swigt__p_p_p_int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_p_void[] = {  {&_swigt__p_p_void, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_void[] = {  {&_swigt__p_void, 0, 0, 0},{0, 0, 0, 0}};
 
@@ -4983,7 +4984,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_ReactionNetwork,
   _swigc__p_char,
   _swigc__p_double,
-  _swigc__p_f_int_p_p_void_int__int,
+  _swigc__p_f_int_int_p_p_void_p_double_p_p_p_int__int,
   _swigc__p_f_p_p_void_p_double_double_int__int,
   _swigc__p_f_p_void__double,
   _swigc__p_f_p_void__p_double,
@@ -4992,6 +4993,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_f_p_void_p_void__p_void,
   _swigc__p_int,
   _swigc__p_p_double,
+  _swigc__p_p_p_int,
   _swigc__p_p_void,
   _swigc__p_void,
 };

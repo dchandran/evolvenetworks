@@ -746,13 +746,45 @@ void setCallbackFunction(GACallbackFnc f)
 	GAsetCallbackFunction(f);
 }
 
-static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
+int _MAX_ITER = -1;
+static int callBackWithLogKeeping(int iter, int popSz, GApopulation pop, double * fitnessArray, int *** parentsArray)
 {
-	GAFitnessFnc fitness = GAgetFitnessFunction();
+	unsigned long long * seeds;
 	double f;
-	int i,j,k,*parents, num = 10*popSz, max = 0;
+	int i,j,k,*parents, num = 10*popSz, max = 0, stop = 0;
 	int * temp = 0, * ids = 0;
 	GAindividual * p;
+	
+	//save
+	int each_fitness = PRINT_EACH_FITNESS,
+		each_script = PRINT_EACH_SCRIPT,
+		each_size = PRINT_EACH_SIZE,
+		each_best_lineage = PRINT_EACH_BEST_LINEAGE,
+		each_all_fitness = PRINT_EACH_ALL_FITNESS,
+		each_all_lineage = PRINT_EACH_ALL_LINEAGE;
+	
+	if (USER_CALLBACK_FNC)
+		stop = USER_CALLBACK_FNC(iter,popSz,pop,fitnessArray, parentsArray);
+	
+	if (iter == _MAX_ITER)
+	{
+		//cheat
+		PRINT_EACH_FITNESS = PRINT_FINAL_FITNESS;
+		PRINT_EACH_SCRIPT = PRINT_FINAL_SCRIPT;
+		PRINT_EACH_SIZE = PRINT_FINAL_SIZE;
+		PRINT_EACH_BEST_LINEAGE = PRINT_FINAL_BEST_LINEAGE;
+		PRINT_EACH_ALL_FITNESS = PRINT_FINAL_ALL_FITNESS;
+		PRINT_EACH_ALL_LINEAGE = PRINT_FINAL_ALL_LINEAGE;
+		
+		//printf("\n========final results=======\n");
+		fprintf(LOGFILE,"\n========final results=======\n");
+	
+		if (LOGFILE && PRINT_SEEDS)
+		{
+			seeds = getMTseeds();
+			fprintf(LOGFILE,"random number generator seeds: %llf,%llf,%llf,%llf\n",seeds[0],seeds[1],seeds[2],seeds[3]);
+		}
+	}
 	
 	if (iter == 0) //header
 	{
@@ -835,7 +867,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 
 			if (!p) continue;
 
-			parents = GAgetOriginalParents(i,iter);
+			parents = getOriginalParents(i,iter,parentsArray);
 			if (parents)
 			{
 				for (j=0; parents[j] > 0; ++j)
@@ -896,7 +928,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 	fprintf(LOGFILE,"%i",iter);
 	if (PRINT_EACH_FITNESS && !PRINT_EACH_ALL_FITNESS)
 	{
-		f = fitness(pop[0]);
+		f = fitnessArray[0];
 		printf("\t%lf",f);
 		fprintf(LOGFILE,"\t%lf",f);
 	}
@@ -905,7 +937,7 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 	{
 		for (i=0; i < popSz; ++i)
 		{
-			f = fitness(pop[i]);
+			f = fitnessArray[i];
 			//printf("\t%lf",f);
 			fprintf(LOGFILE,"\t%lf",f);
 		}
@@ -943,51 +975,21 @@ static int callBackWithLogKeeping(int iter,GApopulation pop,int popSz)
 
 	if (ids && (num > 0))
 		free(ids);
+		
+	if (iter == _MAX_ITER)
+	{
+		//restore
+		PRINT_EACH_FITNESS = each_fitness;
+		PRINT_EACH_SCRIPT = each_script;
+		PRINT_EACH_SIZE = each_size;
+		PRINT_EACH_BEST_LINEAGE = each_best_lineage;
+		PRINT_EACH_ALL_FITNESS = each_all_fitness;
+		PRINT_EACH_ALL_LINEAGE = each_all_lineage;
+	}
 	
-	if (USER_CALLBACK_FNC)
-		return USER_CALLBACK_FNC(iter,pop,popSz);
-	
-	return 0;
+	return stop;
 }
 
-void finalCallBackWithLogKepping(int iter, GApopulation pop, int popSz)
-{
-	unsigned long long * seeds;
-	
-	//save
-	int each_fitness = PRINT_EACH_FITNESS,
-		each_script = PRINT_EACH_SCRIPT,
-		each_size = PRINT_EACH_SIZE,
-		each_best_lineage = PRINT_EACH_BEST_LINEAGE,
-		each_all_fitness = PRINT_EACH_ALL_FITNESS,
-		each_all_lineage = PRINT_EACH_ALL_LINEAGE;
-	
-	//cheat
-	PRINT_EACH_FITNESS = PRINT_FINAL_FITNESS;
-	PRINT_EACH_SCRIPT = PRINT_FINAL_SCRIPT;
-	PRINT_EACH_SIZE = PRINT_FINAL_SIZE;
-	PRINT_EACH_BEST_LINEAGE = PRINT_FINAL_BEST_LINEAGE;
-	PRINT_EACH_ALL_FITNESS = PRINT_FINAL_ALL_FITNESS;
-	PRINT_EACH_ALL_LINEAGE = PRINT_FINAL_ALL_LINEAGE;
-	
-	//printf("\n========final results=======\n");
-	fprintf(LOGFILE,"\n========final results=======\n");
-	callBackWithLogKeeping(iter,pop,popSz);
-	
-	//restore
-	PRINT_EACH_FITNESS = each_fitness;
-	PRINT_EACH_SCRIPT = each_script;
-	PRINT_EACH_SIZE = each_size;
-	PRINT_EACH_BEST_LINEAGE = each_best_lineage;
-	PRINT_EACH_ALL_FITNESS = each_all_fitness;
-	PRINT_EACH_ALL_LINEAGE = each_all_lineage;
-	
-	if (LOGFILE && PRINT_SEEDS)
-	{
-		seeds = getMTseeds();
-		fprintf(LOGFILE,"random number generator seeds: %llf,%llf,%llf,%llf\n",seeds[0],seeds[1],seeds[2],seeds[3]);
-	}
-}
 
 GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GAFitnessFnc fitness, GACallbackFnc callbackFunc)
 {
@@ -995,6 +997,7 @@ GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GAFitnessFnc fitness, G
 	
 	if (!fitness) return 0;
 	
+	_MAX_ITER = maxIter;
 	GAsetFitnessFunction(fitness);
 	GAsetCallbackFunction(callbackFunc);
 	
@@ -1015,11 +1018,11 @@ GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GAFitnessFnc fitness, G
 
 	P = GArun(P,sz0,sz1,maxIter);
 	
-	if (LOGFILE)
+	/*if (LOGFILE)
 	{
 		USER_CALLBACK_FNC = 0;
 		finalCallBackWithLogKepping(maxIter,P,sz1);
-	}
+	}*/
 	
 	if (LOGFILE)
 		fclose(LOGFILE);
@@ -1284,12 +1287,12 @@ int isLineageTrackingOn()
 	return GAisLineageTrackingOn();
 }
 
-int* getOriginalParents(int i, int j)
+int* getOriginalParents(int i, int j, int *** parents)
 {
-	return GAgetOriginalParents(i,j);
+	return GAgetOriginalParents(i,j, parents);
 }
 
-int* getImmediateParents(int i, int j)
+int* getImmediateParents(int i, int j, int *** parents)
 {
-	return GAgetImmediateParents(i,j);
+	return GAgetImmediateParents(i,j, parents);
 }

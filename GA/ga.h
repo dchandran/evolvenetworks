@@ -112,12 +112,14 @@ typedef int(*GASelectionFnc)(GApopulation , double * , double , int );
  * Callback function. If not null, then this function is called during each iteration of the GA. 
  * This function can be used to terminate the GA at any step
  * \param int current generation (iteration)
- * \param GApopulation of individuals
  * \param int number of individuals in the population
+ * \param GApopulation of individuals
+ * \param double* fitness for the individuals
+ * \param int*** parents for each generation. use GAgetOriginalParents or GAgetImmediateParents to get values from this array
  * \return int 0 = continue GA, 1 = stop GA. This can be used to stop the GA before it reaches max iterations
  * \ingroup ga
 */
-typedef int(*GACallbackFnc)(int iter,GApopulation,int popSz);
+typedef int(*GACallbackFnc)(int iter,int popSz, GApopulation,double* fitnesses,int*** parents);
 
 /*! \}
   \name The main GA functions
@@ -256,20 +258,23 @@ GACallbackFnc GAgetCallbackFunction();
  * \param int number of individual in population currently
  * \param int number of individual in the new population (returned array)
  * \param int 0 = delete old population, 1 = keep old population (warning: user must delete it later)
+ * \param double* fitness scores to be calculated
+ * \param int*** parents to be assigned
  * \return int new array of individual (size = 3rd parameter)
  * \ingroup ga
 */
-GApopulation GAnextGen(int,GApopulation,int,int,short);
+GApopulation GAnextGen(int,GApopulation,int,int,short,double*,int***);
 
 /*! \brief sort (Quicksort) a population by its fitness (used at the end of GArun)
  * \param GApopulation population to sort
  * \param GAFitnessFnc fitness function
+ * \param double* fitness values
+ * \param int** parents from a single generation (these need to be swapped too)
  * \param int size of population
- * \param double* optional return value. If non-zero, the fitness values will be stored here. MUST be of same size as the populaiton
  * \return void
  * \ingroup ga
 */
-void GAsort(GApopulation, GAFitnessFnc, int, double *);
+void GAsort(GApopulation, double *, int **, int);
 
 /*! \}
   \name Convenience functions
@@ -308,17 +313,19 @@ int GAisLineageTrackingOn();
 /*! \brief get the IDs for all the original parents of this individual. IDs = (1 + indices of the original population)
  \param int index of an individual
  \param int generation from which this individual is selected
+ \param int*** array of parents
  \return int* NULL TERMINATED array with IDs of parents. Free this array after use.
  \ingroup ga
 */
-int* GAgetOriginalParents(int, int);
+int* GAgetOriginalParents(int, int, int***);
 /*! \brief get the ID for all immediate parents of this individual. IDs = (1 + indices of the previous population)
  \param int index of an individual
  \param int generation from which this individual is selected
+ \param int*** array of parents
  \return int* NULL TERMINATED array with IDs of parents. Free this array after use.
  \ingroup ga
 */
-int* GAgetImmediateParents(int, int);
+int* GAgetImmediateParents(int, int, int***);
 
 /*!
   \}

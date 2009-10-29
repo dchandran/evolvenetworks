@@ -127,10 +127,6 @@ def GAnextGen(*args):
   return _ga.GAnextGen(*args)
 GAnextGen = _ga.GAnextGen
 
-def GAsort(*args):
-  return _ga.GAsort(*args)
-GAsort = _ga.GAsort
-
 def GAfree(*args):
   return _ga.GAfree(*args)
 GAfree = _ga.GAfree

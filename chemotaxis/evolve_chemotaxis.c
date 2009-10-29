@@ -257,7 +257,7 @@ double fitness(void * p)
 }
 
 /* prints the fitness of the best network during each iteration of the genetic algorithm */
-int callback(int iter,GApopulation pop,int popSz)
+int callback(int iter, int popSz, GApopulation pop,  double * fitnessArray, int *** parentsArray)
 {
 	ReactionNetwork * net = (ReactionNetwork*)pop[0];
 	
@@ -346,9 +346,6 @@ int main(int args, char ** argv)
 	
 	pop = evolveNetworks(initsz,initsz/2,iter, &fitness, &callback);
 	
-	//pop = GArun(pop,initsz,initsz/2,iter, &callback);
-	
-	
 	/*****************************************************************************************/
 	
 	//print the chemotaxis path
@@ -427,8 +424,7 @@ int main(int args, char ** argv)
 	fclose(FOUT);
 	FOUT = 0;
 	
-	for (i=0; i < (initsz/2); ++i)
-		deleteNetwork(pop[i]);
+	GAfree(pop);
 	
 	return 0;
 }

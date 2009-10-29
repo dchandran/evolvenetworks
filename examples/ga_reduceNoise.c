@@ -22,7 +22,7 @@ Uncomment one of the following pairs:
 double fitness(GAindividual p);
 
 /* print the generation number and fitness of best network during each iteration */
-int callback(int iter,GApopulation pop,int popSz);
+int callback(int iter,int popSz, GApopulation pop, double * fitnessArray, int *** );
 
 /*Main*/
 int main()
@@ -103,10 +103,10 @@ double fitness(GAindividual p)
 }
 
 /* print the generation number and fitness of best network during each iteration */
-int callback(int iter,GApopulation pop,int popSz)
+int callback(int iter,int popSz, GApopulation pop, double * fitnessArray, int *** parents)
 {
 	int i,j;
-	double f = fitness(pop[0]);
+	double f = fitnessArray[0];
 	ReactionNetwork * net = (ReactionNetwork*)(pop[0]);
 
 	printf("%i\t%i\t%lf\n",iter,getNumSpecies(net),f);

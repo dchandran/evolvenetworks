@@ -430,17 +430,19 @@ int isLineageTrackingOn();
 /*! \brief get the IDs for all the original parents of this individual. IDs = (1 + indices of the original population)
  \param int index of an individual
  \param int generation from which this individual is selected
+ \param int*** parents array
  \return int* NULL TERMINATED array with IDs of parents. Free this array after use.
  \ingroup ga
 */
-int* getOriginalParents(int, int);
+int* getOriginalParents(int, int, int***);
 /*! \brief get the ID for all immediate parents of this individual. IDs = (1 + indices of the previous population)
  \param int index of an individual
  \param int generation from which this individual is selected
+ \param int*** parents array
  \return int* NULL TERMINATED array with IDs of parents. Free this array after use.
  \ingroup ga
 */
-int* getImmediateParents(int, int);
+int* getImmediateParents(int, int, int ***);
 
 /*!
   \}
