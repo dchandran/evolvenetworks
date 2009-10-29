@@ -265,10 +265,11 @@ GApopulation GAnextGen(int,GApopulation,int,int,short);
  * \param GApopulation population to sort
  * \param GAFitnessFnc fitness function
  * \param int size of population
+ * \param double* optional return value. If non-zero, the fitness values will be stored here. MUST be of same size as the populaiton
  * \return void
  * \ingroup ga
 */
-void GAsort(GApopulation, GAFitnessFnc, int);
+void GAsort(GApopulation, GAFitnessFnc, int, double *);
 
 /*! \}
   \name Convenience functions

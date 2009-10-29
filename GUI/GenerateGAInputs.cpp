@@ -55,20 +55,20 @@ namespace NetworkEvolutionLib
 		layout2->addWidget(setupGAOptions());
 		group2->setLayout(layout2);
 		
-		QVBoxLayout * layoutC = new QVBoxLayout;
-		QGroupBox * groupC = new QGroupBox;
-		groupC->setTitle(" Compile command ");
+		//QVBoxLayout * layoutC = new QVBoxLayout;
+		//QGroupBox * groupC = new QGroupBox;
+		//groupC->setTitle(" Compile command ");
 		
-		QString appDir = QCoreApplication::applicationDirPath();
-		QLineEdit * compile = new QLineEdit(compileCommand);
-		layoutC->addWidget(compile);
+		//QString appDir = QCoreApplication::applicationDirPath();
+		//QLineEdit * compile = new QLineEdit(compileCommand);
+		//layoutC->addWidget(compile);
 		
-		groupC->setLayout(layoutC);
+		//groupC->setLayout(layoutC);
 		
 		QSplitter * splitter2 = new QSplitter;
 		splitter2->setOrientation ( Qt::Vertical );
 		splitter2->addWidget(group2);
-		splitter2->addWidget(groupC);
+		//splitter2->addWidget(groupC);
 		
 		firstCol->addWidget(splitter2);
 		QPushButton * button;
@@ -1370,8 +1370,7 @@ namespace NetworkEvolutionLib
 		out << 
 			init() + tr("\n") + 
 			codeEditor->toPlainText() + tr("\n") + 
-			callbackFunction() + tr("\n") + 
-			mainFunction();
+			callbackFunction() + tr("\n");
 
 		qfile.close();
 		
@@ -1381,20 +1380,36 @@ namespace NetworkEvolutionLib
 		
 		proc.start(compileCommand);
 		proc.waitForFinished();
-		proc.start(tr("a.exe"));
-		proc.waitForFinished();
+		proc.start(
+					tr("RunEvolution.exe temp.dll ")
+					+ tr(" ") + QString::number(generations) 
+					+ tr(" ") + QString::number(initPopSz) 
+					+ tr(" ") + QString::number(popSz) );
+		//proc.waitForFinished();
 		
+#else
+#ifdef Q_WS_MAC
+
+		proc.start(compileCommand);
+		proc.waitForFinished();
+		proc.start(
+					tr("./RunEvolution temp.dylib")
+					+ tr(" ") + QString::number(generations) 
+					+ tr(" ") + QString::number(initPopSz) 
+					+ tr(" ") + QString::number(popSz) );
+		//proc.waitForFinished();
 		
 #else
 		proc.start(compileCommand);
 		proc.waitForFinished();
-		proc.start(tr("./a.out"));
-		proc.waitForFinished();
+		proc.start(
+					tr("./RunEvolution temp.so ")
+					+ tr(" ") + QString::number(generations) 
+					+ tr(" ") + QString::number(initPopSz) 
+					+ tr(" ") + QString::number(popSz) );
+		//proc.waitForFinished();
 		
-		/*ProcessThread * thread = new ProcessThread(tr("./a.out"),tr(""),this);
-		ProcessThread::dialog(this, thread, tr("Running"));
-		thread->start();*/
-
+#endif
 #endif
 
 	}
@@ -1590,10 +1605,13 @@ namespace NetworkEvolutionLib
 		max_fitness = settings.value("max_fitness",max_fitness).toDouble();
 		
 #ifdef Q_WS_WIN
-		compileCommand = tr("gcc -Isource source\\*.c ") + codeFile + tr(" -o a.exe");
-		//compileCommand = tr("win32\\tcc -Iwin32\\include -Isource\\include -Isource -Lwin32\\lib source\\*.c -run ") + codeFile;
+		compileCommand = tr("gcc --shared -o temp.dll -I..\\..\\GA -I..\\..\\simulation temp.c -L./ -lnetga");
 #else
-		compileCommand =  tr("gcc -Isource/include -Isource source/*.c ") + codeFile + tr(" -o a.out");
+#ifdef Q_WS_MAC
+		compileCommand = tr("gcc --shared -o temp.dylib -I../../GA -I../../simulation temp.c -L./ -lnetga");
+#else
+		compileCommand = tr("gcc --shared -o temp.so -I../../GA -I../../simulation temp.c -L./ -lnetga");
+#endif
 #endif
 		
 		settings.endGroup();

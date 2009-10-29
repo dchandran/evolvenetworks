@@ -354,7 +354,7 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 	
 	_CURRENT_GENERATION = i;
 	
-	GAsort(population,fitness,popSz);  //sort by fitness (Quicksort)
+	GAsort(population,fitness,popSz,0);  //sort by fitness (Quicksort)
 
 	if (population[popSz-1])
 	{
@@ -435,12 +435,15 @@ static void quicksort(GApopulation population, double* a, int left, int right)
 }
 
 //quicksort
-void GAsort(GApopulation population, GAFitnessFnc fitness, int populationSz) 
+void GAsort(GApopulation population, GAFitnessFnc fitness, int populationSz, double * array) 
 {
-	double * a = (double*) malloc ( populationSz * sizeof(double) );
+	double * a = array;
 	int i;
 	double biggest = -1.0;
 	GAindividual best = 0;
+
+	if (!a) 
+		a = (double*) malloc ( populationSz * sizeof(double) );
 
 	for (i=0; i < populationSz; ++i)
 	{
@@ -454,7 +457,8 @@ void GAsort(GApopulation population, GAFitnessFnc fitness, int populationSz)
 	if (a != NULL)
 	{
 		quicksort(population, a, 0, populationSz - 1);
-		free(a);
+		if (a != array) 
+			free(a);
 	}
 	population[0] = best;
 }

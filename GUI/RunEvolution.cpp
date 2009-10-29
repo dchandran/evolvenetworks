@@ -116,7 +116,7 @@ namespace NetworkEvolutionLib
 			delete semaphore;
 		
 		semaphore = new QSemaphore(1);
-		QGraphicsView * view = new QGraphicsView(scene = new QGraphicsScene, this);
+		QGraphicsView * view = new GraphicsView(scene = new QGraphicsScene, this);
 		scene->setBackgroundBrush(QBrush(Qt::black));
 		view->setDragMode(QGraphicsView::ScrollHandDrag);
 		setCentralWidget(view);
@@ -134,28 +134,31 @@ namespace NetworkEvolutionLib
 	
 	void MainWindow::insertTextItem(double number, int line, int rank, int parent1, int parent2)
 	{
-		QGraphicsSimpleTextItem * textItem = new QGraphicsSimpleTextItem(QString::number(number));
+		double w = 10.0, h = 10.0;
+		//QGraphicsSimpleTextItem * textItem = new QGraphicsSimpleTextItem(QString::number(number));
 		
-		textItem->setBrush(QBrush(QColor(200,255,200)));
-		textItem->setPos( 10.0 + rank * 100.0, 10.0 + line * 100.0 );
+		//textItem->setBrush(QBrush(QColor(200,255,200)));
+		//textItem->setPos( 10.0 + rank * 100.0, 10.0 + line * 100.0 );
 		
-		QGraphicsRectItem * rectItem = new QGraphicsRectItem(	10.0 + rank * 100.0, 10.0 + line * 100.0,
-																2.0 * textItem->boundingRect().width(), 
-																2.0 * textItem->boundingRect().height());
+		QGraphicsRectItem * rectItem = new QGraphicsRectItem(	100.0 + rank * w * 2.0, 100.0 + line * h * 5.0,
+																w, h );
+																//2.0 * textItem->boundingRect().width(), 
+																//2.0 * textItem->boundingRect().height());
 		
-		textItem->scale(2.0,2.0);
+		//textItem->scale(2.0,2.0);
 		
-		rectItem->setBrush(QBrush(QColor(100,100,100)));
+		rectItem->setBrush(QBrush(QColor(255 * number,10,(1-number)*255)));
 		rectItem->setPen(QPen(QColor(100,255,100)));
 		
 		scene->addItem(rectItem);
-		scene->addItem(textItem);
+		//scene->addItem(textItem);
 		
 		if (parent1 > 0)
 		{
 			QGraphicsLineItem * lineItem = new QGraphicsLineItem(
-									10.0 + parent1 * 100.0, 30.0 + (line-1) * 100.0,
-									10.0 + rank * 100.0, 10.0 + (line) * 100.0);
+									100.0 + parent1 * w * 2.0, 100.0 + h + (line-1) * h * 5.0,
+									100.0 + rank * w * 2.0, 100.0 - h + (line) * h * 5.0);
+									
 			lineItem->setPen(QPen(QColor(100,255,100)));
 			scene->addItem(lineItem);
 		}
@@ -163,8 +166,8 @@ namespace NetworkEvolutionLib
 		if (parent2 > 0)
 		{
 			QGraphicsLineItem * lineItem = new QGraphicsLineItem(
-									10.0 + parent2 * 100.0, 30.0 + (line-1) * 100.0,
-									10.0 + rank * 100.0, 10.0 + (line) * 100.0);
+									100.0 + parent2 * w * 2.0, 100.0 + h + (line-1) * h * 5.0,
+									100.0 + rank * w * 2.0, 100.0 - h + (line) * h * 5.0);
 			lineItem->setPen(QPen(QColor(255,100,100)));
 			scene->addItem(lineItem);
 		}
@@ -174,19 +177,37 @@ namespace NetworkEvolutionLib
 	{
 		if (!fitness) return;
 		
+		double * scores = new double[popSz];
+		double min, max;
+		
 		for (int i=0; i < popSz; ++i)
 		{
-			double score = fitness(P[i]);
-			int * p = getImmediateParents(iter,i);
+			scores[i] = fitness(P[i]);
+			if (i==0)
+				min = max = scores[i];
+			else
+			{
+				if (scores[i] > max) max = scores[i];
+				if (scores[i] < min) min = scores[i];
+			}
+		}
+		
+		max -= min;
+		
+		for (int i=0; i < popSz; ++i)
+		{
+			int * p = getImmediateParents(i,iter);
 			if (p && p[0])
 			{
-				insertTextItem(score, iter, i, p[0], p[1]);
+				insertTextItem((scores[i]-min)/max, iter, i, p[0], p[1]);
 			}
 			else
 			{
-				insertTextItem(score, iter, i, 0, 0);
+				insertTextItem((scores[i]-min)/max, iter, i, 0, 0);
 			}
 		}
+		
+		delete scores;
 		
 		if (semaphore)
 			semaphore->release();
