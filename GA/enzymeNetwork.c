@@ -473,13 +473,6 @@ int getNumReactionsForEnzymeNetwork(GAindividual individual)
 	return (getNumReactionsForMassActionNetwork(net->massActionNetwork));
 }
 
-void setFixedSpeciesForEnzymeNetwork(GAindividual individual, int i, int value)
-{
-	EnzymeNetwork * net = (EnzymeNetwork*)(individual);
-	if (!net) return;
-	setFixedSpeciesForMassActionNetwork(net->massActionNetwork,i,value);
-}
-
 void ratesForEnzymeNetwork(double time,double* u,double* rate,GAindividual individual)
 {
 	int i,uni;
@@ -554,27 +547,6 @@ void printEnzymeNetwork(FILE * stream,GAindividual individual)
 	net = enet->massActionNetwork;
 
 	if (!net) return;
-	
-	fix = 0;
-	for (i=0; i < net->species; ++i)
-	{
-		if (net->fixed[i])
-		{
-			fix = i+1;
-			break;
-		}
-	}
-
-	if (fix)
-	{
-		fprintf(stream, "const s%i",fix);
-		for (i=0; i < net->species; ++i)
-		{
-			if (net->fixed[i])			
-				fprintf(stream, ", s%i",i+1);			
-		}
-		fprintf(stream, "\n");
-	}
 	
 	for (i=0; i < net->reactions; ++i)
 	{

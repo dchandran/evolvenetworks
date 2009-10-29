@@ -159,15 +159,6 @@ static PrintNetworkFunction printNetworkFunctions[] =
 	&printProteinInteractionNetwork
 };
 
-typedef void (*SetFixedSpeciesFunction)(GAindividual,int,int);
-
-static SetFixedSpeciesFunction setFixedSpeciesFunctions[] =
-{
-	&setFixedSpeciesForMassActionNetwork,
-	&setFixedSpeciesForEnzymeNetwork,
-	&setFixedSpeciesForGeneRegulationNetwork,
-	&setFixedSpeciesForProteinInteractionNetwork
-};
 
 /***********************************************************
 
@@ -206,8 +197,12 @@ GApopulation randomNetworks(int sz0)
 			//rnet->parents = 0;
 			n = getNumSpecies(rnet);
 			rnet->initialValues = (double*)malloc(n*sizeof(double));
+			rnet->fixed = (int*)malloc(n*sizeof(double));
 			for (j=0; j < n; ++j)
+			{
 				rnet->initialValues[j] = AVG_INIT_VALUES * mtrand();
+				rnet->fixed[j] = 0;
+			}
 
 			P[i] = rnet;
 		}
@@ -228,8 +223,12 @@ GApopulation randomNetworks(int sz0)
 			//rnet->parents = 0;
 			n = getNumSpecies(rnet);
 			rnet->initialValues = (double*)malloc(n*sizeof(double));
+			rnet->fixed = (int*)malloc(n*sizeof(double));
 			for (j=0; j < n; ++j)
+			{
 				rnet->initialValues[j] = AVG_INIT_VALUES * mtrand();
+				rnet->fixed[j] = 0;
+			}
 
 			P[i] = rnet;
 		}
@@ -248,8 +247,12 @@ GApopulation randomNetworks(int sz0)
 			//rnet->parents = 0;
 			n = getNumSpecies(rnet);
 			rnet->initialValues = (double*)malloc(n*sizeof(double));
+			rnet->fixed = (int*)malloc(n*sizeof(double));
 			for (j=0; j < n; ++j)
+			{
 				rnet->initialValues[j] = AVG_INIT_VALUES * mtrand();
+				rnet->fixed[j] = 0;
+			}
 
 			//rnet->id = i+total;
 			P[i+total] = rnet;
@@ -269,8 +272,12 @@ GApopulation randomNetworks(int sz0)
 			//rnet->parents = 0;
 			n = getNumSpecies(rnet);
 			rnet->initialValues = (double*)malloc(n*sizeof(double));
+			rnet->fixed = (int*)malloc(n*sizeof(double));
 			for (j=0; j < n; ++j)
+			{
 				rnet->initialValues[j] = AVG_INIT_VALUES * mtrand();
+				rnet->fixed[j] = 0;
+			}
 
 			//rnet->id = i+total;
 			P[i+total] = rnet;
@@ -350,7 +357,6 @@ double * simulateNetworkODE( GAindividual individual, double time, double dt)
 	if (!r || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 	
 	iv = r->initialValues;
-	stoic = stoicFunctions[r->type];
 	rate = rateFunctions[r->type];
 	
 	p = r->network;
@@ -358,7 +364,7 @@ double * simulateNetworkODE( GAindividual individual, double time, double dt)
 	reactions = getNumReactions(r);
 
 	if (species == 0 || reactions == 0) return 0;
-	N = stoic(r->network);
+	N = getStoichiometryMatrix(individual);
 	y = ODEsim2(species, reactions,	N, rate, iv, 0, time, dt, p);
 
 	free(N);
@@ -380,7 +386,6 @@ double * networkSteadyState( GAindividual individual )
 	if (!r || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 	
 	iv = r->initialValues;
-	stoic = stoicFunctions[r->type];	
 	rate = rateFunctions[r->type];
 	
 	p = r->network;
@@ -388,7 +393,7 @@ double * networkSteadyState( GAindividual individual )
 	reactions = getNumReactions(r);
 
 	if (species == 0 || reactions == 0) return 0;
-	N = stoic(r->network);
+	N = getStoichiometryMatrix(individual);
 	y = steadyState2(species, reactions, N, rate, iv, p, SS_FUNC_ERROR_TOLERANCE,SS_FUNC_MAX_TIME,SS_FUNC_DELTA_TIME);
 	free(N);
 	
@@ -408,7 +413,6 @@ double * simulateNetworkStochastically( GAindividual individual, double time, in
 	if (!r || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 	
 	iv = r->initialValues;
-	stoic = stoicFunctions[r->type];
 	rate = rateFunctions[r->type];
 	
 	p = r->network;
@@ -416,7 +420,7 @@ double * simulateNetworkStochastically( GAindividual individual, double time, in
 	reactions = getNumReactions(r);
 
 	if (species == 0 || reactions == 0) return 0;
-	N = stoic(r->network);
+	N = getStoichiometryMatrix(individual);
 	y = SSA(species, reactions,	N, rate, iv, 0.0, time, 1000000, sz, p);
 	free(N);
 	return y;
@@ -426,18 +430,42 @@ void printNetwork(FILE * stream, GAindividual individual)
 {
 	ReactionNetwork * r = (ReactionNetwork*)individual;
 	PrintNetworkFunction f;
-	int n,i;
+	int n,i,fix;
 	
 	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return;
+	n = getNumSpecies(r);
 	
 	f = printNetworkFunctions[r->type];
+	
+	if (r->fixed)
+	{
+		fix = 0;
+		for (i=0; i < n; ++i)
+		{
+			if (r->fixed[i])
+			{
+				fix = i+1;
+				break;
+			}
+		}
+
+		if (fix)
+		{
+			fprintf(stream, "const s%i",fix);
+			for (i=0; i < n; ++i)
+			{
+				if (r->fixed[i])			
+					fprintf(stream, ", s%i",i+1);			
+			}
+			fprintf(stream, "\n");
+		}
+	}
 	
 	f(stream,r->network);
 
 	if (r->initialValues)
 	{
 		fprintf(stream,"\n");
-		n = getNumSpecies(r);
 		for (i=0; i < n; ++i)
 		{
 			fprintf(stream,"s%i = %lf;\n",i+1,r->initialValues[i]);
@@ -456,18 +484,7 @@ void printNetworkToFile(char * filename, GAindividual individual)
 
 	stream = fopen(filename, "w");
 	if (!stream) return;
-	f = printNetworkFunctions[r->type];
-	f(stream,r->network);
-
-	if (r->initialValues)
-	{
-		fprintf(stream,"\n");
-		n = getNumSpecies(r);
-		for (i=0; i < n; ++i)
-		{
-			fprintf(stream, "s%i = %lf;\n",i+1,r->initialValues[i]);
-		}
-	}
+	printNetwork(stream,individual);
 	fclose(stream);
 }
 
@@ -514,12 +531,23 @@ double* getStoichiometryMatrix(GAindividual individual)
 {
 	ReactionNetwork * r = (ReactionNetwork*)individual;
 	StoichiometryFunction stoic;
-	double * N;
+	double * N, * N2;
+	int i=0, j=0, i2=0, numFixed = 0, n = getNumSpecies(individual), m = getNumReactions(individual);
 
 	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 	stoic = stoicFunctions[r->type];
 
 	N = stoic(r->network);
+	
+	for (i=0; i < n; ++i)
+	{
+		if (r->fixed[i] == 0)
+		{
+			for (j=0; j < m; ++j)			
+				getValue(N,m,i,j) = 0.0;			
+		}
+	}
+	
 	return N;
 }
 
@@ -528,6 +556,7 @@ GAindividual mutateNetwork(GAindividual p)
 	ReactionNetwork * r = (ReactionNetwork*)(p);
 	int n0, n1, i;
 	double * iv;
+	int * fixed;
 	GAMutateFnc f;
 
 	GAindividual net;
@@ -545,14 +574,18 @@ GAindividual mutateNetwork(GAindividual p)
 		if (n0 != n1)
 		{
 			iv = r->initialValues;
+			fixed = r->fixed;
 			r->initialValues = (double*)malloc(n1 * sizeof(double));
+			r->fixed = (int*)malloc(n1 * sizeof(double));
 			for (i=0; i < n0 && i < n1; ++i)
 			{
 				r->initialValues[i] = iv[i];
+				r->fixed[i] = fixed[i];
 			}
 			for (i=n0; i < n1; ++i)
 			{
 				r->initialValues[i] = AVG_INIT_VALUES * mtrand();
+				r->fixed = 0;
 			}
 			free(iv);
 		}
@@ -594,13 +627,23 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 		j = getNumSpecies(r);
 
 		r->initialValues = (double*)malloc(j * sizeof(double));
+		r->fixed = (int*)malloc(j * sizeof(double));
 
 		for (i=0; i < sz1 && i < j; ++i)
+		{
 			r->initialValues[i] = r1->initialValues[i];
+			r->fixed[i] = r1->fixed[i];
+		}
 		for (i=0; i < sz2 && (sz1+i) < j; ++i)
+		{
 			r->initialValues[sz1+i] = r2->initialValues[i];
+			r->fixed[sz1+i] = r2->fixed[i];
+		}
 		for (i=sz1+sz2; i < j; ++i)
+		{
 			r->initialValues[i] = AVG_INIT_VALUES * mtrand();
+			r->fixed[i] = 0;
+		}
 
 		/*
 		i = j = sz1 = sz2 = 0;
@@ -691,6 +734,9 @@ void deleteNetwork(GAindividual p)
 
 	if (r->initialValues)
 		free(r->initialValues);
+	
+	if (r->fixed)
+		free(r->fixed);
 
 	free(r);
 }
@@ -725,8 +771,12 @@ GAindividual cloneNetwork(GAindividual p)
 
 	j = getNumSpecies(r2);
 	r2->initialValues = (double*)malloc(j * sizeof(double));
+	r2->fixed = (int*)malloc(j * sizeof(double));
 	for (i=0; i < j; ++i)
+	{
 		r2->initialValues[i] = r->initialValues[i];
+		r2->fixed[i] = 0;
+	}
 	
 
 	return r2;
@@ -1033,12 +1083,19 @@ GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GAFitnessFnc fitness, G
    Special fitness function
 *******************************/
 
+void setFixed(GAindividual p,int i, int f)
+{
+	ReactionNetwork * r = (ReactionNetwork*)(p);
+	if (!p || getNumSpecies(r) <= i) return;
+	
+	r->fixed[i] = (f>0);
+}
+
 double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs, int outputs, int corr, double ** res)
 {
 	int i, j, m, k, g, cols, n, *best;
 	double * ss, * iv, closest, temp, sumOfSq, corrcoef, *mXY, *mX, *mY, *mX2, *mY2, oldMaxT = SS_FUNC_MAX_TIME;
 	ReactionNetwork * r = (ReactionNetwork*)(p);
-	SetFixedSpeciesFunction setFixed;
 	
 	SS_FUNC_MAX_TIME = 100.0;
 
@@ -1047,8 +1104,6 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 	n = getNumSpecies(r);
 	
 	if (n < cols) return 0.0; // not enough species
-	
-	setFixed = setFixedSpeciesFunctions[r->type];
 	
 	for (i=0; i < inputs; ++i)
 	{
@@ -1089,7 +1144,7 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 			if (res)
 			{
 				for (i=0; i < inputs; ++i)
-					res[m][i] = ss[i];
+					res[m][i] = table[m][i];
 			}
 			for (i=0; i < outputs; ++i) //for each target output
 			{
@@ -1294,29 +1349,3 @@ int* getImmediateParents(int i, int j, int *** parents)
 {
 	return GAgetImmediateParents(i,j, parents);
 }
-
-/************
-net2->fixed = (int*) malloc(n * sizeof(int));
-	
-	fix = 0;
-	for (i=0; i < net->species; ++i)
-	{
-		if (net->fixed[i])
-		{
-			fix = i+1;
-			break;
-		}
-	}
-
-	if (fix)
-	{
-		fprintf(stream, "const s%i",fix);
-		for (i=0; i < net->species; ++i)
-		{
-			if (net->fixed[i])			
-				fprintf(stream, ", s%i",i+1);			
-		}
-		fprintf(stream, "\n");
-	}
-
-************/

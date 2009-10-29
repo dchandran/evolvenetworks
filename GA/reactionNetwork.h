@@ -409,6 +409,12 @@ void configureSteadyStateFunction(double tolerance,
 									double delta,
 									double maxTime);
 
+/*! \brief set fixed species
+	\param GAindividual reaction network
+	\param int species index
+	\param int 0=floating, 1=fixed
+*/
+void setFixed(GAindividual,int,int);
 
 /*!
   \}
