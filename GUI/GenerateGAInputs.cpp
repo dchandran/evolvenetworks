@@ -1369,8 +1369,7 @@ namespace NetworkEvolutionLib
 		QTextStream out(&qfile);
 		out << 
 			init() + tr("\n") + 
-			codeEditor->toPlainText() + tr("\n") + 
-			callbackFunction() + tr("\n");
+			codeEditor->toPlainText() + tr("\n");
 
 		qfile.close();
 		
