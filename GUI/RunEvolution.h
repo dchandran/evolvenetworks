@@ -31,12 +31,14 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QLibrary>
+#include <QThread>
 #include <QGraphicsView>
 #include <QGraphicsScene>
 #include <QGraphicsItem>
 #include <QGraphicsSimpleTextItem>
 #include <QGraphicsRectItem>
 #include <QGraphicsLineItem>
+#include <QSemaphore>
 #include "CodeEditor.h"
 
 namespace NetworkEvolutionLib
@@ -50,9 +52,8 @@ namespace NetworkEvolutionLib
 		~MainWindow();
 		QSize sizeHint() const;
 	
-		static MainWindow * mainWindow;
 		static int MainCallback(int, void**, int);
-
+	
 	public slots:
 		void go();
 		void updateScene(int , void** , int );
@@ -63,6 +64,20 @@ namespace NetworkEvolutionLib
 		QGraphicsScene * scene;
 		QList<QGraphicsItem*> previousLine;
 		
+	};
+	
+	class Thread : public QThread
+	{
+			Q_OBJECT
+			
+		public:
+			Thread(const QString&, QObject * );
+			void emitSignal(int, void**, int );
+		signals:
+			void updateScene(int , void** , int );
+		protected:
+			QLibrary * lib;
+			void run();
 	};
 }
 

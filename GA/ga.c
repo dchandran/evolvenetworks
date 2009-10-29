@@ -574,7 +574,7 @@ int* GAgetImmediateParents(int individual, int generation)
 	int p1=0, p2=0;
 	int * parents, * clone;
 
-	if (_PARENTS == 0 || generation > 0 || individual > 0 || _CURRENT_GENERATION < generation || _POPULATION_SIZE < individual)
+	if (_PARENTS == 0 || generation < 0 || individual <= 0 || _CURRENT_GENERATION < generation || _POPULATION_SIZE < individual)
 	{
 		parents = (int*)malloc(1 * sizeof(int));
 		parents[0] = 0;

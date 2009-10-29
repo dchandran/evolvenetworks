@@ -993,7 +993,7 @@ GApopulation evolveNetworks(int sz0,int sz1,int maxIter, GAFitnessFnc fitness, G
 {
 	GApopulation P;
 	
-	if (fitness) return 0;
+	if (!fitness) return 0;
 	
 	GAsetFitnessFunction(fitness);
 	GAsetCallbackFunction(callbackFunc);

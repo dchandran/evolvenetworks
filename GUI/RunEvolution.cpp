@@ -18,12 +18,12 @@ GAFitnessFnc fitness = 0;
 
 int main(int args, char *argv[])
 {
-	if (args < 4) return 0;
+	if (args < 5) return 0;
 	
-	File = argv[0];
-	Generations = atoi(argv[1]);
-	PopulationSize = atoi(argv[2]);
-	StartingPopulationSize = atoi(argv[3]);
+	File = argv[1];
+	Generations = atoi(argv[2]);
+	PopulationSize = atoi(argv[3]);
+	StartingPopulationSize = atoi(argv[4]);
 	
     QApplication app(args, argv);
 	
@@ -41,6 +41,8 @@ int main(int args, char *argv[])
 
     mainWindow.show();
     
+	mainWindow.go();
+	
 	int output = app.exec();
 	
     return output;
@@ -48,12 +50,59 @@ int main(int args, char *argv[])
 
 namespace NetworkEvolutionLib
 {
-	MainWindow * MainWindow::mainWindow = 0;
-
-	int MainWindow::MainCallback(int iter, GApopulation pop, int popSz)
+	Thread * CurrentThread = 0;
+	QSemaphore * semaphore = 0;
+	typedef void (*InitFunc)(void);
+	
+	Thread::Thread(const QString& file, QObject * parent) : QThread(parent)
 	{
-		if (mainWindow)
-			mainWindow->updateScene(iter,pop,popSz);
+		lib = new QLibrary(file,this);
+		lib->load();
+		CurrentThread = this;
+	}
+	
+	void Thread::emitSignal(int iter, void** pop, int popsz)
+	{
+		if (semaphore)
+		{
+			semaphore->acquire();
+			emit updateScene(iter,pop,popsz);
+			semaphore->acquire();
+			semaphore->release();
+		}
+	}
+	
+	int MainCallback(int iter, GApopulation pop, int popSz)
+	{
+		if (CurrentThread)
+			CurrentThread->emitSignal(iter,pop,popSz);
+		if (callback)
+			return callback(iter,pop,popSz);
+		return 0;
+	}
+	
+	void Thread::run()
+	{
+		if (!CurrentThread || !lib || !lib->isLoaded()) return;
+		
+		void * f0 = lib->resolve("init");
+		void * f1 = lib->resolve("fitness");
+		void * f2 = lib->resolve("callback");
+		if (f0 && f1 && f2)
+		{
+			InitFunc initFunc = (InitFunc)f0;
+			fitness = (GAFitnessFnc)f1;
+			callback = (GACallbackFnc)f2;
+			
+			GApopulation P;
+			initFunc();
+			P = evolveNetworks(StartingPopulationSize,PopulationSize,Generations,fitness,&MainCallback);
+			GAfree(P);
+		}
+		
+		fitness = 0;
+		callback = 0;
+		delete lib;
 	}
 	
 	QSize MainWindow::sizeHint() const
@@ -63,18 +112,20 @@ namespace NetworkEvolutionLib
 
 	MainWindow::MainWindow()
 	{
-		mainWindow = this;
+		if (semaphore)
+			delete semaphore;
 		
+		semaphore = new QSemaphore(1);
 		QGraphicsView * view = new QGraphicsView(scene = new QGraphicsScene, this);
 		scene->setBackgroundBrush(QBrush(Qt::black));
 		view->setDragMode(QGraphicsView::ScrollHandDrag);
 		setCentralWidget(view);
-		
-		go();
 	}
 	
 	MainWindow::~MainWindow()
 	{
+		if (semaphore)
+			delete semaphore;
 		QList<QGraphicsItem*> items = scene->items();
 		for (int i=0; i < items.size(); ++i)
 			if (items[i] && !items[i]->parentItem())
@@ -136,45 +187,19 @@ namespace NetworkEvolutionLib
 				insertTextItem(score, iter, i, 0, 0);
 			}
 		}
+		
+		if (semaphore)
+			semaphore->release();
 	}
-	
-	typedef void (*InitFunc)(void);
 	
 	void MainWindow::go()
 	{
+		show();
+		
 		if (!File) return;
 		
-		cout << "go started\n";
-		
-		QString filename(File);
-		
-		QLibrary * lib = new QLibrary(tr(File),this);
-		
-		if (!lib->isLoaded())
-		{
-			coud << "file not found " << File << "\n";
-			delete lib;
-			return;
-		}
-		
-		void * f0 = lib->resolve(filename, "init");
-		void * f1 = lib->resolve(filename, "fitness");
-		void * f2 = lib->resolve(filename, "callback");
-		if (f0 && f1 && f2)
-		{
-			cout << "all three f's\n";
-			InitFunc initFunc = (InitFunc)f0;
-			fitness = (GAFitnessFnc)f1;
-			callback = (GACallbackFnc)f2;
-				
-			GApopulation P;
-			initFunc();
-			P = evolveNetworks(StartingPopulationSize,PopulationSize,Generations,fitness,&MainCallback);
-			GAfree(P);
-		}
-		
-		fitness = 0;
-		callback = 0;
-		delete lib;
+		Thread * thread = new Thread( tr(File) , this);
+		connect(thread,SIGNAL(updateScene(int , void** , int )),this,SLOT(updateScene(int , void** , int )));
+		thread->start();
 	}	
 }
