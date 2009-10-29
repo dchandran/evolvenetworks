@@ -64,8 +64,6 @@ typedef struct
 	
 	double * Vmax; //the Vmax for each protein
 	double * degradation; //degradation rate for each protein
-	
-	int * fixed;  //array of size=species. 1= ith species is fixed
 } 
 GeneRegulationNetwork;
 
@@ -142,13 +140,6 @@ int getNumSpeciesForGeneRegulationNetwork(GAindividual);
  \ingroup geneticnetwork
 */
 int getNumReactionsForGeneRegulationNetwork(GAindividual);
-/*! \brief set a gene as a fixed (constant, boundary) species
- \param GeneRegulationNetwork network
- \param int index of gene that should be set at fixed
- \param int value = 0 or 1, where 1 = fixed
- \ingroup geneticnetwork
-*/
-void setFixedSpeciesForGeneRegulationNetwork(GAindividual, int, int);
 /*! \brief Use this function to set a cost to protein production. Use 0 to disable.
 		Each protein will consume a set amount of resources, and the system will receive
 		a set amount of resources from the external environment. 

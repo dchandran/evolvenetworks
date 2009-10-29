@@ -52,10 +52,14 @@ static double _FMIN(int n, double * x)
 {
 	int i=0;
 	double sumsq = 0.0;
+	for (i=0; i < n; ++i)
+	{
+		if (x[i] < 0.0) return HUGE_VAL;
+	}
 	_ODEFUNC(0.0,x,_DU,_PARAMS);
 	for (i=0; i < n; ++i)
 	{
-		sumsq += _DU[i]*_DU[i];
+		sumsq += _DU[i]*_DU[i]; 
 	}
 	return sumsq;
 }

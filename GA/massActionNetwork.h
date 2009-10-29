@@ -55,7 +55,6 @@ typedef struct
 	double * k;  //rate constant for each reaction
 	int reactions;    //number of reactions;
 	int species;    //number of species;
-	int * fixed;  //array of size=species. 1= ith species is fixed
 } 
 MassActionNetwork;
 
@@ -130,14 +129,6 @@ int getNumSpeciesForMassActionNetwork(GAindividual);
  \ingroup massaction
 */
 int getNumReactionsForMassActionNetwork(GAindividual);
-/*! \brief set a species as a fixed (constant, boundary) species
- \param MassActionNetwork network
- \param int index of species that should be set at fixed
- \param int value = 0 or 1, where 1 = fixed
- \ingroup massaction
-*/
-void setFixedSpeciesForMassActionNetwork(GAindividual, int,int);
-
 
 /*! \}
     @name Functions for initializing a GA

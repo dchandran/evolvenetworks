@@ -1294,3 +1294,29 @@ int* getImmediateParents(int i, int j, int *** parents)
 {
 	return GAgetImmediateParents(i,j, parents);
 }
+
+/************
+net2->fixed = (int*) malloc(n * sizeof(int));
+	
+	fix = 0;
+	for (i=0; i < net->species; ++i)
+	{
+		if (net->fixed[i])
+		{
+			fix = i+1;
+			break;
+		}
+	}
+
+	if (fix)
+	{
+		fprintf(stream, "const s%i",fix);
+		for (i=0; i < net->species; ++i)
+		{
+			if (net->fixed[i])			
+				fprintf(stream, ", s%i",i+1);			
+		}
+		fprintf(stream, "\n");
+	}
+
+************/

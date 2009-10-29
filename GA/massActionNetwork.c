@@ -107,7 +107,6 @@ void deleteMassActionNetwork(GAindividual individual)
 	if (net->product1) free(net->product1);
 	if (net->product2) free(net->product2);
 	if (net->k) free(net->k);
-	if (net->fixed) free(net->fixed);
 }
 
 GAindividual cloneMassActionNetwork(GAindividual individual)
@@ -130,12 +129,6 @@ GAindividual cloneMassActionNetwork(GAindividual individual)
 	net2->reactant2 = (int*) malloc(m * sizeof(int));
 	net2->product1 = (int*) malloc(m * sizeof(int));
 	net2->product2 = (int*) malloc(m * sizeof(int));
-	net2->fixed = (int*) malloc(n * sizeof(int));
-	
-	for (i=0; i < n; ++i)   //copy values
-	{
-		net2->fixed[i] = net->fixed[i];
-	}
 	
 	for (i=0; i < m; ++i)   //copy values
 	{
@@ -229,10 +222,6 @@ GAindividual crossoverMassActionNetwork(GAindividual individualA, GAindividual i
 	}
 	
 	net3->species = m + 1;
-	
-	net3->fixed = (int*) malloc( (m + 1)*sizeof(int) );
-	for (i=0; i < (m+1); ++i)
-		net3->fixed[i] = 0;
 	
 	return (GAindividual)(net3);
 }
@@ -381,16 +370,16 @@ double * stoichiometryForMassActionNetwork(GAindividual p)
 		for (j=0; j < net->species; ++j)
 			getValue(N,n,j,i) = 0;
 		
-		if ((net->reactant1[i] >= 0) && ((net->fixed[ net->reactant1[i] ]) == 0)) 
+		if (net->reactant1[i] >= 0) 
 			getValue(N,n,net->reactant1[i],i) -= 1;
 		
-		if ((net->reactant2[i] >= 0) && ((net->fixed[ net->reactant2[i] ]) == 0)) 
+		if (net->reactant2[i] >= 0)
 			getValue(N,n,net->reactant2[i],i) -= 1;
 			
-		if ((net->product1[i] >= 0) && ((net->fixed[ net->product1[i] ]) == 0)) 
+		if (net->product1[i] >= 0)
 			getValue(N,n,net->product1[i],i) += 1;
 		
-		if ((net->product2[i] >= 0) && ((net->fixed[ net->product2[i] ]) == 0)) 
+		if (net->product2[i] >= 0)
 			getValue(N,n,net->product2[i],i) += 1;
 	}
 	return N;
@@ -411,14 +400,6 @@ int getNumReactionsForMassActionNetwork(GAindividual individual)
 	return (net->reactions);
 }
 
-void setFixedSpeciesForMassActionNetwork(GAindividual individual, int i, int value)
-{
-	MassActionNetwork * net = (MassActionNetwork*)(individual);
-	if (i < net->species)
-		net->fixed[i] = value;
-}
-
-
 void printMassActionNetwork(FILE *stream, GAindividual individual)
 {
 	int i,fix;
@@ -426,28 +407,7 @@ void printMassActionNetwork(FILE *stream, GAindividual individual)
 	
 	if (!individual) return;
 	net = (MassActionNetwork*)individual;
-	
-	fix = 0;
-	for (i=0; i < net->species; ++i)
-	{
-		if (net->fixed[i])
-		{
-			fix = i+1;
-			break;
-		}
-	}
-
-	if (fix)
-	{
-		fprintf(stream, "const s%i",fix);
-		for (i=0; i < net->species; ++i)
-		{
-			if (net->fixed[i])			
-				fprintf(stream, ", s%i",i+1);			
-		}
-		fprintf(stream, "\n");
-	}
-	
+		
 	for (i=0; i < net->reactions; ++i)
 	{
 		if (net->reactant1[i] > -1 && net->reactant2[i] > -1)
@@ -599,10 +559,6 @@ MassActionNetwork * newMassActionNetwork(int s,int r)
 	net = (MassActionNetwork*)malloc(sizeof(MassActionNetwork));
 	net->species = s;
 	net->reactions = r;
-	
-	net->fixed = (int*)malloc(s * sizeof(int));
-	for (i=0; i < s; ++i)
-		net->fixed[i] = 0; //no fixed species by default
 	
 	net->k = (double*) malloc(net->reactions * sizeof(double));
 	net->reactant1 = (int*) malloc(net->reactions * sizeof(int));

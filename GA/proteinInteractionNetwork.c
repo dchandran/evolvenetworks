@@ -124,9 +124,6 @@ void deleteProteinInteractionNetwork(GAindividual individual)
 	
 	if (net->totals)
 		free (net->totals);
-	
-	if (net->fixed)
-		free (net->fixed);
 		
 	}
 }
@@ -146,11 +143,9 @@ GAindividual cloneProteinInteractionNetwork(GAindividual individual)
 	
 	net2->regulators = (Regulators*) malloc(n * sizeof(Regulators));   //allocate space
 	net2->totals = (double*) malloc(n * sizeof(double));
-	net2->fixed = (int*) malloc(n * sizeof(int));
 	
 	for (i=0; i < n; ++i)   //copy regulators
 	{
-		net2->fixed[i] = net->fixed[i];
 		net2->totals[i] = net->totals[i];
 		m = net->regulators[i].size;
 		net2->regulators[i].size = m;
@@ -193,14 +188,12 @@ GAindividual crossoverProteinInteractionNetwork(GAindividual individualA, GAindi
 	net3->species = n;
 	net3->regulators = (Regulators*) malloc(n * sizeof(Regulators));
 	net3->totals = (double*) malloc(n * sizeof(double));
-	net3->fixed = (int*) malloc(n * sizeof(int));
 	
 	for (i=0; i < i1; ++i) //copy all regulators from net1
 	{
 		n = net1->regulators[i].size;
 		net3->regulators[i].size = n;
 		net3->totals[i] = net1->totals[i];
-		net3->fixed[i] = net1->fixed[i];
 		net3->regulators[i].proteins = (int*) malloc(n * sizeof(int));
 		net3->regulators[i].Km = (double*) malloc(n * sizeof(double));
 		net3->regulators[i].Vmax = (double*) malloc(n * sizeof(double));
@@ -220,7 +213,6 @@ GAindividual crossoverProteinInteractionNetwork(GAindividual individualA, GAindi
 		n = net2->regulators[i].size;
 		net3->regulators[k].size = n;
 		net3->totals[k] = net2->totals[i];
-		net3->fixed[k] = net2->fixed[i];
 		net3->regulators[k].proteins = (int*) malloc(n * sizeof(int));
 		net3->regulators[k].Km = (double*) malloc(n * sizeof(double));
 		net3->regulators[k].Vmax = (double*) malloc(n * sizeof(double));
@@ -238,7 +230,7 @@ GAindividual crossoverProteinInteractionNetwork(GAindividual individualA, GAindi
 
 GAindividual mutateProteinInteractionNetwork(GAindividual individual)
 {
-	int i,j,j2,k,m,n,n2, * fixed;
+	int i,j,j2,k,m,n,n2;
 	double r, * totals;
 	ProteinInteractionNetwork * net;
 	Regulators * regulators;
@@ -291,11 +283,9 @@ GAindividual mutateProteinInteractionNetwork(GAindividual individual)
 			net->species = n2;
 			regulators = net->regulators;
 			totals = net->totals;
-			fixed = net->fixed;
-
+			
 			net->regulators = (Regulators*)malloc( n2 * sizeof(Regulators) );
 			net->totals = (double*)malloc( n2 * sizeof(double) );
-			net->fixed = (int*)malloc( n2 * sizeof(int) );
 			
 			for (j=0,j2=0; j < n; ++j) //copy all proteins
 			{
@@ -304,7 +294,6 @@ GAindividual mutateProteinInteractionNetwork(GAindividual individual)
 				if (j != i) //except protein i
 				{
 					net->totals[j2] = totals[j];
-					net->fixed[j2] = fixed[j];
 					net->regulators[j2].size = m;
 					net->regulators[j2].proteins = (int*)malloc(m * sizeof(int));
 					net->regulators[j2].Km = (double*)malloc(m * sizeof(double));
@@ -328,7 +317,6 @@ GAindividual mutateProteinInteractionNetwork(GAindividual individual)
 
 			if (n != 0)
 			{
-				free(fixed);
 				free(totals);
 				free(regulators);
 			}
@@ -341,17 +329,14 @@ GAindividual mutateProteinInteractionNetwork(GAindividual individual)
 			n2 = n+1;
 			regulators = net->regulators;
 			totals = net->totals;
-			fixed = net->fixed;
-
+			
 			net->species = n2;
 			net->regulators = (Regulators*) malloc( n2 * sizeof(Regulators) );
 			net->totals = (double*) malloc( n2 * sizeof(double) );
-			net->fixed = (int*) malloc( n2 * sizeof(int) );
 			
 			for (j=0; j < n; ++j) //copy all proteins
 			{
 				net->totals[j] = totals[j];
-				net->fixed[j] = fixed[j];
 				m = regulators[j].size;
 				net->regulators[j].size = m;
 				net->regulators[j].proteins = (int*) malloc(m * sizeof(int));
@@ -374,7 +359,6 @@ GAindividual mutateProteinInteractionNetwork(GAindividual individual)
 
 			if (n != 0)
 			{
-				free(fixed);
 				free(totals);
 				free(regulators);
 			}
@@ -418,13 +402,6 @@ int getNumReactionsForProteinInteractionNetwork(GAindividual individual)
 {
 	ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)(individual);
 	return (2 * net->species);
-}
-
-void setFixedSpeciesForProteinInteractionNetwork(GAindividual individual, int i, int value)
-{
-	ProteinInteractionNetwork * net = (ProteinInteractionNetwork*)(individual);
-	if (i < net->species)
-		net->fixed[i] = value;
 }
 
 void ratesForProteinInteractionNetwork(double time,double* u,double* rate,GAindividual individual)
@@ -489,44 +466,20 @@ double * stoichiometryForProteinInteractionNetwork(GAindividual p)
 	}
 	for (i=0; i < n; ++i)
 	{
-		if (net->fixed[i] == 0)
-		{
-			getValue(N,(2*n),i,i*2) = -1.0;
-			getValue(N,(2*n),i,i*2+1) = 1.0;
-		}
+		getValue(N,(2*n),i,i*2) = -1.0;
+		getValue(N,(2*n),i,i*2+1) = 1.0;
 	}
 	return N;
 }
 
 void printProteinInteractionNetwork(FILE* stream, GAindividual individual)
 {
-	int i,j,n,p,fix;
+	int i,j,n,p;
 	double km,vmax,tot,f;
 	ProteinInteractionNetwork * net;
 	
 	net = (ProteinInteractionNetwork*)(individual);
 	n = net->species;
-	
-	fix = 0;
-	for (i=0; i < net->species; ++i)
-	{
-		if (net->fixed[i])
-		{
-			fix = i+1;
-			break;
-		}
-	}
-	
-	if (fix)
-	{
-		fprintf(stream,"const s%i",fix);
-		for (i=0; i < net->species; ++i)
-		{
-			if (net->fixed[i])			
-				fprintf(stream,", s%i",i+1);			
-		}
-		fprintf(stream,"\n");
-	}
 	
 	for (i=0; i < n; ++i)
 	{
@@ -602,14 +555,12 @@ GApopulation randomProteinInteractionNetworks(int num)
 		net = (ProteinInteractionNetwork*) malloc(sizeof(ProteinInteractionNetwork)); //new network
 	
 		net->species = n;    //number of proteins
-		net->fixed = (int*) malloc(n * sizeof(int));
 		
 		net->regulators = (Regulators*) malloc(n * sizeof(Regulators));   //allocate space
 		net->totals = (double*) malloc(n * sizeof(double));
 		
 		for (j=0; j < n; ++j)   //random regulators for each protein
 		{
-			net->fixed[j] = 0; //no fixed species by default
 			net->totals[j] = TOTAL_MIN + mtrand() * (TOTAL_MAX - TOTAL_MIN);
 			m = (int)(MIN_NUM_REGULATIONS + mtrand() * (MAX_NUM_REGULATIONS - MIN_NUM_REGULATIONS));
 			net->regulators[j].size = m;

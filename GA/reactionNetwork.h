@@ -61,6 +61,9 @@ typedef struct
 
 	/*! \brief initial values*/
 	double * initialValues;
+	
+	/*! \brief fixed species*/
+	int * fixed;
 }
 ReactionNetwork;
 

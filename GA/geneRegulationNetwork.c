@@ -133,8 +133,6 @@ void deleteGeneRegulationNetwork(GAindividual individual)
 	if (net->targetGene) free(net->targetGene);
 	if (net->Ka) free(net->Ka);
 	if (net->degradation) free(net->degradation);
-	if (net->fixed)
-		free (net->fixed);
 }
 
 GAindividual cloneGeneRegulationNetwork(GAindividual individual)
@@ -157,8 +155,7 @@ GAindividual cloneGeneRegulationNetwork(GAindividual individual)
 	net2->Ka = (double*) malloc( n * sizeof(double) );
 	net2->degradation = (double*) malloc( m * sizeof(double) );
 	net2->Vmax = (double*) malloc( m * sizeof(double) );
-	net2->fixed = (int*) malloc( m * sizeof(int) );
-	
+
 	for (i=0; i < n; ++i)
 	{
 		net2->complexes[i].size = net->complexes[i].size;
@@ -172,7 +169,6 @@ GAindividual cloneGeneRegulationNetwork(GAindividual individual)
 	
 	for (i=0; i < m; ++i)
 	{
-		net2->fixed[i] = net->fixed[i];
 		net2->degradation[i] = net->degradation[i];
 		net2->Vmax[i] = net->Vmax[i];
 	}
@@ -245,7 +241,6 @@ GAindividual crossoverGeneRegulationNetwork(GAindividual individualA, GAindividu
 	
 	net3->degradation = (double*) malloc( (m+1) * sizeof(double) );
 	net3->Vmax = (double*) malloc( (m+1) * sizeof(double) );
-	net3->fixed = (int*) malloc( (m+1) * sizeof(int) );
 	
 	for (i=0; i < net3->species; ++i)
 	{
@@ -253,20 +248,17 @@ GAindividual crossoverGeneRegulationNetwork(GAindividual individualA, GAindividu
 		{
 			net3->degradation[i] = net1->degradation[i];
 			net3->Vmax[i] = net1->Vmax[i];
-			net3->fixed[i] = net1->fixed[i];
 		}
 		else
 		if (i < net2->species)
 		{
 			net3->degradation[i] = net2->degradation[i];
 			net3->Vmax[i] = net2->Vmax[i];
-			net3->fixed[i] = net2->fixed[i];
 		}
 		else
 		{
 			net3->degradation[i] = DEG_MIN + (DEG_MAX-DEG_MIN) * mtrand();
 			net3->Vmax[i] = VMAX_MIN + (VMAX_MAX-VMAX_MIN) * mtrand();
-			net3->fixed[i] = 0;
 		}
 	}	
 	
@@ -277,7 +269,7 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 {
 	int i,j,k,l,m,n;
 	double r, * Ka, * degradation, * Vmax;
-	int * targetGene, * fixed;
+	int * targetGene;
 	TFComplex * complexes;
 	GeneRegulationNetwork * net;
 	
@@ -329,7 +321,6 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 		Ka = net->Ka;
 		Vmax = net->Vmax;
 		degradation = net->degradation;
-		fixed = net->fixed;
 		
 		net->species = m;
 		net->numComplexes = n+1;
@@ -338,7 +329,6 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 		net->Ka = (double*) malloc( (1+n) * sizeof(double) );
 		net->degradation = (double*) malloc( m * sizeof(double) );
 		net->Vmax = (double*) malloc( m * sizeof(double) );
-		net->fixed = (int*) malloc( m * sizeof(int) );
 		
 		for (j=0; j < n; ++j)
 		{
@@ -353,16 +343,13 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 		{
 			net->degradation[j] = degradation[j];
 			net->Vmax[j] = Vmax[j];
-			net->fixed[j] = fixed[j];
 		}
 
 		free(targetGene);
 		free(complexes);
 		free(Ka);
 		free(degradation);
-		free(Vmax);
-		free(fixed);
-		
+		free(Vmax);	
 		net->complexes[n].size = (int)(TF_MIN + (TF_MAX-TF_MIN) * mtrand());
 		net->complexes[n].TFs = (int*) malloc(net->complexes[n].size * sizeof(int));
 		net->complexes[n].TFs[0] = (int)(m-1);
@@ -375,7 +362,6 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 		net->Ka[n] = KA_MIN + (KA_MAX - KA_MIN) * mtrand();
 		net->degradation[m-1] = DEG_MIN + (DEG_MAX - DEG_MIN) * mtrand();
 		net->Vmax[m-1] = VMAX_MIN + (VMAX_MAX - VMAX_MIN) * mtrand();
-		net->fixed[m-1] = 0;
 		
 		return (GAindividual)(net);
 	}
@@ -406,7 +392,6 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 		Ka = net->Ka;
 		degradation = net->degradation;
 		Vmax = net->Vmax;
-		fixed = net->fixed;
 		
 		net->numComplexes = n-t;
 		net->complexes = (TFComplex*) malloc( (n-t) * sizeof (TFComplex) );
@@ -414,13 +399,11 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 		net->Ka = (double*) malloc( (n-t) * sizeof(double) );
 		net->degradation = (double*) malloc( (m) * sizeof(double) );
 		net->Vmax = (double*) malloc( (m) * sizeof(double) );
-		net->fixed = (int*) malloc( (m) * sizeof(int) );
 		
 		for (j=0, j1=0; j < (1+m) && j1 < m; ++j)
 		{
 			if (j != i)
 			{
-				net->fixed[j1] = fixed[j];
 				net->degradation[j1] = degradation[j];
 				net->Vmax[j1] = Vmax[j];
 				++j1;
@@ -456,8 +439,6 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 		free(Ka);
 		free(degradation);
 		free(Vmax);
-		free(fixed);
-		
 		return (GAindividual)(net);
 	}
 	
@@ -482,13 +463,6 @@ int getNumReactionsForGeneRegulationNetwork(GAindividual individual)
 	if (RESOURCE_INFLUX > 0 && RESOURCE_COST_PER_GENE > 0)
 		return (1 + (2 * net->species));
 	return (2 * net->species);
-}
-
-void setFixedSpeciesForGeneRegulationNetwork(GAindividual individual, int i, int value)
-{
-	GeneRegulationNetwork * net = (GeneRegulationNetwork*)(individual);
-	if (i < net->species)
-		net->fixed[i] = value;
 }
 
 void ratesForGeneRegulationNetwork(double time,double* u,double* rate,GAindividual p)
@@ -560,11 +534,10 @@ double * stoichiometryForGeneRegulationNetwork(GAindividual p)
 			getValue(N,n,i,j) = 0.0;
 			
 	for (i=0; i < m; ++i)
-		if (net->fixed[i] == 0)
-		{
-			getValue(N,n,i,i) = 1.0;
-			getValue(N,n,i,i+m) = -1.0;
-		}
+	{
+		getValue(N,n,i,i) = 1.0;
+		getValue(N,n,i,i+m) = -1.0;
+	}
 	
 	if (RESOURCE_INFLUX > 0 && RESOURCE_COST_PER_GENE > 0)
 	{
@@ -580,34 +553,13 @@ double * stoichiometryForGeneRegulationNetwork(GAindividual p)
 
 void printGeneRegulationNetwork(FILE *stream, GAindividual individual)
 {
-	int i,j,k,p,fix;
+	int i,j,k,p;
 	double num, denom;
 	GeneRegulationNetwork * net;
 	
 	if (!individual) return;
 	
 	net = (GeneRegulationNetwork*)(individual);
-	
-	fix = 0;
-	for (i=0; i < net->species; ++i)
-	{
-		if (net->fixed[i])
-		{
-			fix = i+1;
-			break;
-		}
-	}
-	
-	if (fix)
-	{
-		fprintf(stream,"const s%i",fix);
-		for (i=0; i < net->species; ++i)
-		{
-			if (net->fixed[i])			
-				fprintf(stream,", s%i",i+1);			
-		}
-		fprintf(stream,"\n");
-	}
 	
 	for (i=0; i < net->species; ++i)
 	{
@@ -727,13 +679,11 @@ GeneRegulationNetwork * newGeneRegulationNetwork(int m,int n)
 	
 	net->Vmax = 0;
 	net->degradation = 0;
-	net->fixed = 0;
-
+	
 	if (m > 0)
 	{
 		net->Vmax = (double*) malloc( m * sizeof(double) );
 		net->degradation = (double*) malloc( m * sizeof(double) );
-		net->fixed = (int*) malloc( m * sizeof(int) );
 		
 		for (i=0; i < n; ++i)
 		{
@@ -746,7 +696,6 @@ GeneRegulationNetwork * newGeneRegulationNetwork(int m,int n)
 		{
 			net->degradation[i] = 0.0;
 			net->Vmax[i] = 0.0;
-			net->fixed[i] = 0;
 		}
 	}
 	return net;
