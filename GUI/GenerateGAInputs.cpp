@@ -1362,7 +1362,7 @@ namespace NetworkEvolutionLib
 	void MainWindow::run()
 	{
 		QString appDir = QCoreApplication::applicationDirPath();
-		QFile qfile(appDir + tr("/") + codeFile);
+		QFile qfile(appDir + tr("/temp.c"));
 		if (!qfile.open(QIODevice::WriteOnly | QIODevice::Text))
 			return;
 
