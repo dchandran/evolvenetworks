@@ -48,11 +48,11 @@ double fitness(GAindividual p);
 
 #define INITIAL_POPULATION_SIZE 100
 #define SUCCESSIVE_POPULATION_SIZE 50
-#define NUM_GENERATIONS 30
+#define NUM_GENERATIONS 20
 
 int callback(int iter, int popSz, GApopulation P, double * fitnessArray, int *** parents)
 {
-	return (fitnessArray[0] > 10.0);
+	return 0;
 }
 
 /* main */
@@ -110,79 +110,22 @@ double fitness(GAindividual net)
 	f = 0;   // Calculate correlation to sine wave
 	if (y != 0)
 	{
-		peaks = 0;
-		troughs = 0;
-		for (i = 50; i < (time-3); i+=1)
+		if (getValue(y,(1+N),20,N) < getValue(y,(1+N),50,N) &&
+			getValue(y,(1+N),70,N) < getValue(y,(1+N),50,N))
 		{
-			if ( (getValue(y,N+1,i,1) > 0.1) &&
-				 (getValue(y,N+1,i,1) < 1000.0) &&
-				 (getValue(y,N+1,i,1) > (dx + getValue(y,N+1,i-3,1))) &&
-				 (getValue(y,N+1,i,1) > (dx + getValue(y,N+1,i+3,1))) &&
-				 (getValue(y,N+1,i-3,1) < getValue(y,N+1,i-2,1)) && 
-				 (getValue(y,N+1,i-2,1) < getValue(y,N+1,i-1,1)) && 
-				 (getValue(y,N+1,i-1,1) < getValue(y,N+1,i,1)) && 
-				 (getValue(y,N+1,i+1,1) < getValue(y,N+1,i,1)) && 
-				 (getValue(y,N+1,i+2,1) < getValue(y,N+1,i+1,1)) && 
-				 (getValue(y,N+1,i+3,1) < getValue(y,N+1,i+2,1))
-				)
-			{
-				 peaks += (double)i/time;
-				 //mX += y[i];
-				 //mX2 += y[i]*y[i];
-			}
+			for (i=10; (i+50) < 500; i+=50)
+				if ( getValue(y,(1+N),i-10,N) < ( getValue(y,(1+N),i,N) - 1.0 ) &&
+					 getValue(y,(1+N),i+10,N) < ( getValue(y,(1+N),i,N) - 1.0 ))
+					f += (20 - getValue(y,(1+N),i,N))*(20 - getValue(y,(1+N),i,N));
+				else
+					f += 100.0;
 
-			if ( (getValue(y,N+1,i,1) > 0.1) &&
-				 (getValue(y,N+1,i,1) < 1000.0) &&
-				 (getValue(y,N+1,i,1) < (getValue(y,N+1,i-3,1) - dx)) &&
-				 (getValue(y,N+1,i,1) < (getValue(y,N+1,i+3,1) - dx)) &&
-				 (getValue(y,N+1,i-3,1) > getValue(y,N+1,i-2,1)) && 
-				 (getValue(y,N+1,i-2,1) > getValue(y,N+1,i-1,1)) && 
-				 (getValue(y,N+1,i-1,1) > getValue(y,N+1,i,1)) && 
-				 (getValue(y,N+1,i+1,1) > getValue(y,N+1,i,1)) && 
-				 (getValue(y,N+1,i+2,1) > getValue(y,N+1,i+1,1)) && 
-				 (getValue(y,N+1,i+3,1) > getValue(y,N+1,i+2,1))
-				)
-			{
-				 troughs += (double)i/time;
-			}
-		}
-		
-		if ((troughs+peaks) < 1)
-		{
-			mXY = mX = mY = mX2 = mY2 = 0;
-			
-			for (i = 10; i < time; ++i)
-			{
-				mX += getValue(y,N+1,i,1);
-				mY += sin(i/4.0);
-				mXY += sin(i/4.0) * getValue(y,N+1,i,1);
-				mX2 += getValue(y,N+1,i,1)*getValue(y,N+1,i,1);
-				mY2 += sin(i/4.0)*sin(i/4.0);
-			}
-			mX /= (time-10);
-			mY /= (time-10);
-			mXY /= (time-10);
-			mX2 /= (time-10);
-			mY2 /= (time-10);
-
-			if (((mXY - mX*mY) < 0.01) || ((mY2 - mY*mY)) < 0.01)
-			{
-				f = 0.0;
-			}
-			else
-			{
-				f = ( (mXY - mX*mY)/(sqrt(mX2 - mX*mX)*sqrt(mY2 - mY*mY)) );   // Correlation formula
-				if (f < 0) f = -f; // Negative correlation is just as good as positive (for oscillations)
-			}
+			f = 100.0/f;
 		}
 		else
 		{
-			f = 1.0;
+			f = 0.0;
 		}
-
-		f += (double)troughs + (double)peaks;
-		
-		
 		free(y);
 	}
 
