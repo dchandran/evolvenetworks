@@ -36,6 +36,8 @@
 #define ENZYME_NETWORK 1
 #define PROTEIN_INTERACTION_NETWORK 3
 #define GENE_REGULATION_NETWORK 2
+#define GENE_REGULATORY_NETWORK 2
+#define GENETIC_NETWORK 2
 
 
 /*! \brief A generic network that can contain either a 

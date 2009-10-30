@@ -36,14 +36,14 @@ int main()
 	double ** table, ** table2;
 
 	GAlineageTrackingON();
-	setNetworkType( MASS_ACTION_NETWORK );  //use this network type
-	setNetworkSize(2,10,3,20);  //network size
+	setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
+	setNetworkSize(2,20,3,20);  //network size
 
 	printf ("Logic Gate Evolution\n\n");
 
 	enableLogFile("log.txt");
 	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(1000,200,50,&fitness,&callback);
+	pop = evolveNetworks(1000,500,50,&fitness,&callback);
 	
 	best = pop[0]; //get the best network
 	
@@ -124,8 +124,11 @@ int callback(int iter,int popSz,GApopulation pop,double * fitnessArray, int *** 
 {
 	double f = fitnessArray[0];
 	
-	if (f >= 0.9) return 1;  //stop if good enough
-	
+	if (f >= 0.9)
+	{
+		fitness(pop[0]);
+		return 1;  //stop if good enough
+	}
 	return 0;
 }
 

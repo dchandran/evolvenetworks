@@ -204,7 +204,7 @@ GApopulation randomNetworks(int sz0)
 				rnet->fixed[j] = 0;
 			}
 
-			P[i] = rnet;
+			P[total+i] = rnet;
 		}
 		total += r;
 	}
@@ -230,20 +230,20 @@ GApopulation randomNetworks(int sz0)
 				rnet->fixed[j] = 0;
 			}
 
-			P[i] = rnet;
+			P[total+i] = rnet;
 		}
 		total += r;
 	}
 
-	r = (int)(networkProbs[PROTEIN_INTERACTION_NETWORK] * sz0);
+	r = (int)(networkProbs[GENE_REGULATION_NETWORK] * sz0);
 	if (r > 0 && r <= sz0)
 	{
-		P0 = randomProteinInteractionNetworks(r);
+		P0 = randomGeneRegulationNetworks(r);
 		for (i=0; i < r; ++i)
 		{
 			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
-			rnet->type = PROTEIN_INTERACTION_NETWORK;
-			//rnet->network = P0[i];
+			rnet->type = GENE_REGULATION_NETWORK;
+			rnet->network = P0[i];
 			//rnet->parents = 0;
 			n = getNumSpecies(rnet);
 			rnet->initialValues = (double*)malloc(n*sizeof(double));
@@ -255,7 +255,7 @@ GApopulation randomNetworks(int sz0)
 			}
 
 			//rnet->id = i+total;
-			P[i+total] = rnet;
+			P[total+i] = rnet;
 		}
 		total += r;
 	}
@@ -263,12 +263,12 @@ GApopulation randomNetworks(int sz0)
 	if (total < sz0)
 	{
 		k = sz0 - total;
-		P0 = randomGeneRegulationNetworks(k);
+		P0 = randomProteinInteractionNetworks(r);
 		for (i=0; i < k; ++i)
 		{
 			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
-			rnet->type = GENE_REGULATION_NETWORK;
-			//rnet->network = P0[i];
+			rnet->type = PROTEIN_INTERACTION_NETWORK;
+			rnet->network = P0[i];
 			//rnet->parents = 0;
 			n = getNumSpecies(rnet);
 			rnet->initialValues = (double*)malloc(n*sizeof(double));
@@ -476,7 +476,6 @@ void printNetwork(FILE * stream, GAindividual individual)
 void printNetworkToFile(char * filename, GAindividual individual)
 {
 	ReactionNetwork * r = (ReactionNetwork*)individual;
-	PrintNetworkFunction f;
 	FILE *stream;
 	int i, n;
 
@@ -531,7 +530,7 @@ double* getStoichiometryMatrix(GAindividual individual)
 {
 	ReactionNetwork * r = (ReactionNetwork*)individual;
 	StoichiometryFunction stoic;
-	double * N, * N2;
+	double * N;
 	int i=0, j=0, i2=0, numFixed = 0, n = getNumSpecies(individual), m = getNumReactions(individual);
 
 	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
@@ -607,7 +606,7 @@ GAindividual crossoverNetwork(GAindividual p1, GAindividual p2)
 	GACrossoverFnc f;
 	GAindividual net;
 	ReactionNetwork * r;
-	int i,j,k,sz1,sz2,*p;
+	int i,j,sz1,sz2;
 
 	if (mtrand() > CROSSOVER_PROB || r1->type != r2->type || r2->type < 0 || r2->type >= NUMBER_OF_NETWORK_TYPES)
 		return mutateNetwork(p1);
@@ -1095,6 +1094,8 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 {
 	int i, j, m, k, g, cols, n, *best;
 	double * ss, * iv, closest, temp, sumOfSq, corrcoef, *mXY, *mX, *mY, *mX2, *mY2, oldMaxT = SS_FUNC_MAX_TIME;
+	double * ss2;
+	double a,b,c;
 	ReactionNetwork * r = (ReactionNetwork*)(p);
 	
 	SS_FUNC_MAX_TIME = 100.0;
@@ -1107,7 +1108,7 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 	
 	for (i=0; i < inputs; ++i)
 	{
-		setFixed(r->network,i,1);
+		setFixed(r,i,1);
 	}
 
 	sumOfSq = 0.0;
@@ -1128,6 +1129,8 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 		best[i] = -1;
 		mXY[i] = mX[i] = mY[i] = mX2[i] = mY2[i] = 0;
 	}
+
+	ss2 = (double*)malloc(rows*sizeof(double));
 
 	for (m=0; m < rows; ++m)
 	{
@@ -1170,12 +1173,14 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 					}
 				}
 				
-				j = inputs+i;//best[i];
+				j = i;//best[i];
 
 				if (res)
 				{
 					res[m][inputs+i] = ss[j];
+					
 				}
+				ss2[m] = ss[j];
 
 				temp = (ss[j] - table[m][inputs+i]);
 				closest = temp*temp;
@@ -1218,10 +1223,30 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 			break;
 		}
 
-		temp = ( (mXY[i] - mX[i]*mY[i])/
-				( sqrt(mX2[i] - mX[i]*mX[i])*sqrt(mY2[i] - mY[i]*mY[i])) );   //correlation formula
-		corrcoef += (1.0 + temp)/2.0; //between 0 and 1, instead of -1 and 1		
+		a = mXY[i] - mX[i]*mY[i];
+		b = mX2[i] - mX[i]*mX[i];
+		c = mY2[i] - mY[i]*mY[i];
+
+		if (b > 1.0 && c > 1.0)
+		{
+
+			temp = ( a/
+					( sqrt(b)*sqrt(c)) );   //correlation formula
+			
+			if (temp > 0.8)
+			{
+				temp += 0.0;
+			}
+			corrcoef += (1.0 + temp)/2.0; //between 0 and 1, instead of -1 and 1
+		}
+		else
+		{
+			corrcoef = 0.0;
+			sumOfSq = 0.0;
+		}
 	}
+
+	free(ss2);
 
 	for (i=0; i < n; ++i)
 		r->initialValues[i] = iv[i];
@@ -1236,7 +1261,7 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 	//restore the fixed
 	for (i=0; i < inputs; ++i)
 	{
-		setFixed(r->network,i,0);
+		setFixed(r,i,0);
 	}
 
 	SS_FUNC_MAX_TIME = oldMaxT;

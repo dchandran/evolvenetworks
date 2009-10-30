@@ -62,7 +62,7 @@ LINK_DIRECTORIES(
 #---------------------------------------------------------------------------
 #---------------------------------------------------------------------------
 
-#ADD_SUBDIRECTORY( external/lapack )
+ADD_SUBDIRECTORY( external/lapack )
 
 #---------------------------------------------------------------------------
 #Nelder-Mead algorithm
@@ -104,10 +104,11 @@ ADD_LIBRARY( ode
   ${CVODE_SRC}
   ${SUNDIALS_SRC}
   ${NVECSER_SRC}
+  ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/eigen.c
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/cvodesim.c
 )
 
-TARGET_LINK_LIBRARIES( ode ode  optim )
+TARGET_LINK_LIBRARIES( ode ode lapack )
 
 SET_TARGET_PROPERTIES(ode PROPERTIES LINKER_LANGUAGE C)
 
