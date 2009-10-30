@@ -398,7 +398,7 @@ int main(int args, char ** argv)
 	for (i=0; i < n; ++i)
 		p[i] = getValue(y,(1+n),sz-1,i+1);
 		
-	J = jacobian(n, p, &(chemotaxisODE), &cnet);
+	J = jacobian(n, p, &(chemotaxisODE), &cnet, 0, 0);
 	
 	info = getLoops(J,n);
 	

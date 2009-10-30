@@ -36,6 +36,8 @@ INCLUDE_DIRECTORIES( BEFORE
     ${NETWORKEVOLUTION_SOURCE_DIR}/external/
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/optim/
+	${NETWORKEVOLUTION_SOURCE_DIR}/external/lapack/INCLUDE
+	${NETWORKEVOLUTION_SOURCE_DIR}/external/optim/
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/cvode
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/nvec_ser
@@ -208,6 +210,7 @@ ADD_LIBRARY( gaBistabilize
 TARGET_LINK_LIBRARIES( gaBistabilize
   gaBistabilize
   netga
+  optim
 )
 
 #---------------------------------------------------------------------------

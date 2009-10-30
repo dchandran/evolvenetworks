@@ -3179,18 +3179,26 @@ SWIGINTERN PyObject *_wrap_jacobian(PyObject *SWIGUNUSEDPARM(self), PyObject *ar
   double *arg2 = (double *) 0 ;
   ODEFunction arg3 = (ODEFunction) 0 ;
   void *arg4 = (void *) 0 ;
+  double *arg5 = (double *) 0 ;
+  double *arg6 = (double *) 0 ;
   int val1 ;
   int ecode1 = 0 ;
   void *argp2 = 0 ;
   int res2 = 0 ;
   int res4 ;
+  void *argp5 = 0 ;
+  int res5 = 0 ;
+  void *argp6 = 0 ;
+  int res6 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  PyObject * obj5 = 0 ;
   double *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:jacobian",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOO:jacobian",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
   ecode1 = SWIG_AsVal_int(obj0, &val1);
   if (!SWIG_IsOK(ecode1)) {
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "jacobian" "', argument " "1"" of type '" "int""'");
@@ -3211,7 +3219,17 @@ SWIGINTERN PyObject *_wrap_jacobian(PyObject *SWIGUNUSEDPARM(self), PyObject *ar
   if (!SWIG_IsOK(res4)) {
     SWIG_exception_fail(SWIG_ArgError(res4), "in method '" "jacobian" "', argument " "4"" of type '" "void *""'"); 
   }
-  result = (double *)jacobian(arg1,arg2,arg3,arg4);
+  res5 = SWIG_ConvertPtr(obj4, &argp5,SWIGTYPE_p_double, 0 |  0 );
+  if (!SWIG_IsOK(res5)) {
+    SWIG_exception_fail(SWIG_ArgError(res5), "in method '" "jacobian" "', argument " "5"" of type '" "double *""'"); 
+  }
+  arg5 = (double *)(argp5);
+  res6 = SWIG_ConvertPtr(obj5, &argp6,SWIGTYPE_p_double, 0 |  0 );
+  if (!SWIG_IsOK(res6)) {
+    SWIG_exception_fail(SWIG_ArgError(res6), "in method '" "jacobian" "', argument " "6"" of type '" "double *""'"); 
+  }
+  arg6 = (double *)(argp6);
+  result = (double *)jacobian(arg1,arg2,arg3,arg4,arg5,arg6);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
   return resultobj;
 fail:
@@ -3227,6 +3245,8 @@ SWIGINTERN PyObject *_wrap_jacobian2(PyObject *SWIGUNUSEDPARM(self), PyObject *a
   PropensityFunction arg4 = (PropensityFunction) 0 ;
   double *arg5 = (double *) 0 ;
   void *arg6 = (void *) 0 ;
+  double *arg7 = (double *) 0 ;
+  double *arg8 = (double *) 0 ;
   int val1 ;
   int ecode1 = 0 ;
   int val2 ;
@@ -3236,15 +3256,21 @@ SWIGINTERN PyObject *_wrap_jacobian2(PyObject *SWIGUNUSEDPARM(self), PyObject *a
   void *argp5 = 0 ;
   int res5 = 0 ;
   int res6 ;
+  void *argp7 = 0 ;
+  int res7 = 0 ;
+  void *argp8 = 0 ;
+  int res8 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
   PyObject * obj4 = 0 ;
   PyObject * obj5 = 0 ;
+  PyObject * obj6 = 0 ;
+  PyObject * obj7 = 0 ;
   double *result = 0 ;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOOOO:jacobian2",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOOOOO:jacobian2",&obj0,&obj1,&obj2,&obj3,&obj4,&obj5,&obj6,&obj7)) SWIG_fail;
   ecode1 = SWIG_AsVal_int(obj0, &val1);
   if (!SWIG_IsOK(ecode1)) {
     SWIG_exception_fail(SWIG_ArgError(ecode1), "in method '" "jacobian2" "', argument " "1"" of type '" "int""'");
@@ -3275,7 +3301,17 @@ SWIGINTERN PyObject *_wrap_jacobian2(PyObject *SWIGUNUSEDPARM(self), PyObject *a
   if (!SWIG_IsOK(res6)) {
     SWIG_exception_fail(SWIG_ArgError(res6), "in method '" "jacobian2" "', argument " "6"" of type '" "void *""'"); 
   }
-  result = (double *)jacobian2(arg1,arg2,arg3,arg4,arg5,arg6);
+  res7 = SWIG_ConvertPtr(obj6, &argp7,SWIGTYPE_p_double, 0 |  0 );
+  if (!SWIG_IsOK(res7)) {
+    SWIG_exception_fail(SWIG_ArgError(res7), "in method '" "jacobian2" "', argument " "7"" of type '" "double *""'"); 
+  }
+  arg7 = (double *)(argp7);
+  res8 = SWIG_ConvertPtr(obj7, &argp8,SWIGTYPE_p_double, 0 |  0 );
+  if (!SWIG_IsOK(res8)) {
+    SWIG_exception_fail(SWIG_ArgError(res8), "in method '" "jacobian2" "', argument " "8"" of type '" "double *""'"); 
+  }
+  arg8 = (double *)(argp8);
+  result = (double *)jacobian2(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
   resultobj = SWIG_NewPointerObj(SWIG_as_voidptr(result), SWIGTYPE_p_double, 0 |  0 );
   return resultobj;
 fail:
