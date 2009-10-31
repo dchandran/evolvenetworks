@@ -3,14 +3,18 @@
 	included in the network evolution library to 
 	evolve an oscillator.
 	
-	Build the cvode library first by compiling all the source files in cvode_src and 
-	using ar *.o -o libcvode.a
+	If you already made the libode library using CMake, then use the following
+	command to compile this file:
 	
-	use the following to compile:
+	gcc -I../simulation -I../GA -L../lib ga_oscillator.c -o evolveOscillator -lode
 	
-	gcc mtrand.c ga.c cvodesim.c ssa.c reactionNetwork.c ga_oscillator.c -lm -lcvode
+	If you do not wish to use CMake, then you need to make the cvode library by compiling
+	everything in the cvode_src directory and making the library using ar *.o -o libcvode.a
 	
-	Uncomment one of the following pairs (which pairs?):
+	After building cvode use the following to compile this file:
+	
+	gcc -I../simulation -I../GA mtrand.c ga.c cvodesim.c ssa.c reactionNetwork.c ga_oscillator.c -lm -lcvode
+	
 ****************************************************/
 
 #include "reactionNetwork.h"
@@ -46,11 +50,11 @@ void init()
 /* Fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(GAindividual p);
 
-#define INITIAL_POPULATION_SIZE 100
-#define SUCCESSIVE_POPULATION_SIZE 50
-#define NUM_GENERATIONS 20
+#define INITIAL_POPULATION_SIZE 200
+#define SUCCESSIVE_POPULATION_SIZE 100
+#define NUM_GENERATIONS 10
 
-int callback(int iter, int popSz, GApopulation P, double * fitnessArray, int *** parents)
+int callback(int iter,int popSz, GApopulation P, double * fitnessArray, int *** parents)
 {
 	return 0;
 }
@@ -93,13 +97,7 @@ int main()
 double fitness(GAindividual net)
 {
 	int i, N;
-	double peaks, troughs, * y, time, f, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0, dx = 0.01;
-
-	N = getNumSpecies(net);
-	
-	time = 500.0;
-
-	y = simulateNetworkODE(net,time,1);  //simulate
+	double peaks, troughs, * y, time, f, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0, dx = 1.0;
 
 	N = getNumSpecies(net);
 	
@@ -110,22 +108,83 @@ double fitness(GAindividual net)
 	f = 0;   // Calculate correlation to sine wave
 	if (y != 0)
 	{
-		if (getValue(y,(1+N),20,N) < getValue(y,(1+N),50,N) &&
-			getValue(y,(1+N),70,N) < getValue(y,(1+N),50,N))
+		peaks = 0;
+		troughs = 0;
+		for (i = 50; i < (time-3); ++i)
 		{
-			for (i=10; (i+50) < 500; i+=50)
-				if ( getValue(y,(1+N),i-10,N) < ( getValue(y,(1+N),i,N) - 1.0 ) &&
-					 getValue(y,(1+N),i+10,N) < ( getValue(y,(1+N),i,N) - 1.0 ))
-					f += (20 - getValue(y,(1+N),i,N))*(20 - getValue(y,(1+N),i,N));
-				else
-					f += 100.0;
+			if ( (getValue(y,N+1,i,1) > 0.1) &&
+				 (getValue(y,N+1,i,1) < 100.0) &&
+				 (getValue(y,N+1,i,1) > (dx + getValue(y,N+1,i-3,1))) &&
+				 (getValue(y,N+1,i,1) > (dx + getValue(y,N+1,i+3,1))) &&
+				 (getValue(y,N+1,i-3,1) < (getValue(y,N+1,i-2,1) - dx)) && 
+				 (getValue(y,N+1,i-2,1) < (getValue(y,N+1,i-1,1) - dx)) && 
+				 (getValue(y,N+1,i-1,1) < (getValue(y,N+1,i,1) - dx)) && 
+				 (getValue(y,N+1,i+1,1) < (getValue(y,N+1,i,1) - dx)) && 
+				 (getValue(y,N+1,i+2,1) < (getValue(y,N+1,i+1,1) - dx)) && 
+				 (getValue(y,N+1,i+3,1) < (getValue(y,N+1,i+2,1) - dx))
+				)
+			{
+				 //printf("%i ",i);
+				 peaks += 1.0;
+			}
+			
+			if ( (getValue(y,N+1,i,1) > 0.1) &&
+				 (getValue(y,N+1,i,1) < 100.0) &&
+				 (getValue(y,N+1,i,1) < (getValue(y,N+1,i-3,1) - dx)) &&
+				 (getValue(y,N+1,i,1) < (getValue(y,N+1,i+3,1) - dx)) &&
+				 (getValue(y,N+1,i-3,1) > (getValue(y,N+1,i-2,1) + dx)) && 
+				 (getValue(y,N+1,i-2,1) > (getValue(y,N+1,i-1,1) + dx)) && 
+				 (getValue(y,N+1,i-1,1) > (getValue(y,N+1,i,1) + dx)) && 
+				 (getValue(y,N+1,i+1,1) > (getValue(y,N+1,i,1) + dx)) && 
+				 (getValue(y,N+1,i+2,1) > (getValue(y,N+1,i+1,1) + dx)) && 
+				 (getValue(y,N+1,i+3,1) > (getValue(y,N+1,i+2,1) + dx))
+				)
+			{
+				 troughs += 1.0;
+			}
+			
+			mX += getValue(y,N+1,i,1);
+			mY += sin(i/4.0);
+			mXY += sin(i/4.0) * getValue(y,N+1,i,1);
+			mX2 += getValue(y,N+1,i,1)*getValue(y,N+1,i,1);
+			mY2 += sin(i/4.0)*sin(i/4.0);
+		}
+		
+		//if ((troughs+peaks) <= 0)
+		{
+			mXY = mX = mY = mX2 = mY2 = 0;
+			
+			for (i = 10; i < time; ++i)
+			{
+				mX += getValue(y,N+1,i,1);
+				mY += sin(i/4.0);
+				mXY += sin(i/4.0) * getValue(y,N+1,i,1);
+				mX2 += getValue(y,N+1,i,1)*getValue(y,N+1,i,1);
+				mY2 += sin(i/4.0)*sin(i/4.0);
+			}
+			mX /= (time-10);
+			mY /= (time-10);
+			mXY /= (time-10);
+			mX2 /= (time-10);
+			mY2 /= (time-10);
 
-			f = 100.0/f;
+			if (((mXY - mX*mY) < 0.01) || ((mY2 - mY*mY)) < 0.01)
+			{
+				f = 0.0;
+			}
+			else
+			{
+				f = ( (mXY - mX*mY)/(sqrt(mX2 - mX*mX)*sqrt(mY2 - mY*mY)) );   // Correlation formula
+				if (f < 0) f = -f; // Negative correlation is just as good as positive (for oscillations)
+			}
 		}
-		else
+		/*else
 		{
-			f = 0.0;
-		}
+			f = (double)troughs + (double)peaks;
+		}*/
+		
+		f += (double)troughs + (double)peaks;
+		
 		free(y);
 	}
 

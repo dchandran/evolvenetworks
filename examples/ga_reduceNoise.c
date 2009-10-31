@@ -1,17 +1,21 @@
 /****************************************************
-This file uses either one of the three network types
-included in the network evolution library to 
-evolve a network that minimizes the coefficient
-of variation at steady state
+	This file uses either one of the three network types
+	included in the network evolution library to 
+	evolve a network that minimizes the coefficient
+	of variation at steady state
 
-Build the cvode library first by compiling all the source files in cvode_src and 
-using ar *.o -o libcvode.a
-
-use the following to compile:
-
-gcc mtrand.c ga.c cvodesim.c ssa.c reactionNetwork.c ga_reduceNoise.c -lm -lcvode
-
-Uncomment one of the following pairs:
+	If you already made the libode library using CMake, then use the following
+	command to compile this file:
+	
+	gcc -I../simulation -I../GA -L../lib ga_reduceNoise.c -o evolveNoiseDamper -lode
+	
+	If you do not wish to use CMake, then you need to make the cvode library by compiling
+	everything in the cvode_src directory and making the library using ar *.o -o libcvode.a
+	
+	After building cvode use the following to compile this file:
+	
+	gcc -I../simulation -I../GA mtrand.c ga.c cvodesim.c ssa.c reactionNetwork.c ga_reduceNoise.c -lm -lcvode
+	
 ****************************************************/
 
 #include "reactionNetwork.h"

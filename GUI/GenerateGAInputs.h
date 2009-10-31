@@ -1,6 +1,8 @@
 #ifndef NETWORK_EVOLVUTION_INPUT_GUI_H
 #define NETWORK_EVOLVUTION_INPUT_GUI_H
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <QApplication>
 #include <QCoreApplication>
 #include <QWidget>

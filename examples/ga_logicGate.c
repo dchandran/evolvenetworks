@@ -3,15 +3,19 @@
 	included in the network evolution library to 
 	evolve a logic gate. Demonstrates the use of a predefined fitness function called
 	compareSteadyStates
+
+	If you already made the libode library using CMake, then use the following
+	command to compile this file:
 	
-	Build the cvode library first by compiling all the source files in cvode_src and 
-	using ar *.o -o libcvode.a
+	gcc -I../simulation -I../GA -L../lib ga_logicGate.c -o evolveXOR -lode
 	
-	use the following to compile:
+	If you do not wish to use CMake, then you need to make the cvode library by compiling
+	everything in the cvode_src directory and making the library using ar *.o -o libcvode.a
 	
-	gcc mtrand.c ga.c cvodesim.c ssa.c reactionNetwork.c ga_logicGate.c -lm -lcvode
+	After building cvode use the following to compile this file:
 	
-	Uncomment one of the following pairs:
+	gcc -I../simulation -I../GA mtrand.c ga.c cvodesim.c ssa.c reactionNetwork.c ga_logicGate.c -lm -lcvode
+
 ****************************************************/
 
 #include "reactionNetwork.h"

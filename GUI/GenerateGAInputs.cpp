@@ -21,7 +21,6 @@ int main(int argc, char *argv[])
 
     mainWindow.show();
 
-    
 	int output = app.exec();
 	
 	mainWindow.proc.terminate();
@@ -1379,34 +1378,36 @@ namespace NetworkEvolutionLib
 		
 		proc.start(compileCommand);
 		proc.waitForFinished();
-		proc.start(
-					tr("RunEvolution.exe temp.dll ")
+		QString s(tr("RunEvolution.exe temp.dll ")
 					+ tr(" ") + QString::number(generations) 
 					+ tr(" ") + QString::number(initPopSz) 
-					+ tr(" ") + QString::number(popSz) );
-		//proc.waitForFinished();
+					+ tr(" ") + QString::number(popSz));
+		/*proc.start(s);
+		proc.waitForFinished();*/
+		system(s.toAscii().data());
 		
 #else
 #ifdef Q_WS_MAC
 
 		proc.start(compileCommand);
 		proc.waitForFinished();
-		proc.start(
-					tr("./RunEvolution temp.dylib")
+		QString s(tr("./RunEvolution temp.dylib")
 					+ tr(" ") + QString::number(generations) 
 					+ tr(" ") + QString::number(initPopSz) 
-					+ tr(" ") + QString::number(popSz) );
+					+ tr(" ") + QString::number(popSz));
+		//proc.start(s);
 		//proc.waitForFinished();
-		
+		system(s.toAscii().data());
 #else
 		proc.start(compileCommand);
 		proc.waitForFinished();
-		proc.start(
-					tr("./RunEvolution temp.so ")
+		QString s(tr("./RunEvolution temp.so ")
 					+ tr(" ") + QString::number(generations) 
 					+ tr(" ") + QString::number(initPopSz) 
-					+ tr(" ") + QString::number(popSz) );
+					+ tr(" ") + QString::number(popSz));
+		proc.start(s);
 		//proc.waitForFinished();
+		system(s.toAscii().data());
 		
 #endif
 #endif
@@ -1604,12 +1605,12 @@ namespace NetworkEvolutionLib
 		max_fitness = settings.value("max_fitness",max_fitness).toDouble();
 		
 #ifdef Q_WS_WIN
-		compileCommand = tr("gcc --shared -o temp.dll -I..\\..\\GA -I..\\..\\simulation temp.c -L./ -lnetga");
+		compileCommand = tr("gcc --shared -o temp.dll -Iinclude temp.c -L./ -lnetga");
 #else
 #ifdef Q_WS_MAC
-		compileCommand = tr("gcc --shared -o temp.dylib -I../../GA -I../../simulation temp.c -L./ -lnetga");
+		compileCommand = tr("gcc --shared -o temp.dylib -Iinclude temp.c -L./ -lnetga");
 #else
-		compileCommand = tr("gcc --shared -o temp.so -I../../GA -I../../simulation temp.c -L./ -lnetga");
+		compileCommand = tr("gcc --shared -o temp.so -Iinclude temp.c -L./ -lnetga");
 #endif
 #endif
 		
