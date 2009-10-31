@@ -52,7 +52,7 @@ double fitness(GAindividual p);
 
 #define INITIAL_POPULATION_SIZE 200
 #define SUCCESSIVE_POPULATION_SIZE 100
-#define NUM_GENERATIONS 10
+#define NUM_GENERATIONS 30
 
 int callback(int iter,int popSz, GApopulation P, double * fitnessArray, int *** parents)
 {
@@ -101,7 +101,7 @@ double fitness(GAindividual net)
 
 	N = getNumSpecies(net);
 	
-	time = 500.0;
+	time = 100.0;
 
 	y = simulateNetworkODE(net,time,1);  //simulate
 
@@ -110,44 +110,46 @@ double fitness(GAindividual net)
 	{
 		peaks = 0;
 		troughs = 0;
-		for (i = 50; i < (time-3); ++i)
+		for (i = 0; i < (time-3); ++i)
 		{
-			if ( (getValue(y,N+1,i,1) > 0.1) &&
-				 (getValue(y,N+1,i,1) < 100.0) &&
-				 (getValue(y,N+1,i,1) > (dx + getValue(y,N+1,i-3,1))) &&
-				 (getValue(y,N+1,i,1) > (dx + getValue(y,N+1,i+3,1))) &&
-				 (getValue(y,N+1,i-3,1) < (getValue(y,N+1,i-2,1) - dx)) && 
-				 (getValue(y,N+1,i-2,1) < (getValue(y,N+1,i-1,1) - dx)) && 
-				 (getValue(y,N+1,i-1,1) < (getValue(y,N+1,i,1) - dx)) && 
-				 (getValue(y,N+1,i+1,1) < (getValue(y,N+1,i,1) - dx)) && 
-				 (getValue(y,N+1,i+2,1) < (getValue(y,N+1,i+1,1) - dx)) && 
-				 (getValue(y,N+1,i+3,1) < (getValue(y,N+1,i+2,1) - dx))
-				)
+			if (i > time/2)
 			{
-				 //printf("%i ",i);
-				 peaks += 1.0;
+				if ( (getValue(y,N+1,i,1) > 0.1) &&
+					 (getValue(y,N+1,i,1) < 100.0) &&
+					 (getValue(y,N+1,i,1) > (dx + getValue(y,N+1,i-3,1))) &&
+					 (getValue(y,N+1,i,1) > (dx + getValue(y,N+1,i+3,1))) &&
+					 (getValue(y,N+1,i-3,1) < (getValue(y,N+1,i-2,1) - dx)) && 
+					 (getValue(y,N+1,i-2,1) < (getValue(y,N+1,i-1,1) - dx)) && 
+					 (getValue(y,N+1,i-1,1) < (getValue(y,N+1,i,1) - dx)) && 
+					 (getValue(y,N+1,i+1,1) < (getValue(y,N+1,i,1) - dx)) && 
+					 (getValue(y,N+1,i+2,1) < (getValue(y,N+1,i+1,1) - dx)) && 
+					 (getValue(y,N+1,i+3,1) < (getValue(y,N+1,i+2,1) - dx))
+					)
+				{
+					 //printf("%i ",i);
+					 peaks += 0.1;
+				}
+				
+				if ( (getValue(y,N+1,i,1) > 0.1) &&
+					 (getValue(y,N+1,i,1) < 100.0) &&
+					 (getValue(y,N+1,i,1) < (getValue(y,N+1,i-3,1) - dx)) &&
+					 (getValue(y,N+1,i,1) < (getValue(y,N+1,i+3,1) - dx)) &&
+					 (getValue(y,N+1,i-3,1) > (getValue(y,N+1,i-2,1) + dx)) && 
+					 (getValue(y,N+1,i-2,1) > (getValue(y,N+1,i-1,1) + dx)) && 
+					 (getValue(y,N+1,i-1,1) > (getValue(y,N+1,i,1) + dx)) && 
+					 (getValue(y,N+1,i+1,1) > (getValue(y,N+1,i,1) + dx)) && 
+					 (getValue(y,N+1,i+2,1) > (getValue(y,N+1,i+1,1) + dx)) && 
+					 (getValue(y,N+1,i+3,1) > (getValue(y,N+1,i+2,1) + dx))
+					)
+				{
+					 troughs += 0.1;
+				}
 			}
-			
-			if ( (getValue(y,N+1,i,1) > 0.1) &&
-				 (getValue(y,N+1,i,1) < 100.0) &&
-				 (getValue(y,N+1,i,1) < (getValue(y,N+1,i-3,1) - dx)) &&
-				 (getValue(y,N+1,i,1) < (getValue(y,N+1,i+3,1) - dx)) &&
-				 (getValue(y,N+1,i-3,1) > (getValue(y,N+1,i-2,1) + dx)) && 
-				 (getValue(y,N+1,i-2,1) > (getValue(y,N+1,i-1,1) + dx)) && 
-				 (getValue(y,N+1,i-1,1) > (getValue(y,N+1,i,1) + dx)) && 
-				 (getValue(y,N+1,i+1,1) > (getValue(y,N+1,i,1) + dx)) && 
-				 (getValue(y,N+1,i+2,1) > (getValue(y,N+1,i+1,1) + dx)) && 
-				 (getValue(y,N+1,i+3,1) > (getValue(y,N+1,i+2,1) + dx))
-				)
-			{
-				 troughs += 1.0;
-			}
-			
 			mX += getValue(y,N+1,i,1);
-			mY += sin(i/4.0);
-			mXY += sin(i/4.0) * getValue(y,N+1,i,1);
+			mY += sin(i/2.0);
+			mXY += sin(i/2.0) * getValue(y,N+1,i,1);
 			mX2 += getValue(y,N+1,i,1)*getValue(y,N+1,i,1);
-			mY2 += sin(i/4.0)*sin(i/4.0);
+			mY2 += sin(i/2.0)*sin(i/2.0);
 		}
 		
 		//if ((troughs+peaks) <= 0)
