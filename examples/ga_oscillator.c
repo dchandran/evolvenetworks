@@ -146,10 +146,10 @@ double fitness(GAindividual net)
 				}
 			}
 			mX += getValue(y,N+1,i,1);
-			mY += sin(i/2.0);
-			mXY += sin(i/2.0) * getValue(y,N+1,i,1);
+			mY += sin(i/5.0);
+			mXY += sin(i/5.0) * getValue(y,N+1,i,1);
 			mX2 += getValue(y,N+1,i,1)*getValue(y,N+1,i,1);
-			mY2 += sin(i/2.0)*sin(i/2.0);
+			mY2 += sin(i/5.0)*sin(i/5.0);
 		}
 		
 		//if ((troughs+peaks) <= 0)
