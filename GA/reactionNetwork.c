@@ -540,10 +540,10 @@ double* getStoichiometryMatrix(GAindividual individual)
 	
 	for (i=0; i < n; ++i)
 	{
-		if (r->fixed[i] == 0)
+		if (r->fixed[i] == 1)
 		{
-			for (j=0; j < m; ++j)			
-				getValue(N,m,i,j) = 0.0;			
+			for (j=0; j < m; ++j)	
+				getValue(N,m,i,j) = 0.0;
 		}
 	}
 	
@@ -584,7 +584,7 @@ GAindividual mutateNetwork(GAindividual p)
 			for (i=n0; i < n1; ++i)
 			{
 				r->initialValues[i] = AVG_INIT_VALUES * mtrand();
-				r->fixed = 0;
+				r->fixed[i] = 0;
 			}
 			free(iv);
 		}
@@ -1105,7 +1105,7 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 	n = getNumSpecies(r);
 	
 	if (n < cols) return 0.0; // not enough species
-	
+
 	for (i=0; i < inputs; ++i)
 	{
 		setFixed(r,i,1);
@@ -1147,7 +1147,7 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 			if (res)
 			{
 				for (i=0; i < inputs; ++i)
-					res[m][i] = table[m][i];
+					res[m][i] = ss[i];
 			}
 			for (i=0; i < outputs; ++i) //for each target output
 			{
@@ -1173,7 +1173,7 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 					}
 				}
 				
-				j = i;//best[i];
+				j = i+inputs;
 
 				if (res)
 				{
@@ -1227,22 +1227,20 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 		b = mX2[i] - mX[i]*mX[i];
 		c = mY2[i] - mY[i]*mY[i];
 
-		if (b > 1.0 && c > 1.0)
+		if (a > 1.0 && b > 1.0 && c > 1.0)
 		{
-
-			temp = ( a/
-					( sqrt(b)*sqrt(c)) );   //correlation formula
-			
-			if (temp > 0.8)
-			{
-				temp += 0.0;
-			}
-			corrcoef += (1.0 + temp)/2.0; //between 0 and 1, instead of -1 and 1
+			temp =  a/( sqrt(b)*sqrt(c));   //correlation formula
+			corrcoef = temp*temp; //between 0 and 1
 		}
 		else
 		{
 			corrcoef = 0.0;
 			sumOfSq = 0.0;
+		}
+
+		if (corrcoef > 0.9)
+		{
+			temp = temp + 0.0;
 		}
 	}
 

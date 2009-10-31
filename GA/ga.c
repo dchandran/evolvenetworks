@@ -159,6 +159,7 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 	int i,k,best,k2;
 	void * x1 = NULL, * x2 = NULL;
 	double totalFitness;
+	double temp;
 	GApopulation nextGApopulation;
 
 	//allocate memory for next generation
@@ -178,7 +179,6 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 
 	for (i = 0; i < oldPopSz; ++i)
 	{
-		fitnessArray[i] = fitness(currentGApopulation[i]);
 		if (fitnessArray[i] < 0) fitnessArray[i] = 0;   //negative fitness not allowed
 
 		totalFitness += fitnessArray[i];
@@ -212,7 +212,7 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 		
 		if (crossover != NULL) 
 		{
-			double temp = fitnessArray[k];
+			temp = fitnessArray[k];
 			fitnessArray[k] = 0;   //this is to prevent self-self crossover
 			k2 = selection(currentGApopulation,fitnessArray,totalFitness,oldPopSz);
 			fitnessArray[k] = temp;
@@ -328,14 +328,28 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 		}
 	}
 	
+	for (j=0; j < initPopSz; ++j)
+		if (population[j])
+			fitnessScores[j] = fitness(population[j]);
+
 	i = 0;
+
 	while (stop == 0) //keep going until max iterations or until callback function signals a stop
 	{
 		if (i == 0)  //initial population
+		{
 			population = GAnextGen(i, population, initPopSz, popSz, 0, fitnessScores, parents);
+			free(fitnessScores);
+			fitnessScores = (double*)malloc(popSz*sizeof(double));
+		}
 		else        //successive populations
+		{
 			population = GAnextGen(i, population, popSz, popSz, 0, fitnessScores, parents);
-		
+		}
+		for (j=0; j < popSz; ++j)
+			if (population[j])
+				fitnessScores[j] = fitness(population[j]);
+
 		GAsort(population,fitnessScores,parents[i],popSz);  //sort by fitness (Quicksort)
 
 		if (callback != NULL)
@@ -421,7 +435,8 @@ static int partition(double* a, int left, int right, GApopulation population, in
 {
 	int i = left - 1;
 	int j = right;
-	while (1) {
+	while (1) 
+	{
 		while (less(a[++i], a[right]))      // find item on left to swap
 			;                               // a[right] acts as sentinel
 		while (less(a[right], a[--j]))      // find item on right to swap

@@ -33,11 +33,11 @@ int main()
 	double *iv;
 	GApopulation pop;
 	GAindividual * best;
-	double ** table, ** table2;
+	double ** table, ** table2, f;
 
 	GAlineageTrackingON();
 	setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
-	setNetworkSize(2,20,3,20);  //network size
+	setNetworkSize(2,6,2,8);  //network size
 
 	printf ("Logic Gate Evolution\n\n");
 
@@ -65,7 +65,9 @@ int main()
 	num_inputs = 2;
 	num_outputs = 1;
 	
-	compareSteadyStates(best, table, num_rows, num_inputs, num_outputs, 1, table2);
+	f = compareSteadyStates(best, table, num_rows, num_inputs, num_outputs, 1, table2);
+
+	printf("\n%lf\n",f);
 
 	//free table
 	for (i=0; i < 4; ++i)
@@ -123,13 +125,13 @@ double fitness(GAindividual p)
 int callback(int iter,int popSz,GApopulation pop,double * fitnessArray, int *** parents)
 {
 	double f = fitnessArray[0];
-	
-	if (f >= 0.9)
+
+	if (f > 0.9)
 	{
 		fitness(pop[0]);
-		return 1;  //stop if good enough
+		return 1;
 	}
-	return 0;
+	return (int)(f > 0.9);
 }
 
 double** XORtable() //make XOR table
