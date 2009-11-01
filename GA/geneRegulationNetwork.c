@@ -305,7 +305,7 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 		return (GAindividual)(net);
 	}
 	else
-	if (r < (MUTATE_KA+MUTATE_PRODUCTION+MUTATE_COMPLEX))
+	if (r < (MUTATE_KA+MUTATE_PRODUCTION+MUTATE_COMPLEX) || (MAX_NUM_GENES <= net->species && MIN_NUM_GENES >= (net->species-1)))
 	{
 		i = (int)(mtrand() * n);
 		j = (int)(mtrand() * net->complexes[i].size);
@@ -313,7 +313,7 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 		return (GAindividual)(net);
 	}
 	else
-	if (r < (MUTATE_KA+MUTATE_PRODUCTION+MUTATE_COMPLEX+ADD_GENE))
+	if (r < (MUTATE_KA+MUTATE_PRODUCTION+MUTATE_COMPLEX+ADD_GENE) && MAX_NUM_GENES <= net->species)
 	{
 		++m;
 		complexes = net->complexes;
@@ -366,7 +366,7 @@ GAindividual mutateGeneRegulationNetwork(GAindividual individual)
 		return (GAindividual)(net);
 	}
 	else 
-	if (m > 2) //remove gene
+	if (m > 2 && MIN_NUM_GENES < net->species) //remove gene
 	{	
 		int t = 0, j1 = 0;
 		

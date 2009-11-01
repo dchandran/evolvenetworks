@@ -94,7 +94,7 @@ GASelectionFnc GAgetSelectionFunction()
 * \param number of individual
 * \ingroup ga
 */
-int GArouletteWheelSelection(GApopulation population, double * fitnessValues, double sumOfFitness, int popSz)
+int GArouletteWheelSelection(GApopulation population, double * fitnessValues, double sumOfFitness, int popSz, int k)
 {
 	int i;
 	double randNum = mtrand() * sumOfFitness, 
@@ -113,7 +113,7 @@ int GArouletteWheelSelection(GApopulation population, double * fitnessValues, do
 * \param number of individual
 * \ingroup ga
 */
-int GAtournamentSelection(GApopulation population, double * fitnessValues, double sumOfFitness, int popSz)
+int GAtournamentSelection(GApopulation population, double * fitnessValues, double sumOfFitness, int popSz, int n)
 {
 	int i = (int)(mtrand() * popSz);
 	int j = (int)(mtrand() * popSz);
@@ -129,6 +129,7 @@ int GAtournamentSelection(GApopulation population, double * fitnessValues, doubl
 	//fitnessValues[k] = 0;   //do not pick this individual again?
 	return (k);
 }
+double _SELECTION_PARAMETER = 0.1;
 /*! \brief Selects the individual with highest fitness
 * \param array of individuals
 * \param array of corresponding fitness values
@@ -136,15 +137,35 @@ int GAtournamentSelection(GApopulation population, double * fitnessValues, doubl
 * \param number of individual
 * \ingroup ga
 */
-int GAeliteSelection(GApopulation population, double * fitnessValues, double sumOfFitness, int popSz)
+int GAeliteSelection(GApopulation population, double * fitnessValues, double sumOfFitness, int popSz, int k)
 {
-	int i, best = 0;
-	for (i=0; i < popSz; ++i)
-		if (fitnessValues[i] > fitnessValues[best])
-			best = i;
-	fitnessValues[best] = 0;
-	return (best);
+	double p = (double)k/(double)popSz;
+	return (int)(p * (double)popSz * _SELECTION_PARAMETER);
 }
+/*! \brief Selects an individual at random, with probability of selection based on a hyperbolic CDF of rank
+ * \param GApopulation array of individuals
+ * \param GApopulation array of corresponding fitness values
+ * \param double sum of all fitness values
+ * \param int number of individual
+ * \ingroup ga
+*/
+int GAhyperbolicSelection(GApopulation population, double * fitnessValues, double sumOfFitness, int popSz, int k)
+{
+	double u = mtrand(), 
+			b = _SELECTION_PARAMETER * (double)popSz, a;
+	
+	a = (b+popSz)/popSz;
+	return (int)( b*u/(a-u) );
+}
+/*! \brief set steepness parameter for the hyperbolic CDF based selection function
+ * \param double steepness of the hyperbola. must be [0,1] lower number = more steep
+ * \ingroup ga
+*/
+void GAsetParameterForSelection( double p )
+{ 
+	_SELECTION_PARAMETER = p; 
+}
+
 /*
 * Get next population from current population
 * \param: array of individuals
@@ -200,7 +221,7 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 	x2 = NULL;
 	for (i = 1; i < newPopSz; ++i)
 	{
-		k = selection(currentGApopulation,fitnessArray,totalFitness,oldPopSz);
+		k = selection(currentGApopulation,fitnessArray,totalFitness,oldPopSz,i);
 
 		x1 = currentGApopulation[k];
 		
@@ -214,7 +235,7 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 		{
 			temp = fitnessArray[k];
 			fitnessArray[k] = 0;   //this is to prevent self-self crossover
-			k2 = selection(currentGApopulation,fitnessArray,totalFitness,oldPopSz);
+			k2 = selection(currentGApopulation,fitnessArray,totalFitness,oldPopSz,i);
 			fitnessArray[k] = temp;
 			x2 = currentGApopulation[k2];
 			x1 = crossover(x1,x2);
@@ -278,7 +299,7 @@ void GAinit(GADeleteFnc deleteGAindividualPtr,
 	crossover = crossoverPtr;
 	mutate = mutatePtr;
 	if (selectionPtr == 0)
-		selection = &(GArouletteWheelSelection);
+		selection = &GAhyperbolicSelection;//&GArouletteWheelSelection;
 	else
 		selection = selectionPtr;
 	callback = callbackPtr;
@@ -331,7 +352,7 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 	for (j=0; j < initPopSz; ++j)
 		if (population[j])
 			fitnessScores[j] = fitness(population[j]);
-
+	GAsort(population,fitnessScores,0,initPopSz);
 	i = 0;
 
 	while (stop == 0) //keep going until max iterations or until callback function signals a stop
@@ -421,13 +442,18 @@ static void exch(double* a, int i, int j, GApopulation population, int ** parent
 	a[i] = a[j];
 	a[j] = swap;
 
-	temp = population[i];
-	population[i] = population[j];
-	population[j] = temp;
-	
-	p = parents[i];
-	parents[i] = parents[j];
-	parents[j] = p;
+	if (population)
+	{
+		temp = population[i];
+		population[i] = population[j];
+		population[j] = temp;
+	}
+	if (parents)
+	{
+		p = parents[i];
+		parents[i] = parents[j];
+		parents[j] = p;
+	}
 }
 
 // partition a[left] to a[right], assumes left < right

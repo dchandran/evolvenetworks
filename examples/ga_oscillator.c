@@ -23,9 +23,9 @@
 
 void init()
 {
-    setNetworkTypeProbability(0,1);
+    setNetworkTypeProbability(0,0);
     setNetworkTypeProbability(1,0);
-    setNetworkTypeProbability(2,0);
+    setNetworkTypeProbability(2,1);
     setNetworkTypeProbability(3,0);
 	setDistributionOfMassActionNetwork(0.2,0.2,0.2,0.2,0.2,0.2);
     setRateConstantForMassActionNetwork(0.01,100);
@@ -37,8 +37,8 @@ void init()
     setResourceRestriction(0,0);
     setRateConstantsForGeneRegulationNetwork(1,4,0.001,100,0.1,20,0.1,10);
     setMutationRatesForGeneRegulationNetwork(0.2,0.2,0.2,0.2,0.2);
-    setNetworkSize(4,12,5,24);
-    setCrossoverRate(1.0);
+    setNetworkSize(3,6,2,10);
+    setCrossoverRate(0.5);
     setAverageInitialValue(1.0);
     setMutationRateOfInitialValues(0.05);
     configureContinuousLog(1,0,1,0,0,1);
@@ -50,13 +50,13 @@ void init()
 /* Fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(GAindividual p);
 
-#define INITIAL_POPULATION_SIZE 200
-#define SUCCESSIVE_POPULATION_SIZE 100
-#define NUM_GENERATIONS 30
+#define INITIAL_POPULATION_SIZE 1000
+#define SUCCESSIVE_POPULATION_SIZE 200
+#define NUM_GENERATIONS 80
 
 int callback(int iter,int popSz, GApopulation P, double * fitnessArray, int *** parents)
 {
-	return 0;
+	return (fitnessArray[0] > 0.45);
 }
 
 /* main */
@@ -96,97 +96,46 @@ int main()
 /* Fitness function that tests for oscillations by counting the number of peaks*/
 double fitness(GAindividual net)
 {
-	int i, N;
-	double peaks, troughs, * y, time, f, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0, dx = 1.0;
+	int i, N, n;
+	double x, * y, time, f, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0, dx = 0.01;
 
 	N = getNumSpecies(net);
 	
-	time = 100.0;
+	time = 500.0;
 
 	y = simulateNetworkODE(net,time,1);  //simulate
 
 	f = 0;   // Calculate correlation to sine wave
 	if (y != 0)
 	{
-		peaks = 0;
-		troughs = 0;
-		for (i = 0; i < (time-3); ++i)
+		n = 0;
+		mXY = mX = mY = mX2 = mY2 = 0;
+		for (i = 0; i < (time); ++i)
 		{
-			if (i > time/2)
-			{
-				if ( (getValue(y,N+1,i,1) > 0.1) &&
-					 (getValue(y,N+1,i,1) < 100.0) &&
-					 (getValue(y,N+1,i,1) > (dx + getValue(y,N+1,i-3,1))) &&
-					 (getValue(y,N+1,i,1) > (dx + getValue(y,N+1,i+3,1))) &&
-					 (getValue(y,N+1,i-3,1) < (getValue(y,N+1,i-2,1) - dx)) && 
-					 (getValue(y,N+1,i-2,1) < (getValue(y,N+1,i-1,1) - dx)) && 
-					 (getValue(y,N+1,i-1,1) < (getValue(y,N+1,i,1) - dx)) && 
-					 (getValue(y,N+1,i+1,1) < (getValue(y,N+1,i,1) - dx)) && 
-					 (getValue(y,N+1,i+2,1) < (getValue(y,N+1,i+1,1) - dx)) && 
-					 (getValue(y,N+1,i+3,1) < (getValue(y,N+1,i+2,1) - dx))
-					)
-				{
-					 //printf("%i ",i);
-					 peaks += 0.1;
-				}
-				
-				if ( (getValue(y,N+1,i,1) > 0.1) &&
-					 (getValue(y,N+1,i,1) < 100.0) &&
-					 (getValue(y,N+1,i,1) < (getValue(y,N+1,i-3,1) - dx)) &&
-					 (getValue(y,N+1,i,1) < (getValue(y,N+1,i+3,1) - dx)) &&
-					 (getValue(y,N+1,i-3,1) > (getValue(y,N+1,i-2,1) + dx)) && 
-					 (getValue(y,N+1,i-2,1) > (getValue(y,N+1,i-1,1) + dx)) && 
-					 (getValue(y,N+1,i-1,1) > (getValue(y,N+1,i,1) + dx)) && 
-					 (getValue(y,N+1,i+1,1) > (getValue(y,N+1,i,1) + dx)) && 
-					 (getValue(y,N+1,i+2,1) > (getValue(y,N+1,i+1,1) + dx)) && 
-					 (getValue(y,N+1,i+3,1) > (getValue(y,N+1,i+2,1) + dx))
-					)
-				{
-					 troughs += 0.1;
-				}
-			}
+			x = sin((double)i/4.0) > 0;
 			mX += getValue(y,N+1,i,1);
-			mY += sin(i/5.0);
-			mXY += sin(i/5.0) * getValue(y,N+1,i,1);
+			mY += x;
+			mXY += x * getValue(y,N+1,i,1);
 			mX2 += getValue(y,N+1,i,1)*getValue(y,N+1,i,1);
-			mY2 += sin(i/5.0)*sin(i/5.0);
+			mY2 += x*x;
+			++n;
 		}
 		
-		//if ((troughs+peaks) <= 0)
-		{
-			mXY = mX = mY = mX2 = mY2 = 0;
-			
-			for (i = 10; i < time; ++i)
-			{
-				mX += getValue(y,N+1,i,1);
-				mY += sin(i/4.0);
-				mXY += sin(i/4.0) * getValue(y,N+1,i,1);
-				mX2 += getValue(y,N+1,i,1)*getValue(y,N+1,i,1);
-				mY2 += sin(i/4.0)*sin(i/4.0);
-			}
-			mX /= (time-10);
-			mY /= (time-10);
-			mXY /= (time-10);
-			mX2 /= (time-10);
-			mY2 /= (time-10);
+		mX /= (double)(n);
+		mY /= (double)(n);
+		mXY /= (double)(n);
+		mX2 /= (double)(n);
+		mY2 /= (double)(n);
 
-			if (((mXY - mX*mY) < 0.01) || ((mY2 - mY*mY)) < 0.01)
-			{
-				f = 0.0;
-			}
-			else
-			{
-				f = ( (mXY - mX*mY)/(sqrt(mX2 - mX*mX)*sqrt(mY2 - mY*mY)) );   // Correlation formula
-				if (f < 0) f = -f; // Negative correlation is just as good as positive (for oscillations)
-			}
-		}
-		/*else
+		if (((mX2 - mX*mX)) < 0.0001)
 		{
-			f = (double)troughs + (double)peaks;
-		}*/
-		
-		f += (double)troughs + (double)peaks;
-		
+			f = 0.0;
+		}
+		else
+		{
+			f = ( (mXY - mX*mY)/(sqrt(mX2 - mX*mX)*sqrt(mY2 - mY*mY)) );   // Correlation formula
+			if (f < 0) f = -f; // Negative correlation is just as good as positive (for oscillations)
+		}
 		free(y);
 	}
 

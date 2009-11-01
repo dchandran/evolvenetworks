@@ -263,7 +263,7 @@ GApopulation randomNetworks(int sz0)
 	if (total < sz0)
 	{
 		k = sz0 - total;
-		P0 = randomProteinInteractionNetworks(r);
+		P0 = randomProteinInteractionNetworks(k);
 		for (i=0; i < k; ++i)
 		{
 			rnet = (ReactionNetwork*) malloc(sizeof(ReactionNetwork));
@@ -278,7 +278,7 @@ GApopulation randomNetworks(int sz0)
 				rnet->initialValues[j] = AVG_INIT_VALUES * mtrand();
 				rnet->fixed[j] = 0;
 			}
-
+			
 			//rnet->id = i+total;
 			P[i+total] = rnet;
 		}
@@ -491,12 +491,15 @@ int getNumSpecies(GAindividual individual)
 {
 	ReactionNetwork * r = (ReactionNetwork*)individual;
 	GetNumSpeciesFunction f;
+	int n;
 	
 	if (!r || (r->type < 0) || (r->type > NUMBER_OF_NETWORK_TYPES)) return 0;
 	
 	f = getNumSpeciesFunctions[r->type];
 	
-	return (f(r->network));
+	n = f(r->network);
+	
+	return (n);
 }
 
 int getNumReactions(GAindividual individual)

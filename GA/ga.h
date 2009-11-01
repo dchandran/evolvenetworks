@@ -104,10 +104,11 @@ typedef GAindividual (*GAMutateFnc)(GAindividual);
  * \param GApopulation array of fitness values for the individuals
  * \param double total fitness (sum of all fitness values)
  * \param int number of individuals in the population
+ * \param int index of the current population where this new individual will be placed
  * \return int index (in population vector) of the individual to select
  * \ingroup ga
 */
-typedef int(*GASelectionFnc)(GApopulation , double * , double , int );
+typedef int(*GASelectionFnc)(GApopulation , double * , double , int , int);
 /*! \brief
  * Callback function. If not null, then this function is called during each iteration of the GA. 
  * This function can be used to terminate the GA at any step
@@ -162,7 +163,7 @@ GApopulation GArun(GApopulation,int sz0,int sz1,int maxIter);
  * \param int number of individual
  * \ingroup ga
 */
-int GArouletteWheelSelection(GApopulation , double * , double , int );
+int GArouletteWheelSelection(GApopulation , double * , double , int , int );
 /*! \brief Selects the best of two random individuals
  * \param GApopulation array of individuals
  * \param GApopulation array of corresponding fitness values
@@ -170,7 +171,7 @@ int GArouletteWheelSelection(GApopulation , double * , double , int );
  * \param int number of individual
  * \ingroup ga
 */
-int GAtournamentSelection(GApopulation , double * , double , int );
+int GAtournamentSelection(GApopulation , double * , double , int , int );
 /*! \brief Selects the individual with highest fitness
  * \param GApopulation array of individuals
  * \param GApopulation array of corresponding fitness values
@@ -178,7 +179,20 @@ int GAtournamentSelection(GApopulation , double * , double , int );
  * \param int number of individual
  * \ingroup ga
 */
-int GAeliteSelection(GApopulation , double * , double , int );
+int GAeliteSelection(GApopulation , double * , double , int , int );
+/*! \brief Selects an individual at random, with probability of selection based on a hyperbolic CDF of rank
+ * \param GApopulation array of individuals
+ * \param GApopulation array of corresponding fitness values
+ * \param double sum of all fitness values
+ * \param int number of individual
+ * \ingroup ga
+*/
+int GAhyperbolicSelection(GApopulation , double * , double , int , int );
+/*! \brief set steepness parameter for the hyperbolic CDF based selection function and the strictness for the elitism selection.
+ * \param double must be beteen 0 and 1. lower number = more steep/ more stringent
+ * \ingroup ga
+*/
+void GAsetParameterForSelection( double );
 
 /*! \}
   \name Convenience functions -- substitute for GAinit
