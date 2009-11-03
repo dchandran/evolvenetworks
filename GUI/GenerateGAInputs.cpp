@@ -1396,7 +1396,10 @@ namespace NetworkEvolutionLib
 		
 		proc.start(compileCommand);
 		proc.waitForFinished();
-		QString s(tr("RunEvolution.exe temp.dll ")
+		
+		appDir.replace(tr("/"), tr("\\"));
+		appDir = tr("\"") + appDir + tr("\"\\");
+		QString s(appDir + tr("RunEvolution.exe temp.dll")
 					+ tr(" ") + QString::number(generations) 
 					+ tr(" ") + QString::number(initPopSz) 
 					+ tr(" ") + QString::number(popSz));
@@ -1419,7 +1422,7 @@ namespace NetworkEvolutionLib
 #else
 		proc.start(compileCommand);
 		proc.waitForFinished();
-		QString s(tr("./RunEvolution temp.so ")
+		QString s(tr("./RunEvolution temp.so")
 					+ tr(" ") + QString::number(generations) 
 					+ tr(" ") + QString::number(initPopSz) 
 					+ tr(" ") + QString::number(popSz));

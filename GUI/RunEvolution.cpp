@@ -138,16 +138,18 @@ namespace NetworkEvolutionLib
 		
 		if (index < 0 || index >= nextGen.size()) return;
 		
-		if (!(parent1 >= 0 && parent1 < previousGen.size()) &&
-			!((parent2 >= 0 && parent2 < previousGen.size())))
+		QColor color((int)(255 * fitness/max), (int)((1.0-fitness/max)*255), 0);
+		
+		if ( iteration == 0 )
 		{
-			QGraphicsRectItem * rectItem = new QGraphicsRectItem(1000.0 * mtrand(), 1000.0 * mtrand(), w, h);
-			rectItem->setBrush(QBrush(QColor((int)(255 * fitness/max),10,(int)((1.0-fitness/max)*255))));
+			double x = 1000.0 * mtrand(), y = 1000.0 * mtrand();
+			QGraphicsRectItem * rectItem = new QGraphicsRectItem(x, y, w, h);
+			rectItem->setBrush(QBrush(color));
 			rectItem->setPen(QPen(QColor(100,255,100)));
 			scene->addItem(rectItem);
 			rectItem->setToolTip(QString::number(fitness));
 			
-			nextGen[index] = rectItem->scenePos();
+			nextGen[index] = QPointF(x,y);
 			return;
 		}
 		
@@ -156,12 +158,12 @@ namespace NetworkEvolutionLib
 			double x = previousGen[parent1].x() + 3.0 * w * cos(2 * 3.14159 * mtrand()), 
 				   y = previousGen[parent1].y() + 3.0 * h * sin(2 * 3.14159 * mtrand());
 			QGraphicsRectItem * rectItem = new QGraphicsRectItem(x,y, w, h);
-			rectItem->setBrush(QBrush(QColor((int)(255 * fitness/max),10,(int)((1.0-fitness/max)*255))));
+			rectItem->setBrush(QBrush(color));
 			rectItem->setPen(QPen(QColor(100,255,100)));
 			scene->addItem(rectItem);
 			rectItem->setToolTip(QString::number(fitness));
 			
-			nextGen[index] = rectItem->scenePos();
+			nextGen[index] = QPointF(x,y);
 		}
 		
 		if (parent2 >= 0 && parent2 < previousGen.size())
@@ -169,12 +171,12 @@ namespace NetworkEvolutionLib
 			double x = previousGen[parent2].x() + 3.0 * w * cos(2 * 3.14159 * mtrand()), 
 				   y = previousGen[parent2].y() + 3.0 * h * sin(2 * 3.14159 * mtrand());
 			QGraphicsRectItem * rectItem = new QGraphicsRectItem(x,y, w, h);
-			rectItem->setBrush(QBrush(QColor((int)(255 * fitness/max),10,(int)((1.0-fitness/max)*255))));
+			rectItem->setBrush(QBrush(color));
 			rectItem->setPen(QPen(QColor(100,255,100)));
 			scene->addItem(rectItem);
 			rectItem->setToolTip(QString::number(fitness));
 			
-			nextGen[index] = rectItem->scenePos();
+			nextGen[index] = QPointF(x,y);
 		}
 	}
 	
@@ -182,14 +184,17 @@ namespace NetworkEvolutionLib
 	{
 		double max = scores[0];
 		
-		previousGen = nextGen;
-		
 		nextGen.clear();
 		
 		for (int i=0; i < popSz; ++i)
-			nextGen << QPointF();
+			nextGen << QPointF(1000.0 * mtrand(), 1000.0 * mtrand());
 		
-		for (int i=0; i < popSz/4.0; ++i)
+		int sz = popSz/2;
+		
+		if (iter > 0)
+			sz = popSz/4;
+		
+		for (int i=0; i < sz; ++i)
 		{
 			int * p = getImmediateParents(i,iter, parents);
 			if (p && p[0])
@@ -204,9 +209,10 @@ namespace NetworkEvolutionLib
 			{
 				delete p;
 			}
-			
-			//if (iter == 0 && i >= pop) break;
 		}
+		
+		previousGen = nextGen;
+		
 		if (semaphore)
 			semaphore->release();
 	}
