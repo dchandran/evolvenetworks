@@ -60,10 +60,9 @@ namespace NetworkEvolutionLib
 		
 	private:
 		
-		void insertTextItem(double, int, int, int, int);
+		void insertTextItem(double, double, int, int, int, int);
 		QGraphicsScene * scene;
-		QList<QGraphicsItem*> previousLine;
-		
+		QList<QPointF> previousGen, nextGen;
 	};
 	
 	class Thread : public QThread

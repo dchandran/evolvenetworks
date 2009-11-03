@@ -146,7 +146,7 @@ ADD_LIBRARY( ga
 #---------------------------------------------------------------------------
 
 ADD_LIBRARY( netga
-  STATIC
+  SHARED
   ${NETWORKEVOLUTION_SOURCE_DIR}/GA/massActionNetwork.c
   ${NETWORKEVOLUTION_SOURCE_DIR}/GA/proteinInteractionNetwork.c
   ${NETWORKEVOLUTION_SOURCE_DIR}/GA/enzymeNetwork.c

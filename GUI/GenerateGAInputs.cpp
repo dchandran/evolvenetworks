@@ -34,6 +34,11 @@ namespace NetworkEvolutionLib
 	{
 		reset();
 		
+		selectionFunctions 	<< "GArouletteWheelSelection"
+							<< "GAtournamentSelection"
+							<< "GAeliteSelection"
+							<< "GAhyperbolicSelection";
+
 		QSplitter * twoCols = new QSplitter;
 		twoCols->setOrientation ( Qt::Horizontal );
 		
@@ -247,6 +252,7 @@ namespace NetworkEvolutionLib
 		settings.setValue("seeds2",seeds2);
 		
 		settings.setValue("max_fitness",max_fitness);
+		settings.setValue("selectionFunction",selectionFunction);
 		
 		settings.endGroup();
 	}
@@ -985,7 +991,7 @@ namespace NetworkEvolutionLib
 		treeWidget->setItemWidget(log,1,lineEdit = new QLineEdit(logFile));
 		connect(lineEdit,SIGNAL(textEdited (const QString &)),this,SLOT(setLogFile(const QString&)));
 		
-		QTreeWidgetItem * runs = new QTreeWidgetItem;
+		/*QTreeWidgetItem * runs = new QTreeWidgetItem;
 		runs->setText(0,"Runs");
 		runs->setToolTip(0,"The number of times to repeat the evolution experiment. Each result will be different, unless the same seed is used");
 		treeWidget->addTopLevelItem(runs);
@@ -993,7 +999,7 @@ namespace NetworkEvolutionLib
 		intSpinBox->setRange(1,1000000);
 		intSpinBox->setSingleStep(1);
 		intSpinBox->setValue(this->runs);
-		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(setRuns(int)));
+		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(setRuns(int)));*/
 		
 		QTreeWidgetItem * popSz = new QTreeWidgetItem;
 		popSz->setText(0,"Population Size");
@@ -1025,6 +1031,7 @@ namespace NetworkEvolutionLib
 		connect(intSpinBox,SIGNAL(valueChanged(int)),this,SLOT(setGenerations(int)));
 		intSpinBox->setValue(generations);
 		
+		/*
 		QTreeWidgetItem * stopcrit = new QTreeWidgetItem;
 		stopcrit->setText(0,"Stop criterion");
 		stopcrit->setToolTip(0,"Stop the evolution when best individual reaches this fitness level. Use 0 to disable.");
@@ -1034,7 +1041,17 @@ namespace NetworkEvolutionLib
 		doubleSpinBox->setSingleStep(0.01);
 		doubleSpinBox->setDecimals(5);
 		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setMaxFitness(double)));
-		doubleSpinBox->setValue(max_fitness);
+		doubleSpinBox->setValue(max_fitness);*/
+		
+		QTreeWidgetItem * selectionFuncBox = new QTreeWidgetItem;
+		selectionFuncBox->setText(0,"Selection function");
+		selectionFuncBox->setToolTip(0,"Select the function for selecting the fit individuals.");
+		treeWidget->addTopLevelItem(selectionFuncBox);
+		QComboBox * comboBox = new QComboBox;
+		comboBox->addItems(selectionFunctions);
+		treeWidget->setItemWidget(selectionFuncBox,1,comboBox);
+		connect(comboBox,SIGNAL(activated(int)),this,SLOT(setSelectionFunc(int)));
+		comboBox->setCurrentIndex(0);
 		
 		log->setText(0,"Log file");
 		log->setToolTip(0,"Keep a log file with information about each generation and the final results");
@@ -1312,6 +1329,8 @@ namespace NetworkEvolutionLib
 				+ tr("    void setMTseeds(") + s + tr(");\n");
 		}
 		
+		s += tr("   GAsetSelectionFunction(&") + selectionFunction + tr(");\n");
+		
 		s += tr("}\n");
 		
 		return s;
@@ -1497,6 +1516,7 @@ namespace NetworkEvolutionLib
 		seeds2 = 1;
 		
 		max_fitness = 0.0;
+		selectionFunction = selectionFunctions[0];
 		
 		/***********************/
 		
@@ -1603,6 +1623,7 @@ namespace NetworkEvolutionLib
 		seeds2 = settings.value("seeds2",seeds2).toInt();
 		
 		max_fitness = settings.value("max_fitness",max_fitness).toDouble();
+		selectionFunction = settings.value("selectionFunction",selectionFunction).toString();
 		
 #ifdef Q_WS_WIN
 		compileCommand = tr("gcc --shared -o temp.dll -Iinclude temp.c -L./ -lnetga");

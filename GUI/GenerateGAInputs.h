@@ -117,6 +117,9 @@ namespace NetworkEvolutionLib
 
 		double max_fitness;
 		
+		QStringList selectionFunctions;
+		QString selectionFunction;
+		
 	signals:
 		void terminate();
 	
@@ -244,6 +247,7 @@ namespace NetworkEvolutionLib
 		
 		void showSeed(bool value) { seeds = (int)value; }
 		void setMaxFitness(double value) { max_fitness = (int)value; }
+		void setSelectionFunc(int index) { selectionFunction = selectionFunctions[index]; }
 	};
 }
 
