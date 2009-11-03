@@ -132,26 +132,62 @@ namespace NetworkEvolutionLib
 				delete items[i];
 	}
 	
-	void MainWindow::insertTextItem(double number, int line, int rank, int parent1, int parent2)
+	void MainWindow::insertTextItem(double fitness, int iteration, int rank, int parent1, int parent2)
 	{
+		static int originalSettlers[] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
+		static double originalPointsX[] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
+		static double originalPointsY[] = {0,0,0,0,0,0,0,0,0,0,0,0,0};
+		static int sz = 13;
 		double w = 10.0, h = 10.0;
-		//QGraphicsSimpleTextItem * textItem = new QGraphicsSimpleTextItem(QString::number(number));
 		
-		//textItem->setBrush(QBrush(QColor(200,255,200)));
-		//textItem->setPos( 10.0 + rank * 100.0, 10.0 + line * 100.0 );
+		if (iteration == 0)
+		{
+			if (originalSettlers[sz-1] > 0) return;
+			
+			for (int i=0; i < sz; ++i)
+			{
+				if (originalSettlers[i] == 0)
+				{
+					QGraphicsRectItem * rectItem = new QGraphicsRectItem(100.0 * mtrand(), 100.0 * mtrand(), w, h);
+					rectItem->setBrush(QBrush(QColor((int)(255 * fitness),10,(int)((1.0-fitness)*255))));
+					rectItem->setPen(QPen(QColor(100,255,100)));
+					scene->addItem(rectItem);
+					
+					originalSettlers[i] = parent1;
+					originalPointsX[i] = rectItem->scenePos().x();
+					originalPointsY[i] = rectItem->scenePos().y();
+					
+					break;
+				}
+			}
+			
+			return;
+		}
 		
+		for (int i=0; i < sz; ++i)
+		{
+			if (parent1 == originalSettlers[i] || parent2 == originalSettlers[i])
+			{
+				double x = originalPointsX[i] + w * iteration * cos(2 * 3.14159 * mtrand()), 
+					   y = originalPointsY[i] + h * iteration * sin(2 * 3.14159 * mtrand());
+				QGraphicsRectItem * rectItem = new QGraphicsRectItem(x,y, w, h);
+				rectItem->setBrush(QBrush(QColor((int)(255 * fitness),10,(int)((1.0-fitness)*255))));
+				rectItem->setPen(QPen(QColor(100,255,100)));
+				scene->addItem(rectItem);
+			}
+		}
+		
+		/*
+		QGraphicsSimpleTextItem * textItem = new QGraphicsSimpleTextItem(QString::number(number));
+		textItem->setBrush(QBrush(QColor(200,255,200)));
+		textItem->setPos( 10.0 + rank * 100.0, 10.0 + line * 100.0 );
 		QGraphicsRectItem * rectItem = new QGraphicsRectItem(	100.0 + rank * w * 2.0, 100.0 + line * h * 5.0,
-																w, h );
-																//2.0 * textItem->boundingRect().width(), 
-																//2.0 * textItem->boundingRect().height());
+																2.0 * textItem->boundingRect().width(), 
+																2.0 * textItem->boundingRect().height());
 		
-		//textItem->scale(2.0,2.0);
+		textItem->scale(2.0,2.0);
+		scene->addItem(textItem);
 		
-		rectItem->setBrush(QBrush(QColor((int)(255 * number),10,(int)((1.0-number)*255))));
-		rectItem->setPen(QPen(QColor(100,255,100)));
-		
-		scene->addItem(rectItem);
-		//scene->addItem(textItem);
 		
 		if (parent1 > 0)
 		{
@@ -170,41 +206,33 @@ namespace NetworkEvolutionLib
 									100.0 + rank * w * 2.0, 100.0 - h + (line) * h * 5.0);
 			lineItem->setPen(QPen(QColor(255,100,100)));
 			scene->addItem(lineItem);
-		}
+		}*/
 	}
 	
 	void MainWindow::updateScene(int iter, int popSz, GApopulation P, double * scores, int *** parents)
 	{
 		if (!fitness) return;
 		
-		double min, max;
+		double max = scores[0];
 		
-		for (int i=0; i < popSz; ++i)
+		for (int i=0; i < popSz/4.0; ++i)
 		{
-			if (i==0)
-				min = max = scores[i];
-			else
-			{
-				if (scores[i] > max) max = scores[i];
-				if (scores[i] < min) min = scores[i];
-			}
-		}
-		
-		max -= min;
-		
-		for (int i=0; i < popSz; ++i)
-		{
-			int * p = getImmediateParents(i,iter, parents);
+			//int * p = getImmediateParents(i,iter, parents);
+			int * p = getOriginalParents(i,iter, parents);
 			if (p && p[0])
 			{
-				insertTextItem((scores[i]-min)/max, iter, i, p[0], p[1]);
+				insertTextItem(scores[i]/max, iter, i, p[0], p[1]);
 			}
 			else
 			{
-				insertTextItem((scores[i]-min)/max, iter, i, 0, 0);
+				insertTextItem(scores[i]/max, iter, i, i, 0);
 			}
 			if (p)
+			{
 				delete p;
+			}
+			
+			if (iter == 0 && i >= 13) break;
 		}
 		
 		delete scores;

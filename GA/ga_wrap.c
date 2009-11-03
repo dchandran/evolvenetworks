@@ -2664,7 +2664,7 @@ SWIG_Python_MustGetPtr(PyObject *obj, swig_type_info *ty, int argnum, int flags)
 #define SWIGTYPE_p_char swig_types[3]
 #define SWIGTYPE_p_double swig_types[4]
 #define SWIGTYPE_p_f_int_int_p_p_void_p_double_p_p_p_int__int swig_types[5]
-#define SWIGTYPE_p_f_p_p_void_p_double_double_int__int swig_types[6]
+#define SWIGTYPE_p_f_p_p_void_p_double_double_int_int__int swig_types[6]
 #define SWIGTYPE_p_f_p_void__double swig_types[7]
 #define SWIGTYPE_p_f_p_void__p_double swig_types[8]
 #define SWIGTYPE_p_f_p_void__p_void swig_types[9]
@@ -3029,7 +3029,7 @@ SWIGINTERN PyObject *_wrap_GAinit(PyObject *SWIGUNUSEDPARM(self), PyObject *args
     }
   }
   {
-    int res = SWIG_ConvertFunctionPtr(obj5, (void**)(&arg6), SWIGTYPE_p_f_p_p_void_p_double_double_int__int);
+    int res = SWIG_ConvertFunctionPtr(obj5, (void**)(&arg6), SWIGTYPE_p_f_p_p_void_p_double_double_int_int__int);
     if (!SWIG_IsOK(res)) {
       SWIG_exception_fail(SWIG_ArgError(res), "in method '" "GAinit" "', argument " "6"" of type '" "GASelectionFnc""'"); 
     }
@@ -3103,6 +3103,7 @@ SWIGINTERN PyObject *_wrap_GArouletteWheelSelection(PyObject *SWIGUNUSEDPARM(sel
   double *arg2 = (double *) 0 ;
   double arg3 ;
   int arg4 ;
+  int arg5 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   void *argp2 = 0 ;
@@ -3111,13 +3112,16 @@ SWIGINTERN PyObject *_wrap_GArouletteWheelSelection(PyObject *SWIGUNUSEDPARM(sel
   int ecode3 = 0 ;
   int val4 ;
   int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:GArouletteWheelSelection",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:GArouletteWheelSelection",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_p_void, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GArouletteWheelSelection" "', argument " "1"" of type '" "GApopulation""'"); 
@@ -3138,7 +3142,12 @@ SWIGINTERN PyObject *_wrap_GArouletteWheelSelection(PyObject *SWIGUNUSEDPARM(sel
     SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "GArouletteWheelSelection" "', argument " "4"" of type '" "int""'");
   } 
   arg4 = (int)(val4);
-  result = (int)GArouletteWheelSelection(arg1,arg2,arg3,arg4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "GArouletteWheelSelection" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = (int)(val5);
+  result = (int)GArouletteWheelSelection(arg1,arg2,arg3,arg4,arg5);
   resultobj = SWIG_From_int((int)(result));
   return resultobj;
 fail:
@@ -3152,6 +3161,7 @@ SWIGINTERN PyObject *_wrap_GAtournamentSelection(PyObject *SWIGUNUSEDPARM(self),
   double *arg2 = (double *) 0 ;
   double arg3 ;
   int arg4 ;
+  int arg5 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   void *argp2 = 0 ;
@@ -3160,13 +3170,16 @@ SWIGINTERN PyObject *_wrap_GAtournamentSelection(PyObject *SWIGUNUSEDPARM(self),
   int ecode3 = 0 ;
   int val4 ;
   int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:GAtournamentSelection",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:GAtournamentSelection",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_p_void, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GAtournamentSelection" "', argument " "1"" of type '" "GApopulation""'"); 
@@ -3187,7 +3200,12 @@ SWIGINTERN PyObject *_wrap_GAtournamentSelection(PyObject *SWIGUNUSEDPARM(self),
     SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "GAtournamentSelection" "', argument " "4"" of type '" "int""'");
   } 
   arg4 = (int)(val4);
-  result = (int)GAtournamentSelection(arg1,arg2,arg3,arg4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "GAtournamentSelection" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = (int)(val5);
+  result = (int)GAtournamentSelection(arg1,arg2,arg3,arg4,arg5);
   resultobj = SWIG_From_int((int)(result));
   return resultobj;
 fail:
@@ -3201,6 +3219,7 @@ SWIGINTERN PyObject *_wrap_GAeliteSelection(PyObject *SWIGUNUSEDPARM(self), PyOb
   double *arg2 = (double *) 0 ;
   double arg3 ;
   int arg4 ;
+  int arg5 ;
   void *argp1 = 0 ;
   int res1 = 0 ;
   void *argp2 = 0 ;
@@ -3209,13 +3228,16 @@ SWIGINTERN PyObject *_wrap_GAeliteSelection(PyObject *SWIGUNUSEDPARM(self), PyOb
   int ecode3 = 0 ;
   int val4 ;
   int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
   PyObject * obj0 = 0 ;
   PyObject * obj1 = 0 ;
   PyObject * obj2 = 0 ;
   PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
   int result;
   
-  if (!PyArg_ParseTuple(args,(char *)"OOOO:GAeliteSelection",&obj0,&obj1,&obj2,&obj3)) SWIG_fail;
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:GAeliteSelection",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
   res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_p_void, 0 |  0 );
   if (!SWIG_IsOK(res1)) {
     SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GAeliteSelection" "', argument " "1"" of type '" "GApopulation""'"); 
@@ -3236,7 +3258,70 @@ SWIGINTERN PyObject *_wrap_GAeliteSelection(PyObject *SWIGUNUSEDPARM(self), PyOb
     SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "GAeliteSelection" "', argument " "4"" of type '" "int""'");
   } 
   arg4 = (int)(val4);
-  result = (int)GAeliteSelection(arg1,arg2,arg3,arg4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "GAeliteSelection" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = (int)(val5);
+  result = (int)GAeliteSelection(arg1,arg2,arg3,arg4,arg5);
+  resultobj = SWIG_From_int((int)(result));
+  return resultobj;
+fail:
+  return NULL;
+}
+
+
+SWIGINTERN PyObject *_wrap_GAhyperbolicSelection(PyObject *SWIGUNUSEDPARM(self), PyObject *args) {
+  PyObject *resultobj = 0;
+  GApopulation arg1 = (GApopulation) 0 ;
+  double *arg2 = (double *) 0 ;
+  double arg3 ;
+  int arg4 ;
+  int arg5 ;
+  void *argp1 = 0 ;
+  int res1 = 0 ;
+  void *argp2 = 0 ;
+  int res2 = 0 ;
+  double val3 ;
+  int ecode3 = 0 ;
+  int val4 ;
+  int ecode4 = 0 ;
+  int val5 ;
+  int ecode5 = 0 ;
+  PyObject * obj0 = 0 ;
+  PyObject * obj1 = 0 ;
+  PyObject * obj2 = 0 ;
+  PyObject * obj3 = 0 ;
+  PyObject * obj4 = 0 ;
+  int result;
+  
+  if (!PyArg_ParseTuple(args,(char *)"OOOOO:GAhyperbolicSelection",&obj0,&obj1,&obj2,&obj3,&obj4)) SWIG_fail;
+  res1 = SWIG_ConvertPtr(obj0, &argp1,SWIGTYPE_p_p_void, 0 |  0 );
+  if (!SWIG_IsOK(res1)) {
+    SWIG_exception_fail(SWIG_ArgError(res1), "in method '" "GAhyperbolicSelection" "', argument " "1"" of type '" "GApopulation""'"); 
+  }
+  arg1 = (GApopulation)(argp1);
+  res2 = SWIG_ConvertPtr(obj1, &argp2,SWIGTYPE_p_double, 0 |  0 );
+  if (!SWIG_IsOK(res2)) {
+    SWIG_exception_fail(SWIG_ArgError(res2), "in method '" "GAhyperbolicSelection" "', argument " "2"" of type '" "double *""'"); 
+  }
+  arg2 = (double *)(argp2);
+  ecode3 = SWIG_AsVal_double(obj2, &val3);
+  if (!SWIG_IsOK(ecode3)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode3), "in method '" "GAhyperbolicSelection" "', argument " "3"" of type '" "double""'");
+  } 
+  arg3 = (double)(val3);
+  ecode4 = SWIG_AsVal_int(obj3, &val4);
+  if (!SWIG_IsOK(ecode4)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode4), "in method '" "GAhyperbolicSelection" "', argument " "4"" of type '" "int""'");
+  } 
+  arg4 = (int)(val4);
+  ecode5 = SWIG_AsVal_int(obj4, &val5);
+  if (!SWIG_IsOK(ecode5)) {
+    SWIG_exception_fail(SWIG_ArgError(ecode5), "in method '" "GAhyperbolicSelection" "', argument " "5"" of type '" "int""'");
+  } 
+  arg5 = (int)(val5);
+  result = (int)GAhyperbolicSelection(arg1,arg2,arg3,arg4,arg5);
   resultobj = SWIG_From_int((int)(result));
   return resultobj;
 fail:
@@ -3339,7 +3424,7 @@ SWIGINTERN PyObject *_wrap_GAsetSelectionFunction(PyObject *SWIGUNUSEDPARM(self)
   
   if (!PyArg_ParseTuple(args,(char *)"O:GAsetSelectionFunction",&obj0)) SWIG_fail;
   {
-    int res = SWIG_ConvertFunctionPtr(obj0, (void**)(&arg1), SWIGTYPE_p_f_p_p_void_p_double_double_int__int);
+    int res = SWIG_ConvertFunctionPtr(obj0, (void**)(&arg1), SWIGTYPE_p_f_p_p_void_p_double_double_int_int__int);
     if (!SWIG_IsOK(res)) {
       SWIG_exception_fail(SWIG_ArgError(res), "in method '" "GAsetSelectionFunction" "', argument " "1"" of type '" "GASelectionFnc""'"); 
     }
@@ -3397,7 +3482,7 @@ SWIGINTERN PyObject *_wrap_GAgetSelectionFunction(PyObject *SWIGUNUSEDPARM(self)
   
   if (!PyArg_ParseTuple(args,(char *)":GAgetSelectionFunction")) SWIG_fail;
   result = (GASelectionFnc)GAgetSelectionFunction();
-  resultobj = SWIG_NewFunctionPtrObj((void *)(result), SWIGTYPE_p_f_p_p_void_p_double_double_int__int);
+  resultobj = SWIG_NewFunctionPtrObj((void *)(result), SWIGTYPE_p_f_p_p_void_p_double_double_int_int__int);
   return resultobj;
 fail:
   return NULL;
@@ -4858,6 +4943,7 @@ static PyMethodDef SwigMethods[] = {
 	 { (char *)"GArouletteWheelSelection", _wrap_GArouletteWheelSelection, METH_VARARGS, NULL},
 	 { (char *)"GAtournamentSelection", _wrap_GAtournamentSelection, METH_VARARGS, NULL},
 	 { (char *)"GAeliteSelection", _wrap_GAeliteSelection, METH_VARARGS, NULL},
+	 { (char *)"GAhyperbolicSelection", _wrap_GAhyperbolicSelection, METH_VARARGS, NULL},
 	 { (char *)"GAsetupNewStruct", _wrap_GAsetupNewStruct, METH_VARARGS, NULL},
 	 { (char *)"GAsetFitnessFunction", _wrap_GAsetFitnessFunction, METH_VARARGS, NULL},
 	 { (char *)"GAsetCrossoverFunction", _wrap_GAsetCrossoverFunction, METH_VARARGS, NULL},
@@ -4928,7 +5014,7 @@ static swig_type_info _swigt__p_ReactionNetwork = {"_p_ReactionNetwork", "Reacti
 static swig_type_info _swigt__p_char = {"_p_char", "char *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_double = {"_p_double", "double *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_int_int_p_p_void_p_double_p_p_p_int__int = {"_p_f_int_int_p_p_void_p_double_p_p_p_int__int", "int (*)(int,int,void **,double *,int ***)|GACallbackFnc", 0, 0, (void*)0, 0};
-static swig_type_info _swigt__p_f_p_p_void_p_double_double_int__int = {"_p_f_p_p_void_p_double_double_int__int", "int (*)(void **,double *,double,int)|GASelectionFnc", 0, 0, (void*)0, 0};
+static swig_type_info _swigt__p_f_p_p_void_p_double_double_int_int__int = {"_p_f_p_p_void_p_double_double_int_int__int", "int (*)(void **,double *,double,int,int)|GASelectionFnc", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_void__double = {"_p_f_p_void__double", "double (*)(void *)|GAFitnessFnc", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_void__p_double = {"_p_f_p_void__p_double", "double *(*)(void *)|double *(*)(GAindividual)", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_f_p_void__p_void = {"_p_f_p_void__p_void", "GAMutateFnc|void *(*)(void *)|GACloneFnc", 0, 0, (void*)0, 0};
@@ -4947,7 +5033,7 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_char,
   &_swigt__p_double,
   &_swigt__p_f_int_int_p_p_void_p_double_p_p_p_int__int,
-  &_swigt__p_f_p_p_void_p_double_double_int__int,
+  &_swigt__p_f_p_p_void_p_double_double_int_int__int,
   &_swigt__p_f_p_void__double,
   &_swigt__p_f_p_void__p_double,
   &_swigt__p_f_p_void__p_void,
@@ -4966,7 +5052,7 @@ static swig_cast_info _swigc__p_ReactionNetwork[] = {  {&_swigt__p_ReactionNetwo
 static swig_cast_info _swigc__p_char[] = {  {&_swigt__p_char, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_double[] = {  {&_swigt__p_double, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_int_int_p_p_void_p_double_p_p_p_int__int[] = {  {&_swigt__p_f_int_int_p_p_void_p_double_p_p_p_int__int, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_f_p_p_void_p_double_double_int__int[] = {  {&_swigt__p_f_p_p_void_p_double_double_int__int, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_f_p_p_void_p_double_double_int_int__int[] = {  {&_swigt__p_f_p_p_void_p_double_double_int_int__int, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_void__double[] = {  {&_swigt__p_f_p_void__double, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_void__p_double[] = {  {&_swigt__p_f_p_void__p_double, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_f_p_void__p_void[] = {  {&_swigt__p_f_p_void__p_void, 0, 0, 0},{0, 0, 0, 0}};
@@ -4985,7 +5071,7 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_char,
   _swigc__p_double,
   _swigc__p_f_int_int_p_p_void_p_double_p_p_p_int__int,
-  _swigc__p_f_p_p_void_p_double_double_int__int,
+  _swigc__p_f_p_p_void_p_double_double_int_int__int,
   _swigc__p_f_p_void__double,
   _swigc__p_f_p_void__p_double,
   _swigc__p_f_p_void__p_void,

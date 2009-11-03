@@ -87,6 +87,10 @@ def GAeliteSelection(*args):
   return _ga.GAeliteSelection(*args)
 GAeliteSelection = _ga.GAeliteSelection
 
+def GAhyperbolicSelection(*args):
+  return _ga.GAhyperbolicSelection(*args)
+GAhyperbolicSelection = _ga.GAhyperbolicSelection
+
 def GAsetupNewStruct(*args):
   return _ga.GAsetupNewStruct(*args)
 GAsetupNewStruct = _ga.GAsetupNewStruct
