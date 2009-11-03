@@ -247,7 +247,7 @@ namespace NetworkEvolutionLib
 		
 		void showSeed(bool value) { seeds = (int)value; }
 		void setMaxFitness(double value) { max_fitness = (int)value; }
-		void setSelectionFunc(int index) { selectionFunction = selectionFunctions[index]; }
+		void setSelectionFunc(const QString& s) { selectionFunction = s; }
 	};
 }
 

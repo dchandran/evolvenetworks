@@ -32,13 +32,12 @@ namespace NetworkEvolutionLib
 {
 	MainWindow::MainWindow()
 	{
-		reset();
-		
 		selectionFunctions 	<< "GArouletteWheelSelection"
 							<< "GAtournamentSelection"
 							<< "GAeliteSelection"
 							<< "GAhyperbolicSelection";
-
+		
+		reset();
 		QSplitter * twoCols = new QSplitter;
 		twoCols->setOrientation ( Qt::Horizontal );
 		
@@ -1050,7 +1049,7 @@ namespace NetworkEvolutionLib
 		QComboBox * comboBox = new QComboBox;
 		comboBox->addItems(selectionFunctions);
 		treeWidget->setItemWidget(selectionFuncBox,1,comboBox);
-		connect(comboBox,SIGNAL(activated(int)),this,SLOT(setSelectionFunc(int)));
+		connect(comboBox,SIGNAL(activated(const QString&)),this,SLOT(setSelectionFunc(const QString&)));
 		comboBox->setCurrentIndex(0);
 		
 		log->setText(0,"Log file");
