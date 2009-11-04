@@ -30,7 +30,13 @@
 
 <br />
 The Network Evolution Library is a set of functions that allow the user to evolve biological networks.
-The library is written in C. The user provides a fitness function in C, and the library will do the rest.
+The library is written in C, but a Python interface is being made available. 
+The user provides a fitness function, and the library will do the rest. 
+<br />
+The library has several options, so a graphical interface is provided for viewing these options and 
+automatically generating the C code for setting these options. Using the GUI, a user can write
+a fitness function and callback function and run the evolution. The evolution can be visualized (image below).
+The evolution will track the distribution of fitness values, lineage, network size, and network structure. 
 <br />
 There are several examples included, such as evolving chemotaxis, oscillators, noise-damping networks, and
 networks with multiple stable states. 
