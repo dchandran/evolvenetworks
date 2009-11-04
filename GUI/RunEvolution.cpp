@@ -145,7 +145,7 @@ namespace NetworkEvolutionLib
 			double x = 1000.0 * mtrand(), y = 1000.0 * mtrand();
 			QGraphicsRectItem * rectItem = new QGraphicsRectItem(x, y, w, h);
 			rectItem->setBrush(QBrush(color));
-			rectItem->setPen(QPen(QColor(100,255,100)));
+			rectItem->setPen(Qt::NoPen);
 			scene->addItem(rectItem);
 			rectItem->setToolTip(QString::number(fitness));
 			
@@ -159,7 +159,7 @@ namespace NetworkEvolutionLib
 				   y = previousGen[parent1].y() + 3.0 * h * sin(2 * 3.14159 * mtrand());
 			QGraphicsRectItem * rectItem = new QGraphicsRectItem(x,y, w, h);
 			rectItem->setBrush(QBrush(color));
-			rectItem->setPen(QPen(QColor(100,255,100)));
+			rectItem->setPen(Qt::NoPen);
 			scene->addItem(rectItem);
 			rectItem->setToolTip(QString::number(fitness));
 			
@@ -172,7 +172,7 @@ namespace NetworkEvolutionLib
 				   y = previousGen[parent2].y() + 3.0 * h * sin(2 * 3.14159 * mtrand());
 			QGraphicsRectItem * rectItem = new QGraphicsRectItem(x,y, w, h);
 			rectItem->setBrush(QBrush(color));
-			rectItem->setPen(QPen(QColor(100,255,100)));
+			rectItem->setPen(Qt::NoPen);
 			scene->addItem(rectItem);
 			rectItem->setToolTip(QString::number(fitness));
 			
