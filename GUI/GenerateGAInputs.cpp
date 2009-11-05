@@ -1056,7 +1056,7 @@ namespace NetworkEvolutionLib
 		selectionFuncParam->setText(0,"Steepness");
 		selectionFuncParam->setToolTip(0,"Set the steepness of the selection function (only applies to hyperbolic and elite selection).");
 		selectionFuncBox->addChild(selectionFuncParam);
-		treeWidget->setItemWidget(selectionFuncBox,1,doubleSpinBox = new QDoubleSpinBox);
+		treeWidget->setItemWidget(selectionFuncParam,1,doubleSpinBox = new QDoubleSpinBox);
 		doubleSpinBox->setRange(0,1);
 		doubleSpinBox->setSingleStep(0.01);
 		doubleSpinBox->setDecimals(3);
