@@ -103,6 +103,7 @@ namespace NetworkEvolutionLib
 		double mass_action_prob, enzyme_prob, protein_net_prob, grn_prob;
 		
 		QString codeFile, logFile;
+		double selectionFunctionParam;
 		int runs, generations, popSz, initPopSz;
 		QString seeds;
 		QString compileCommand;
@@ -248,6 +249,7 @@ namespace NetworkEvolutionLib
 		void showSeed(bool value) { seeds = (int)value; }
 		void setMaxFitness(double value) { max_fitness = (int)value; }
 		void setSelectionFunc(const QString& s) { selectionFunction = s; }
+		void setSelectionFuncParam(double d) { selectionFunctionParam = d; }
 	};
 }
 

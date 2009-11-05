@@ -1052,6 +1052,17 @@ namespace NetworkEvolutionLib
 		connect(comboBox,SIGNAL(activated(const QString&)),this,SLOT(setSelectionFunc(const QString&)));
 		comboBox->setCurrentIndex(0);
 		
+		QTreeWidgetItem * selectionFuncParam = new QTreeWidgetItem;
+		selectionFuncParam->setText(0,"Steepness");
+		selectionFuncParam->setToolTip(0,"Set the steepness of the selection function (only applies to hyperbolic and elite selection).");
+		selectionFuncBox->addChild(selectionFuncParam);
+		treeWidget->setItemWidget(selectionFuncBox,1,doubleSpinBox = new QDoubleSpinBox);
+		doubleSpinBox->setRange(0,1);
+		doubleSpinBox->setSingleStep(0.01);
+		doubleSpinBox->setDecimals(3);
+		doubleSpinBox->setValue(selectionFunctionParam);
+		connect(doubleSpinBox,SIGNAL(valueChanged(double)),this,SLOT(setSelectionFuncParam(double)));
+		
 		log->setText(0,"Log file");
 		log->setToolTip(0,"Keep a log file with information about each generation and the final results");
 		
@@ -1329,6 +1340,7 @@ namespace NetworkEvolutionLib
 		}
 		
 		s += tr("   GAsetSelectionFunction(&") + selectionFunction + tr(");\n");
+		s += tr("   GAsetParameterForSelection(") + QString::number(selectionFunctionParam) + tr(");\n");
 		
 		s += tr("}\n");
 		
@@ -1519,6 +1531,7 @@ namespace NetworkEvolutionLib
 		
 		max_fitness = 0.0;
 		selectionFunction = selectionFunctions[0];
+		selectionFunctionParam = 0.1;
 		
 		/***********************/
 		
@@ -1626,6 +1639,7 @@ namespace NetworkEvolutionLib
 		
 		max_fitness = settings.value("max_fitness",max_fitness).toDouble();
 		selectionFunction = settings.value("selectionFunction",selectionFunction).toString();
+		selectionFunctionParam = settings.value("selectionFunction",selectionFunctionParam).toDouble();
 		
 #ifdef Q_WS_WIN
 		compileCommand = tr("gcc --shared -o temp.dll -Iinclude temp.c -L./ -lnetga");

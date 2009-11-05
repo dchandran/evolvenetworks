@@ -13,6 +13,7 @@ char * File = 0;
 int Generations = 0;
 int PopulationSize = 0;
 int StartingPopulationSize = 0;
+double MaxFitness = 0.0;
 GACallbackFnc callback = 0;
 GAFitnessFnc fitness = 0;
 
@@ -53,6 +54,7 @@ namespace NetworkEvolutionLib
 	Thread * CurrentThread = 0;
 	QSemaphore * semaphore = 0;
 	typedef void (*InitFunc)(void);
+	typedef double (*MaxFitnessFunction)(void);
 	
 	Thread::Thread(const QString& file, QObject * parent) : QThread(parent)
 	{
@@ -85,14 +87,29 @@ namespace NetworkEvolutionLib
 	{
 		if (!CurrentThread || !lib || !lib->isLoaded()) return;
 		
+		MaxFitness = 0.0;
+		fitness = 0;
+		callback = 0;
+		
 		void * f0 = lib->resolve("init");
 		void * f1 = lib->resolve("fitness");
 		void * f2 = lib->resolve("callback");
-		if (f0 && f1 && f2)
+		void * f3 = lib->resolve("maxfitness");
+		if (f0 && f1)
 		{
 			InitFunc initFunc = (InitFunc)f0;
 			fitness = (GAFitnessFnc)f1;
-			callback = (GACallbackFnc)f2;
+			
+			if (f3)
+			{
+				MaxFitnessFunction f = (MaxFitnessFunction)(f3);
+				MaxFitness = f();
+			}
+			
+			if (f2)
+			{
+				callback = (GACallbackFnc)f2;
+			}
 			
 			GApopulation P;
 			initFunc();
@@ -100,6 +117,7 @@ namespace NetworkEvolutionLib
 			GAfree(P);
 		}
 		
+		MaxFitness = 0.0;
 		fitness = 0;
 		callback = 0;
 		delete lib;
@@ -183,6 +201,8 @@ namespace NetworkEvolutionLib
 	void MainWindow::updateScene(int iter, int popSz, GApopulation P, double * scores, int *** parents)
 	{
 		double max = scores[0];
+		
+		if (MaxFitness > 0.0) max = MaxFitness;
 		
 		nextGen.clear();
 		

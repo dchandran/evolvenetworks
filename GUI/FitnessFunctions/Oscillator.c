@@ -95,3 +95,5 @@ double fitness(GAindividual net)
 
 	return (f);
 }
+
+double maxfitness() { return 1.0; }
