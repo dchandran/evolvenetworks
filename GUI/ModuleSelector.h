@@ -10,10 +10,14 @@
 #include <QTableWidget>
 #include <QTabWidget>
 #include <QToolButton>
+#include <QPushButton>
+#include <QCheckBox>
 #include <QGridLayout>
 #include <QHBoxLayout>
-#include <QVBoxLyaout>
-
+#include <QVBoxLayout>
+#include <QDir>
+#include <QFile>
+#include <QFileInfoList>
 
 #ifdef Q_WS_WIN
 #define MY_EXPORT __declspec(dllexport)
@@ -28,7 +32,8 @@ namespace NetworkEvolutionLib
 		Q_OBJECT
 	public:
 		ModuleSelector(QWidget * parent = 0);
-		
+	private:
+		QWidget * generateWidget(const QFileInfoList&);
 	};
 
 }
