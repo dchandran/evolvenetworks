@@ -7,14 +7,28 @@ static int PROB_REWIRE = 1;
 
 static void freeBlock(Block * block)
 {
+	if (!block) return;
 	
+	if (block->internals)
+		free(block->internals);
+		
+	if (block->inputs)
+		free(block->inputs);
+	
+	if (block->outputs)
+		free(block-outputs);
+	
+	if (block->params)
+		free(block->params);
+	
+	free(block);
 }
 
 static void copyBlock(Block * block, Block * block2)
 {
 	int i;
 	int n;
-	//Block * block2 = (Block*)malloc(sizeof(Block));
+
 	block2->type = block->type;
 
 	n = BlockTypesTable[ block->type ].numInternals;
