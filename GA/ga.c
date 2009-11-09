@@ -11,76 +11,77 @@
 /****************************
 * functions required for the GA
 ****************************/
-static GADeleteFnc deleteGAindividual = 0;
-static GACloneFnc clone = 0;
-static GAFitnessFnc fitness = 0;
-static GACrossoverFnc crossover = 0;
-static GAMutateFnc mutate = 0;
-static GASelectionFnc selection = 0;
-static GACallbackFnc callback = 0;
+static GADeleteFunc deleteGAindividual = 0;
+static GACloneFunc clone = 0;
+static GAFitnessFunc fitness = 0;
+static GACrossoverFunc crossover = 0;
+static GAMutateFunc mutate = 0;
+static GASelectionFunc selection = 0;
+static GACallbackFunc callback = 0;
 
 /****************************
-* lineage tracking on or  off
+* options
 *****************************/
 
 static int _TRACK_PARENTS = 1;
+static double _CROSSOVER_PROB = 0.5;
 
 /*********************************************
 * get and set the above function pointers
 **********************************************/
 
-void GAsetupNewStruct(GADeleteFnc f, GACloneFnc g)
+void GAsetupNewStruct(GADeleteFunc f, GACloneFunc g)
 {
 	deleteGAindividual = f;
 	clone = g;
 }
 
-void GAsetFitnessFunction(GAFitnessFnc f)
+void GAsetFitnessFunction(GAFitnessFunc f)
 {
 	fitness = f;
 }
 
-GAFitnessFnc GAgetFitnessFunction()
+GAFitnessFunc GAgetFitnessFunction()
 {
 	return fitness;
 }
 
-void GAsetCallbackFunction(GACallbackFnc f)
+void GAsetCallbackFunction(GACallbackFunc f)
 {
 	callback = f;
 }
 
-GACallbackFnc GAgetCallbackFunction()
+GACallbackFunc GAgetCallbackFunction()
 {
 	return callback;
 }
 
-void GAsetCrossoverFunction(GACrossoverFnc f)
+void GAsetCrossoverFunction(GACrossoverFunc f)
 {
 	crossover = f;
 }
 
-GACrossoverFnc GAgetCrossoverFunction()
+GACrossoverFunc GAgetCrossoverFunction()
 {
 	return crossover;
 }
 
-void GAsetMutationFunction(GAMutateFnc f)
+void GAsetMutationFunction(GAMutateFunc f)
 {
 	mutate = f;
 }
 
-GAMutateFnc GAgetMutationFunction()
+GAMutateFunc GAgetMutationFunction()
 {
 	return mutate;
 }
 
-void GAsetSelectionFunction(GASelectionFnc f)
+void GAsetSelectionFunction(GASelectionFunc f)
 {
 	selection = f;
 }
 
-GASelectionFnc GAgetSelectionFunction()
+GASelectionFunc GAgetSelectionFunction()
 {
 	return selection;
 }
@@ -231,7 +232,7 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 			parents[gen][i][1] = 0;
 		}
 		
-		if (crossover != NULL) 
+		if (crossover != NULL && mtrand() < _CROSSOVER_PROB) 
 		{
 			temp = fitnessArray[k];
 			fitnessArray[k] = 0;   //this is to prevent self-self crossover
@@ -239,16 +240,15 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 			fitnessArray[k] = temp;
 			x2 = currentGApopulation[k2];
 			x1 = crossover(x1,x2);
+			
+			if (!x1) 
+				x1 = currentGApopulation[k];
 
 			if (x1 == currentGApopulation[k] || x1 == currentGApopulation[k2])
-			{
 				x1 = clone(x1); //cannot allow the same x1
-			}
 			
 			if (parents)
-			{
 				parents[gen][i][1] = k2;
-			}
 		}
 		else
 		{
@@ -256,10 +256,11 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 		}
 
 		if (mutate != NULL) 
-		{
 			x1 = mutate(x1);
-		}
-
+		
+		if (!x1)
+			x1 = clone( currentGApopulation[k] );
+		
 		nextGApopulation[i] = x1; //add to the new population
 	}
 	/*free the memory from the old population*/
@@ -285,13 +286,13 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 * \param: mutation function pointer (can bt 0, but not recommended)
 * \param: selection function pointer (can be 0)
 */
-void GAinit(GADeleteFnc deleteGAindividualPtr, 
-			GACloneFnc clonePtr,
-			GAFitnessFnc fitnessPtr, 
-			GACrossoverFnc crossoverPtr, 
-			GAMutateFnc mutatePtr, 
-			GASelectionFnc selectionPtr,
-			GACallbackFnc callbackPtr)
+void GAinit(GADeleteFunc deleteGAindividualPtr, 
+			GACloneFunc clonePtr,
+			GAFitnessFunc fitnessPtr, 
+			GACrossoverFunc crossoverPtr, 
+			GAMutateFunc mutatePtr, 
+			GASelectionFunc selectionPtr,
+			GACallbackFunc callbackPtr)
 {
 	deleteGAindividual = deleteGAindividualPtr;
 	clone = clonePtr;
@@ -639,4 +640,17 @@ int* GAgetImmediateParents(int individual, int generation, int *** _PARENTS)
 	parents[0] = 0;
 	
 	return parents;
+}
+
+double GAgetCrossoverProb()
+{
+	return _CROSSOVER_PROB;
+}
+
+void GAsetCrossoverProb(double p)
+{
+	_CROSSOVER_PROB = p;
+	
+	if (_CROSSOVER_PROB < 0.0) _CROSSOVER_PROB = 0.0;
+	if (_CROSSOVER_PROB > 1.0) _CROSSOVER_PROB = 1.0;
 }
