@@ -55,7 +55,6 @@ namespace NetworkEvolutionLib
 			}			
 		}
 		
-		
 		QHBoxLayout * layout = new QHBoxLayout;
 		layout->addWidget(tabWidget);
 		layout->setContentsMargins(0,0,0,0);
@@ -70,18 +69,22 @@ namespace NetworkEvolutionLib
 		for (int i=0, j=0, k=0; k < files.size(); ++j, ++k)
 		{
 			QToolButton * button = new QToolButton;
-			button->setAutoRaise(false);
+			QCheckBox * checkbox = new QCheckBox;
+			QVBoxLayout * vlayout = new QVBoxLayout;
+			vlayout->addWidget(button);
+			vlayout->addWidget(checkbox);
 			button->setIcon(QIcon(files[k].absoluteFilePath()));
-			button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+			//button->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 			button->setIconSize(QSize(200,200));
-			button->setText(files[k].baseName().replace(tr("_"),tr(" ")));
+			checkbox->setText(files[k].baseName().replace(tr("_"),tr(" ")));
 			button->setStyleSheet(tr("QToolButton:pressed { background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadbde, stop: 1 #f6f7fa); }"));
 			if (j > 3)
 			{
 				++i;
 				j = 0;
 			}
-			layout->addWidget(button,i,j);
+			connect(button,SIGNAL(clicked()),checkbox,SLOT(toggle()));
+			layout->addLayout(vlayout,i,j);
 		}
 		
 		widget->setLayout(layout);
