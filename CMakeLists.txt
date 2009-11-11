@@ -44,7 +44,7 @@ INCLUDE_DIRECTORIES( BEFORE
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/sundials
 	${NETWORKEVOLUTION_SOURCE_DIR}/simulation
 	${NETWORKEVOLUTION_SOURCE_DIR}/GA
-	${NETWORKEVOLUTION_SOURCE_DIR}/bistability
+	${NETWORKEVOLUTION_SOURCE_DIR}/parameters
 	${NETWORKEVOLUTION_SOURCE_DIR}/loops
 	${NETWORKEVOLUTION_SOURCE_DIR}/chemotaxis
 	${NETWORKEVOLUTION_SOURCE_DIR}/lib
@@ -199,12 +199,12 @@ IF (SWIG_BINDINGS)
    )
 ENDIF(SWIG_BINDINGS)
 #---------------------------------------------------------------------------
-# Bistability finder
+# Parameter related
 #---------------------------------------------------------------------------
 
 ADD_LIBRARY( gaBistabilize
   STATIC
-  ${NETWORKEVOLUTION_SOURCE_DIR}/bistability/ga_bistable.c
+  ${NETWORKEVOLUTION_SOURCE_DIR}/parameters/ga_bistable.c
 )
 
 TARGET_LINK_LIBRARIES( gaBistabilize
@@ -212,6 +212,9 @@ TARGET_LINK_LIBRARIES( gaBistabilize
   netga
   optim
 )
+
+ADD_EXECUTABLE( parameterInformation ${NETWORKEVOLUTION_SOURCE_DIR}/parameters/ParameterInformationContent.c )
+TARGET_LINK_LIBRARIES( parameterInformation ode ssa )
 
 #---------------------------------------------------------------------------
 # Loops in interaction matrix finder
@@ -238,7 +241,7 @@ TARGET_LINK_LIBRARIES( loops
 ADD_EXECUTABLE( evolveChemotaxis ${NETWORKEVOLUTION_SOURCE_DIR}/chemotaxis/evolve_chemotaxis.c )
 TARGET_LINK_LIBRARIES( evolveChemotaxis netga loops )
 
-ADD_EXECUTABLE( bistabilize ${NETWORKEVOLUTION_SOURCE_DIR}/bistability/test_bistable.c )
+ADD_EXECUTABLE( bistabilize ${NETWORKEVOLUTION_SOURCE_DIR}/parameters/test_bistable.c )
 TARGET_LINK_LIBRARIES( bistabilize gaBistabilize )
 
 ADD_EXECUTABLE( evolveOscillator ${NETWORKEVOLUTION_SOURCE_DIR}/examples/ga_oscillator.c )
