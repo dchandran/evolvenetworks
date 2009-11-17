@@ -32,17 +32,28 @@ typedef struct
 }
 Block;
 
+/*! \brief function type for getting the stoichiometry matrix of a block 
+*	\param Matrix the output stoichiometry matrix
+*	\param Block * the block
+*/
 typedef void (*StiochiometryFunction)(Matrix*,Block*);
+
+/*! \brief function type for calculating the rate vector for a block at the given concentration values
+*	\param double* vector of concentration values
+*	\param double* output vector of rate values
+*	\param Block * the block
+*/
 typedef void (*RatesFunction)(double*,double*,Block*);
 
-/*! \brief a block type. */
+/*! \brief a block type */
 typedef struct
 {
 	char * name;
 	StiochiometryFunction stoic;
 	RatesFunction rates;
 	int numReactions;
-	int numExternals;
+	int numInputs;
+	int numOutputs;
 	int numInternals;
 	int numParameters;
 	double * paramsLowerBound;
@@ -50,34 +61,60 @@ typedef struct
 }
 BlockType;
 
-/*! \brief a system is defined as a set of blocks. */
+/*! \brief a system is defined as a set of blocks and a set number of molecular species */
 typedef struct
 {
 	Block * blocks;
 	int numBlocks;
 	int numSpecies;
 }
-System;
+SystemOfBlocks;
 
+/*! \brief (used during mutation events) set the probability for mutating a parameter value */
 void setMutateParameterProb(double);
+
+/*! \brief (used during mutation events) set the probability for rewiring two blocks in a system*/
 void setMutateStructureProb(double);
 
-void addBlockType(int);
+/*! \brief evolve a population of Systems for optimizing the given fitness function
+*	\param int initial size of population (number of systems)
+*	\param int final size of population (number of systems)
+*	\param GAFitnessFunc the fitness function (see ga.h)
+*	\param GACallbackFunc optional callback funtion (see ga.h)
+*	\return GApopulation a set of Systems sorted by fitness, null terminated. use GAfree to remove.
+*/
+GApopulation evolveNetworks(int initialPopulationSize, int finalPopulationSize, GAFitnessFunc fitness, GACallbackFunc callback);
 
-GApopulation evolveNetworks(int initialPopulationSize, int finalPopulationSize, GAfitnessFunc fitness, GAcallback callback);
-
+/*! \brief check is a block type is a null type
+*	\return int 0 or 1*/
 int isNullBlockType(BlockType);
 
+/*! \brief check is a block's type is a null type
+*	\return int 0 or 1*/
 int isNullBlock(Block *);
 
-static BlockType BlockTypesTable[] =
-{
-	{"single reactant and product", &uniuni_stoic, &uniuni_rates, 1, 1, 1, 0, 1, 0, 0},
-	{"dimerization", &biuni_stoic, &biuni_rates, 1, 2, 1, 0, 1, 0, 0},
-	{"dissociation", &unibi_stoic, &unibi_rates, 1, 1, 2, 0, 1, 0, 0},
-	{"two reactants and products", &bibi_stoic, &bibi_rates, 1, 2, 2, 0, 1, 0, 0},
-	{"enzymatic reaction", &enzyme_stoic, &enzyme_rates, 4, 2, 1, 1, 4, 0, 0},
-	{0,0,0,0,0,0,0,0,0,0} //NULL type
-};
+/*! \brief get the number of total block types that exist
+*	\return int number of block types*/
+int numBlockTypes();
+
+/*! \brief (used during initialization) set the type of blocked to be used in a system
+*	\param char* name of the block type, e.g. "one to one"
+*	\return int 0 or 1 indicating whether this block name exists*/
+int addBlockType(const char* name);
+
+/*! \brief (used during initialization) set the type of blocked to be used in a system
+*	\param int index of the block type
+*	\return int 0 or 1 indicating whether this block type exists*/
+int addBlockTypeByIndex(int);
+
+/*! \brief (used during initialization) disallow a type of blocked from being used in a system
+*	\param char* name of the block type, e.g. "one to one"
+*	\return int 0 or 1 indicating whether this block name exists*/
+int removeBlockType(const char* name);
+
+/*! \brief (used during initialization) disallow a type of blocked from being used in a system
+*	\param int index of a block type
+*	\return int 0 or 1 indicating whether this block type exists*/
+int removeBlockTypeByIndex(int);
 
 #endif
