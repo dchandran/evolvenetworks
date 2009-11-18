@@ -1,5 +1,14 @@
 #include "blocks.h"
 
+/******************************************************************
+* simple mass action with combinations of 1 and 2 reactants and products
+*******************************************************************/
+
+static void print_ma(FILE * file, Block* block)
+{
+	
+}
+
 static void uniuni_stoic( Matrix * matrix, Block * block )
 {
 	valueAt(matrix, block->inputs[0], 0) = -1.0;
@@ -91,10 +100,10 @@ static void enzyme_rates( double * rates, double * conc, Block * block )
 */
 BlockType BlockTypesTable[] =
 {
-	{"single reactant and product\0", &uniuni_stoic, 	&uniuni_rates, 	1, 	1, 	1, 	0, 	1, 	0, 	0},
-	{"dimerization\0", 				&biuni_stoic, 	&biuni_rates, 	1, 	2, 	1, 	0, 	1, 	0, 	0},
-	{"dissociation\0", 				&unibi_stoic, 	&unibi_rates, 	1, 	1, 	2, 	0, 	1, 	0, 	0},
-	{"two reactants and products\0", 	&bibi_stoic, 	&bibi_rates, 	1, 	2, 	2, 	0, 	1, 	0, 	0},
-	{"enzymatic reaction\0", 			&enzyme_stoic, 	&enzyme_rates, 	4, 	2, 	1, 	1, 	4, 	0, 	0},
+	{"single reactant and product\0", &uniuni_stoic, 	&uniuni_rates,	&print_ma,	1, 	1, 	1, 	0, 	1, 	0, 	0},
+	{"dimerization\0", 				&biuni_stoic, 	&biuni_rates, 	&print_ma,	 	1, 	2, 	1, 	0, 	1, 	0, 	0},
+	{"dissociation\0", 				&unibi_stoic, 	&unibi_rates, 	&print_ma,	 	1, 	1, 	2, 	0, 	1, 	0, 	0},
+	{"two reactants and products\0", 	&bibi_stoic, 	&bibi_rates, 	&print_ma,	 	1, 	2, 	2, 	0, 	1, 	0, 	0},
+	{"enzymatic reaction\0", 			&enzyme_stoic, 	&enzyme_rates, 	&print_enzyme,	 	4, 	2, 	1, 	1, 	4, 	0, 	0},
 	{0,0,0,0,0,0,0,0,0,0} //NULL type to mark the end of array
 };

@@ -1,4 +1,4 @@
- /*!
+/*!
   \file    ga.h
   \author: Deepak Chandran (dchandran1@gmail.com)
   \brief   A genetic genetic algorithm

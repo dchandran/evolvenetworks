@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "ParameterInformationContent.h"
 
 double * parameterMI(OutputFunction F, int N, double * low, double * hi)
@@ -28,7 +29,7 @@ double * parameterMI(OutputFunction F, int N, double * low, double * hi)
 	blocksz = (max-min)/(double)blocks;
 	temp2 = (double*)malloc(blocks * sizeof(double));
 	for (i=0; i < blocks; ++i)
-		temp2[i] = 0.0;
+		temp2[i] = 1E-5;
 
 	for (i=0; i < iter; ++i)
 		temp2[ (int)(temp[i]/blocksz) ] += 1.0;
@@ -40,6 +41,8 @@ double * parameterMI(OutputFunction F, int N, double * low, double * hi)
 	H = 0.0;
 	for (i=0; i < blocks; ++i)
 		H -= temp2[i] * log(temp2[i]);
+	
+	printf("H = %lf\n",H);
 	free(temp2);
 	iter = 1000;
 	iter2 = 100;
@@ -48,13 +51,13 @@ double * parameterMI(OutputFunction F, int N, double * low, double * hi)
 	for (i=0; i < N; ++i)
 	{
 		MI[i] = 0.0;
-		H2 = 0.0;
+		H3 = 0.0;
 		
 		for (j=0; j < iter2; ++j)
 		{
 			u = mtrand() * (hi[i] - low[i]) + low[i];
 			for (k=0; k < blocks; ++k)
-				temp[k] = 0;
+				temp[k] = 1E-5;
 			
 			for (k=0; k < iter; ++k)
 			{
@@ -71,10 +74,12 @@ double * parameterMI(OutputFunction F, int N, double * low, double * hi)
 			
 			H2 = 0.0;
 			for (k=0; k < blocks; ++k)
-				H2 -= temp[k] * log(temp2[k]);
+				H2 -= temp[k] * log(temp[k]);
 
 			H3 += H2/iter2;
 		}
+		
+		printf("H(Y | p%i) = %lf\n",i,H3);
 		
 		MI[i] = H - H3;
 	}
@@ -96,6 +101,8 @@ void ode(double t, double * u, double * du, void * p)
 		   h2 = k[7],
 		   x,
 		   y;
+	s0 = 1.0;
+	vmax2 = 10.0;
 	x = ka1*pow(s0,h1);
 	y = ka2*pow(u[0],h2);
 	du[0] = vmax1 * x/ (1 + x) - 0.5*u[0];
@@ -126,13 +133,25 @@ int main()
 {
 	double low[] = {0.01, 0.1, 0.1, 0.1, 0.1, 0.1, 1.0, 1.0};
 	double hi[] = {20.0, 20.0, 20.0, 100.0, 100.0, 100.0, 8.0, 8.0};
-	double * p = parameterMI(&ss,8,low,hi);
-	int i;
+	double * p;
 	
-	for (i=0; i < 8; ++i)
-		printf("%lf ",p[i]);
-	printf("\n");
+	initMTrand();
+
+	int i,n;
 	
-	free(p);
+	FILE * file;
+	file = fopen("out2.txt","w");
+	
+	for (n=0; n < 5; ++n)
+	{
+		p = parameterMI(&ss,8,low,hi);
+		for (i=0; i < 8; ++i)
+			fprintf(file,"%lf\t",p[i]);
+		fprintf(file,"\n");
+		free(p);
+	}
+	
+	fclose(file);
+	
 	return 0;
 }
