@@ -138,6 +138,7 @@ ADD_LIBRARY( ga
   STATIC
   ${NETWORKEVOLUTION_SOURCE_DIR}/GA/ga.c
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/mtrand.c
+  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/blocks.c
 )
 
 
@@ -194,7 +195,7 @@ IF (SWIG_BINDINGS)
    )
    TARGET_LINK_LIBRARIES( _ga
       _ga
-      netga
+      ga
 	  ${PYTHON_LIBRARIES}
    )
 ENDIF(SWIG_BINDINGS)
@@ -209,7 +210,7 @@ ADD_LIBRARY( gaBistabilize
 
 TARGET_LINK_LIBRARIES( gaBistabilize
   gaBistabilize
-  netga
+  ga
   optim
 )
 
@@ -239,19 +240,19 @@ TARGET_LINK_LIBRARIES( loops
 # Use GA library
 
 ADD_EXECUTABLE( evolveChemotaxis ${NETWORKEVOLUTION_SOURCE_DIR}/chemotaxis/evolve_chemotaxis.c )
-TARGET_LINK_LIBRARIES( evolveChemotaxis netga loops )
+TARGET_LINK_LIBRARIES( evolveChemotaxis ga loops )
 
 ADD_EXECUTABLE( bistabilize ${NETWORKEVOLUTION_SOURCE_DIR}/parameters/test_bistable.c )
 TARGET_LINK_LIBRARIES( bistabilize gaBistabilize )
 
 ADD_EXECUTABLE( evolveOscillator ${NETWORKEVOLUTION_SOURCE_DIR}/examples/ga_oscillator.c )
-TARGET_LINK_LIBRARIES( evolveOscillator netga )
+TARGET_LINK_LIBRARIES( evolveOscillator ga )
 
 ADD_EXECUTABLE( evolveNoiseDamper ${NETWORKEVOLUTION_SOURCE_DIR}/examples/ga_reduceNoise.c )
-TARGET_LINK_LIBRARIES( evolveNoiseDamper netga )
+TARGET_LINK_LIBRARIES( evolveNoiseDamper ga )
 
 ADD_EXECUTABLE( evolveXOR ${NETWORKEVOLUTION_SOURCE_DIR}/examples/ga_logicGate.c )
-TARGET_LINK_LIBRARIES( evolveXOR netga )
+TARGET_LINK_LIBRARIES( evolveXOR ga )
 
 # Not related to GA
 

@@ -1,3 +1,23 @@
+/*!
+  \file    functions.h
+  \author: Deepak Chandran (dchandran1@gmail.com)
+  \brief   A framework for constructing and evolving (see ga.h) modular biological systems
+
+   This file supplements the blocks implementation described in blocks.h
+   This file defines the rates and stoichiometry matrix functions for the different 
+   block types. The different block types are also constructed in this file.
+   
+   New block types can be added by addeding a new row to the BlockTypesTable
+   at the end of this file. New functions need to be constructed calculating for the new 
+   block type's rates and stoichiometry matrix. See some of the other block types
+   listed in the BlockTypesTable as an example. See the definition of BlockType in blocks.h
+   to see what constitutes a block type.
+	
+**/
+
+#ifndef BLOCKTYPES_FUNCTIONS_H
+#define BLOCKTYPES_FUNCTIONS_H
+
 #include "blocks.h"
 
 /******************************************************************
@@ -11,72 +31,76 @@ static void print_ma(FILE * file, Block* block)
 
 static void uniuni_stoic( Matrix * matrix, Block * block )
 {
-	valueAt(matrix, block->inputs[0], 0) = -1.0;
-	valueAt(matrix, block->outputs[0], 0) = 1.0;
+	valueAt(*matrix, block->inputs[0], 0) = -1.0;
+	valueAt(*matrix, block->outputs[0], 0) = 1.0;
 }
 
-static void uniuni_rates( double * rates, double * conc, Block * block )
+static void uniuni_rates( double t, double * rates, double * conc, Block * block )
 {
 	rates[0] = block->params[0] * conc[ block->inputs[0] ];
 }
 
 static void biuni_stoic( Matrix * matrix, Block * block )
 {
-	valueAt(matrix, block->inputs[0], 0) = -1.0;
-	valueAt(matrix, block->inputs[1], 0) = -1.0;
-	valueAt(matrix, block->outputs[0], 0) = 1.0;
+	valueAt(*matrix, block->inputs[0], 0) = -1.0;
+	valueAt(*matrix, block->inputs[1], 0) = -1.0;
+	valueAt(*matrix, block->outputs[0], 0) = 1.0;
 }
 
-static void biuni_rates( double * rates, double * conc, Block * block )
+static void biuni_rates( double t, double * rates, double * conc, Block * block )
 {
 	rates[0] = block->params[0] * conc[ block->inputs[0] ] * conc[ block->inputs[1] ];
 }
 
 static void unibi_stoic( Matrix * matrix, Block * block )
 {
-	valueAt(matrix, block->inputs[0], 0) = -1.0;
-	valueAt(matrix, block->outputs[0], 0) = 1.0;
-	valueAt(matrix, block->outputs[1], 0) = 1.0;
+	valueAt(*matrix, block->inputs[0], 0) = -1.0;
+	valueAt(*matrix, block->outputs[0], 0) = 1.0;
+	valueAt(*matrix, block->outputs[1], 0) = 1.0;
 }
 
-static void unibi_rates( double * rates, double * conc, Block * block )
+static void unibi_rates( double t, double * rates, double * conc, Block * block )
 {
 	rates[0] = block->params[0] * conc[ block->inputs[0] ];
 }
 
 static void bibi_stoic( Matrix * matrix, Block * block )
 {
-	valueAt(matrix, block->inputs[0], 0) = -1.0;
-	valueAt(matrix, block->inputs[1], 0) = -1.0;
-	valueAt(matrix, block->outputs[0], 0) = 1.0;
-	valueAt(matrix, block->outputs[1], 0) = 1.0;
+	valueAt(*matrix, block->inputs[0], 0) = -1.0;
+	valueAt(*matrix, block->inputs[1], 0) = -1.0;
+	valueAt(*matrix, block->outputs[0], 0) = 1.0;
+	valueAt(*matrix, block->outputs[1], 0) = 1.0;
 }
 
-static void bibi_rates( double * rates, double * conc, Block * block )
+static void bibi_rates( double t, double * rates, double * conc, Block * block )
 {
 	rates[0] = block->params[0] * conc[ block->inputs[0] ] * conc[ block->inputs[1] ];
 }
 
-static void enzyme_stoic( Matrix * matrix, Block * block )
+static void print_enzyme(FILE * file, Block * block)
 {
-	valueAt(matrix, block->inputs[0], 0) = -1.0;   //s + e -> es
-	valueAt(matrix, block->inputs[1], 0) = -1.0;
-	valueAt(matrix, block->internals[0], 0) = 1.0;
-	
-	valueAt(matrix, block->inputs[0], 0) = 1.0;   //es -> s + e
-	valueAt(matrix, block->inputs[1], 0) = 1.0;
-	valueAt(matrix, block->internals[0], 0) = -1.0;
-	
-	valueAt(matrix, block->outputs[0], 0) = 1.0;  //es -> p + e
-	valueAt(matrix, block->inputs[1], 0) = 1.0;
-	valueAt(matrix, block->internals[0], 0) = -1.0;
-	
-	valueAt(matrix, block->outputs[0], 0) = -1.0;  //p + e -> es
-	valueAt(matrix, block->inputs[1], 0) = -1.0;
-	valueAt(matrix, block->internals[0], 0) = 1.0;
 }
 
-static void enzyme_rates( double * rates, double * conc, Block * block )
+static void enzyme_stoic( Matrix * matrix, Block * block )
+{
+	valueAt(*matrix, block->inputs[0], 0) = -1.0;   //s + e -> es
+	valueAt(*matrix, block->inputs[1], 0) = -1.0;
+	valueAt(*matrix, block->internals[0], 0) = 1.0;
+	
+	valueAt(*matrix, block->inputs[0], 0) = 1.0;   //es -> s + e
+	valueAt(*matrix, block->inputs[1], 0) = 1.0;
+	valueAt(*matrix, block->internals[0], 0) = -1.0;
+	
+	valueAt(*matrix, block->outputs[0], 0) = 1.0;  //es -> p + e
+	valueAt(*matrix, block->inputs[1], 0) = 1.0;
+	valueAt(*matrix, block->internals[0], 0) = -1.0;
+	
+	valueAt(*matrix, block->outputs[0], 0) = -1.0;  //p + e -> es
+	valueAt(*matrix, block->inputs[1], 0) = -1.0;
+	valueAt(*matrix, block->internals[0], 0) = 1.0;
+}
+
+static void enzyme_rates( double t, double * rates, double * conc, Block * block )
 {
 	rates[0] = block->params[0] * conc[ block->inputs[0] ] * conc[ block->inputs[1] ];
 	rates[1] = block->params[1] * conc[ block->internals[0] ];
@@ -107,3 +131,5 @@ BlockType BlockTypesTable[] =
 	{"enzymatic reaction\0", 			&enzyme_stoic, 	&enzyme_rates, 	&print_enzyme,	 	4, 	2, 	1, 	1, 	4, 	0, 	0},
 	{0,0,0,0,0,0,0,0,0,0} //NULL type to mark the end of array
 };
+
+#endif

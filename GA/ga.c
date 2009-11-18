@@ -599,7 +599,7 @@ int* GAgetOriginalParents(int individual, int generation, int *** _PARENTS)
 int* GAgetImmediateParents(int individual, int generation, int *** _PARENTS)
 {
 	int p1=0, p2=0;
-	int * parents, * clone;
+	int * parents;
 
 	if (_PARENTS == 0 || generation < 0 || individual <= 0)
 	{
