@@ -6,10 +6,10 @@
 static int MIN_SIZE = 1;  //minimum allowed size of a system (size = num. of blocks)
 static int MAX_SIZE = 20;  //maximum allowed size of a system (size = num. of blocks)
 
-static double PROB_PARAM_CHANGE = 0.6; //prob. of changing parameter (during mutation)
+static double PROB_PARAM_CHANGE = 0.0; //prob. of changing parameter (during mutation)
 static double PROB_REWIRE = 0.3;  //prob. of rewiring vs. changing parameter (during mutation)
-static double PROB_NEW_BLOCK = 0.05;  //prob. of adding new block (during mutation)
-static double PROB_DEL_BLOCK = 0.05;  //prob. of removing a block (during mutation)
+static double PROB_NEW_BLOCK = 0.0;  //prob. of adding new block (during mutation)
+static double PROB_DEL_BLOCK = 0.0;  //prob. of removing a block (during mutation)
 static int MUTATION_RATE = 1; //number of changes made during a single mutation event. Cannot be < 1
 
 static double** FIXED_PARAM_VALUES = 0; //values for specific fixed parameters
@@ -17,7 +17,7 @@ static int** FIXED_PARAMS = 0; //indicates whether or not to mutate specific par
 static int** FIXED_INPUTS = 0; //indicates whether or not to rewire specific inputs
 static int** FIXED_OUTPUTS = 0; //indicates whether or not to rewire specific outputs
 static int* ALLOWED_BLOCKS = 0; //indicates which block types to use
-static int NO_SAME_INPUT_OUTPUT = 1; //whether the same species can be an input and output of same block
+static int NO_SAME_INPUT_OUTPUT = 0; //whether the same species can be an input and output of same block
 
 /*******************
 * helper functions
@@ -54,8 +54,8 @@ static void initialzeArrays() //initialize the above arrays
 		
 		FIXED_PARAM_VALUES[i] = (double*)malloc( BlockTypesTable[i].numParams * sizeof(double) );
 		FIXED_PARAMS[i] = (int*)malloc( BlockTypesTable[i].numParams * sizeof(int) );
-		FIXED_INPUTS[i] = (int*)malloc( BlockTypesTable[i].numParams * sizeof(int) );
-		FIXED_OUTPUTS[i] = (int*)malloc( BlockTypesTable[i].numParams * sizeof(int) );
+		FIXED_INPUTS[i] = (int*)malloc( BlockTypesTable[i].numInputs * sizeof(int) );
+		FIXED_OUTPUTS[i] = (int*)malloc( BlockTypesTable[i].numOutputs * sizeof(int) );
 		
 		//nothing fixed by default
 		for (j=0; j < BlockTypesTable[i].numParams; ++j)
@@ -397,13 +397,13 @@ int systemSize(System* s)
 
 double paramUpperBound(Block * block, int k)
 {
-	if (!block || block->type > numBlockTypes()) return 0.0;
+	if (!block || block->type > numBlockTypes()) return 1.0;
 
 	if (BlockTypesTable[block->type].paramsUpperBound && 
 		k >= 0 &&
 		k < BlockTypesTable[block->type].numParams)
 		return BlockTypesTable[block->type].paramsUpperBound[k];
-	return 0.0;
+	return 1.0;
 }
 
 double paramLowerBound(Block * block, int k)
@@ -549,25 +549,29 @@ static void pruneSystem(System * s) //find unconnected inputs/outputs
 		if (!b1 || !b2)
 		{
 			--total;
-			
-			n = numInputs(s->blocks[j]);
-			for (k=0; k < n; ++k)
+
+			for (j=0; j < s->numBlocks; ++j)
 			{
-				if (s->blocks[j]->inputs[k] == i)
-					s->blocks[j]->inputs[k] = -1;
-					
-				if (s->blocks[j]->inputs[k] > i)
-					s->blocks[j]->inputs[k] -= 1;
-			}
-			
-			n = numOutputs(s->blocks[j]);
-			for (k=0; k < n; ++k)
-			{
-				if (s->blocks[j]->outputs[k] == i)
-					s->blocks[j]->outputs[k] = -1;
 				
-				if (s->blocks[j]->outputs[k] > i)
-					s->blocks[j]->outputs[k] -= 1;
+				n = numInputs(s->blocks[j]);
+				for (k=0; k < n; ++k)
+				{
+					if (s->blocks[j]->inputs[k] == i)
+						s->blocks[j]->inputs[k] = -1;
+						
+					if (s->blocks[j]->inputs[k] > i)
+						s->blocks[j]->inputs[k] -= 1;
+				}
+				
+				n = numOutputs(s->blocks[j]);
+				for (k=0; k < n; ++k)
+				{
+					if (s->blocks[j]->outputs[k] == i)
+						s->blocks[j]->outputs[k] = -1;
+					
+					if (s->blocks[j]->outputs[k] > i)
+						s->blocks[j]->outputs[k] -= 1;
+				}
 			}
 		}
 	}
@@ -584,7 +588,7 @@ static System * randomSubsystem(System * s, double prob) //get random subset of 
 	
 	s2->blocks = (Block**)malloc(numBlocks2 * sizeof(Block*));
 	
-	for (i=0, i2=0; i < numBlocks && i2 < numBlocks2; ++i)
+	for (i=0, i2=0; i2 < numBlocks2; ++i)
 	{
 		if (mtrand() < prob)
 		{
@@ -599,7 +603,7 @@ static System * randomSubsystem(System * s, double prob) //get random subset of 
 	s2->numBlocks = numBlocks2;
 	s2->numSpecies = s->numSpecies;
 	
-	pruneSystem(s2);
+	//pruneSystem(s2);
 	return s2;
 }
 
@@ -614,18 +618,10 @@ static void reassignInputsOutputs(Block * block, int numSpecies)
 
 	for (i=0; i < n1; ++i)
 	{
-		b = 0;
-		for (j=0; j < n2; ++j)
-			if ((block->inputs[i] == block->outputs[j]))
-			{
-				b = 1;
-				break;
-			}
-
+		b = 1;
 		while (b)
 		{
 			b = 0;
-			block->inputs[i] = (int)(mtrand() * numSpecies);
 
 			for (j=0; j < n2; ++j)
 				if ((block->inputs[i] == block->outputs[j]))
@@ -633,11 +629,14 @@ static void reassignInputsOutputs(Block * block, int numSpecies)
 					b = 1;
 					break;
 				}
+
+			if (b == 1)
+				block->inputs[i] = (int)(mtrand() * numSpecies);
 		}
 	}
 }
 
-static GAindividual * GAcrossoverBlocks(GAindividual X, GAindividual Y) //place two subsets together
+static GAindividual * crossoverBlocks(GAindividual X, GAindividual Y) //place two subsets together
 {
 	System * s1 = randomSubsystem((System*)X, 0.5);
 	System * s2 = randomSubsystem((System*)Y, 0.5);
@@ -661,10 +660,10 @@ static GAindividual * GAcrossoverBlocks(GAindividual X, GAindividual Y) //place 
 	}
 
 	for (i=0; i < s2->numBlocks; ++i)
-	{		
+	{
 		n = numInputs(s2->blocks[i]);
 		for (j=0; j < n; ++j)
-			if (s1->blocks[i]->inputs[j] < 0)
+			if (s2->blocks[i]->inputs[j] < 0)
 				s2->blocks[i]->inputs[j] = (int)(mtrand() * sz1);
 			else
 				s2->blocks[i]->inputs[j] += sz1;
@@ -735,7 +734,7 @@ static Block * randomBlock()
 	return block;
 }
 
-static GAindividual GAmutateBlocksH(GAindividual X)  //rewire or change parameter
+static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 {
 	System * S = (System*)X;
 	int i,j,k,k0,k1,m0,m1,n;
@@ -814,7 +813,8 @@ static GAindividual GAmutateBlocksH(GAindividual X)  //rewire or change paramete
 						S->blocks[j] = oldBlocks[i];
 						++j;
 					}
-				freeBlock(oldBlocks[k]);
+					else
+						freeBlock(oldBlocks[i]);
 				free(oldBlocks);
 				
 				S->numBlocks--;
@@ -904,13 +904,13 @@ static GAindividual GAmutateBlocksH(GAindividual X)  //rewire or change paramete
 	return (GAindividual)S;
 }
 
-static GAindividual GAmutateBlocks(GAindividual X)  //rewire or change parameter n times
+static GAindividual mutateBlocks(GAindividual X)  //rewire or change parameter n times
 {
 	int i;
 	
 	if ((PROB_PARAM_CHANGE + PROB_REWIRE) > 0.0)
 		for (i=0; i < MUTATION_RATE; ++i)
-			GAmutateBlocksH(X);
+			mutateBlocksH(X);
 
 	return X;
 }
@@ -923,6 +923,7 @@ static System * randomSystem(int numBlocks, int numSpecies)
 {
 	int i,j,n;
 	System * S = (System*)malloc(sizeof(System));
+	S->blocks = (Block**)malloc(numBlocks * sizeof(Block*));
 
 	S->numBlocks = numBlocks;
 	S->numSpecies = numSpecies;
@@ -933,11 +934,11 @@ static System * randomSystem(int numBlocks, int numSpecies)
 
 		n = numInputs(S->blocks[i]);
 		for (j=0; j < n; ++j)
-			S->blocks[j]->inputs[j] = (int)(mtrand() * numSpecies);
+			S->blocks[i]->inputs[j] = (int)(mtrand() * numSpecies);
 		
 		n = numOutputs(S->blocks[i]);
 		for (j=0; j < n; ++j)
-			S->blocks[j]->outputs[j] = (int)(mtrand() * numSpecies);
+			S->blocks[i]->outputs[j] = (int)(mtrand() * numSpecies);
 
 		if (NO_SAME_INPUT_OUTPUT)
 			reassignInputsOutputs(S->blocks[i],numSpecies);
@@ -951,15 +952,32 @@ GApopulation evolveNetworks(int initialPopulationSize, int finalPopulationSize, 
 	return 0;
 }
 
-int main()
+int main(int args, char** argv)
 {
 	int i;
 	
-	System * S = randomSystem(10,10);
+	System * S1 = randomSystem(5,10);
+	System * S2 = randomSystem(6,14);
+	System * S3 = 0;
 
-	freeSystem(S);
+	for (i=0; i<20; ++i)
+	{
+		mutateBlocks(S1);
+		mutateBlocks(S2);
+	}
 
-	i = 0;
-	getchar();
+	for (i=0; i<20; ++i)
+	{
+		printf("co start..\n");
+		S3 = (System*)crossoverBlocks(S1,S2);
+		printf("co done..\n");
+		freeSystem(S2);
+		printf("free done..\n");
+		S2 = S3;
+	}
+
+	freeSystem(S1);
+	freeSystem(S2);
+
 	return 0;
 }
