@@ -1,3 +1,5 @@
+#include <stdlib.h>
+#include <stdio.h>
 #include "blocks.h"
 #include "functions.h"
 
@@ -941,7 +943,7 @@ static System * randomSystem(int numBlocks, int numSpecies)
 			reassignInputsOutputs(S->blocks[i],numSpecies);
 	}
 
-	return System;
+	return S;
 }
 
 GApopulation evolveNetworks(int initialPopulationSize, int finalPopulationSize, GAFitnessFunc fitness, GACallbackFunc callback)
@@ -952,7 +954,12 @@ GApopulation evolveNetworks(int initialPopulationSize, int finalPopulationSize, 
 int main()
 {
 	int i;
+	
+	System * S = randomSystem(10,10);
+
+	freeSystem(S);
 
 	i = 0;
+	getchar();
 	return 0;
 }
