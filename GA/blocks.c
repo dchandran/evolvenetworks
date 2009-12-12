@@ -521,9 +521,11 @@ static int totalInternalSpecies(System * s)
 
 static void pruneSystem(System * s) //find unconnected inputs/outputs
 {
-	int i,j,k,n,b1,b2,total;
-	
+	int i,j,k,n,b1,b2,total,maxi;
+	int * isUsed;
 	total = s->numSpecies;
+	
+	isUsed = (int*)malloc(total * sizeof(int));
 	
 	for (i=0; i < s->numSpecies; ++i)
 	{
@@ -546,34 +548,28 @@ static void pruneSystem(System * s) //find unconnected inputs/outputs
 				}
 		}
 		
-		if (!b1 || !b2)
+		k = (int)(b1 && b2);
+		isUsed[i] = k;
+		total -= (1 - k);
+	}
+	
+	maxi = 0;
+	for (i=0; i < s->numSpecies; ++i)
+	{
+		for (j=0; j < s->numBlocks; ++j)
 		{
-			--total;
-
-			for (j=0; j < s->numBlocks; ++j)
-			{
-				
-				n = numInputs(s->blocks[j]);
-				for (k=0; k < n; ++k)
-				{
-					if (s->blocks[j]->inputs[k] == i)
-						s->blocks[j]->inputs[k] = -1;
-						
-					if (s->blocks[j]->inputs[k] > i)
-						s->blocks[j]->inputs[k] -= 1;
-				}
-				
-				n = numOutputs(s->blocks[j]);
-				for (k=0; k < n; ++k)
-				{
-					if (s->blocks[j]->outputs[k] == i)
-						s->blocks[j]->outputs[k] = -1;
+			n = numInputs(s->blocks[j]);
+			for (k=0; k < n; ++k)
+				if (s->blocks[j]->inputs[k] == i)
+					s->blocks[j]->inputs[k] = isUsed[i] ? maxi : -1;
 					
-					if (s->blocks[j]->outputs[k] > i)
-						s->blocks[j]->outputs[k] -= 1;
-				}
-			}
+			n = numOutputs(s->blocks[j]);
+			for (k=0; k < n; ++k)
+				if (s->blocks[j]->outputs[k] == i)
+					s->blocks[j]->outputs[k] = isUsed[i] ? maxi : -1;
 		}
+		
+		maxi += isUsed[i];
 	}
 	s->numSpecies = total;
 }
@@ -590,21 +586,38 @@ static System * randomSubsystem(System * s, double prob) //get random subset of 
 	
 	for (i=0, i2=0; i2 < numBlocks2; ++i)
 	{
+		if (i >= numBlocks)
+			i = 0;
 		if (mtrand() < prob)
 		{
 			s2->blocks[i2] = copyBlock(s->blocks[i]);
 			++i2;
 		}
-		
-		if (i >= numBlocks)
-			i = 0;
 	}
 
 	s2->numBlocks = numBlocks2;
 	s2->numSpecies = s->numSpecies;
 	
-	//pruneSystem(s2);
+	pruneSystem(s2);
 	return s2;
+}
+
+static void printB(Block * block, int n)
+{
+	int i;
+	
+	int in = numInputs(block),
+		out = numOutputs(block);
+	
+	for (i=0; i < in; ++i)
+		printf("%i ",block->inputs[i]);
+	
+	printf(" -- [%i] -- ",n);
+	
+	for (i=0; i < out; ++i)
+		printf("%i ",block->outputs[i]);
+
+	printf("\n");
 }
 
 static void reassignInputsOutputs(Block * block, int numSpecies)
@@ -636,10 +649,12 @@ static void reassignInputsOutputs(Block * block, int numSpecies)
 	}
 }
 
+static void printB(Block * block, int n);
+
 static GAindividual * crossoverBlocks(GAindividual X, GAindividual Y) //place two subsets together
 {
-	System * s1 = randomSubsystem((System*)X, 0.5);
-	System * s2 = randomSubsystem((System*)Y, 0.5);
+	System * s1 = randomSubsystem((System*)X, 0.6);
+	System * s2 = randomSubsystem((System*)Y, 0.6);
 	System * s3;
 	
 	int sz1 = s1->numSpecies,
@@ -667,7 +682,7 @@ static GAindividual * crossoverBlocks(GAindividual X, GAindividual Y) //place tw
 				s2->blocks[i]->inputs[j] = (int)(mtrand() * sz1);
 			else
 				s2->blocks[i]->inputs[j] += sz1;
-		
+
 		n = numOutputs(s2->blocks[i]);
 		for (j=0; j < n; ++j)
 			if (s2->blocks[i]->outputs[j] < 0)
@@ -678,11 +693,14 @@ static GAindividual * crossoverBlocks(GAindividual X, GAindividual Y) //place tw
 	
 	s3 = (System*)malloc(sizeof(System));
 	s3->numBlocks = s1->numBlocks + s2->numBlocks;
-	s3->numSpecies = s1->numSpecies + s2->numSpecies;	
+	s3->numSpecies = s1->numSpecies + s2->numSpecies;
 	s3->blocks = (Block**)malloc(s3->numBlocks * sizeof(Block));
-	
+
 	for (i=0; i < s1->numBlocks; ++i)
+	{
 		s3->blocks[i] = s1->blocks[i];
+		printB(s3->blocks[i],i);
+	}
 
 	for (i = 0; i < s2->numBlocks; ++i)
 		s3->blocks[i + s1->numBlocks] = s2->blocks[i];
@@ -691,6 +709,8 @@ static GAindividual * crossoverBlocks(GAindividual X, GAindividual Y) //place tw
 	s2->blocks = 0;
 	free(s1);
 	free(s2);
+
+	return (void*)s3;
 }
 
 /*******************
@@ -917,7 +937,7 @@ static GAindividual mutateBlocks(GAindividual X)  //rewire or change parameter n
 
 /**************************
 * main evolution function
-**************************/
+***************************/
 
 static System * randomSystem(int numBlocks, int numSpecies)
 {
@@ -935,7 +955,7 @@ static System * randomSystem(int numBlocks, int numSpecies)
 		n = numInputs(S->blocks[i]);
 		for (j=0; j < n; ++j)
 			S->blocks[i]->inputs[j] = (int)(mtrand() * numSpecies);
-		
+
 		n = numOutputs(S->blocks[i]);
 		for (j=0; j < n; ++j)
 			S->blocks[i]->outputs[j] = (int)(mtrand() * numSpecies);
@@ -955,27 +975,46 @@ GApopulation evolveNetworks(int initialPopulationSize, int finalPopulationSize, 
 int main(int args, char** argv)
 {
 	int i;
+	initMTrand();
 	
-	System * S1 = randomSystem(5,10);
-	System * S2 = randomSystem(6,14);
+	System * S1 = randomSystem(5,5);
+	System * S2 = randomSystem(6,6);
 	System * S3 = 0;
-
-	for (i=0; i<20; ++i)
+	
+	for (i=0; i < S1->numBlocks; ++i)
+		printB(S1->blocks[i],i);
+	
+	printf("\n\n");
+	
+	for (i=0; i < S2->numBlocks; ++i)
+		printB(S2->blocks[i],i);
+	
+	printf("\n\n");
+	
+	for (i=0; i<2; ++i)
 	{
 		mutateBlocks(S1);
 		mutateBlocks(S2);
 	}
-
-	for (i=0; i<20; ++i)
-	{
-		printf("co start..\n");
-		S3 = (System*)crossoverBlocks(S1,S2);
-		printf("co done..\n");
-		freeSystem(S2);
-		printf("free done..\n");
-		S2 = S3;
-	}
-
+	
+	printf("\nMutants\n");
+	
+	for (i=0; i < S1->numBlocks; ++i)
+		printB(S1->blocks[i],i);
+	
+	printf("\n\n");
+	
+	for (i=0; i < S2->numBlocks; ++i)
+		printB(S2->blocks[i],i);
+	
+	S3 = (System*)crossoverBlocks(S1,S2);
+	
+	printf("\nnum species=%i\n",S3->numSpecies);
+	
+	for (i=0; i < S3->numBlocks; ++i)
+		printB(S3->blocks[i],i);
+	
+	freeSystem(S3);
 	freeSystem(S1);
 	freeSystem(S2);
 
