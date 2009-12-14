@@ -20,8 +20,8 @@
 #define GA_BLOCK_BASED_EVOLUTION
 
 #include "ga.h"
-//#include "cvodesim.h"
-//#include "ssa.h"
+#include "cvodesim.h"
+#include "ssa.h"
 
 /*! \brief a 2D matrix with rownames and colnames. 
 The 2D matrix is stored as a single array for efficient memory management.
@@ -47,8 +47,7 @@ Matrix;
 typedef struct
 {
 	int type;
-	int * inputs;
-	int * outputs;
+	int * externals;
 	int * internals;
 	double * params;
 }
@@ -59,7 +58,7 @@ Block;
 *	\param Block * the block
 * \ingroup gablocks
 */
-typedef void (*StiochiometryFunction)(Matrix*,Block*);
+typedef void (*StiochiometryFunction)(Matrix*,Block*,int);
 
 /*! \brief function type for calculating the rate vector for a block at the given concentration values
 *	\param double time
@@ -78,7 +77,6 @@ typedef void (*RatesFunction)(double,double*,double*,Block*);
 */
 typedef void (*PrintFunction)(FILE*,Block*);
 
-
 /*! \brief a block type
 * \ingroup gablocks
 */
@@ -87,12 +85,11 @@ typedef struct
 	char * name;
 	StiochiometryFunction stoic;
 	RatesFunction rates;
-	PrintFunction print;
 	int numReactions;
-	int numInputs;
-	int numOutputs;
+	int numExternals;
 	int numInternals;
 	int numParams;
+	int allowIdenticalExternals;
 	double * paramsLowerBound;
 	double * paramsUpperBound;
 }
@@ -134,19 +131,12 @@ GApopulation evolveNetworks(int initialPopulationSize, int finalPopulationSize, 
 * \ingroup gablocks
 */
 
-/*! \brief number of inputs in the given block
+/*! \brief number of inputs and outputs in the given block
 *	\param Block* block
 *	\return int
 * \ingroup gablocks
 */
-int numInputs(Block * block);
-
-/*! \brief number of outputs in the given block
-*	\param Block* block
-*	\return int 
-* \ingroup gablocks
-*/
-int numOutputs(Block * block);
+int numExternals(Block * block);
 
 /*! \brief number of parameters in the given block
 *	\param Block* block
@@ -163,6 +153,14 @@ int numParams(Block * block);
 */
 double paramUpperBound(Block * block, int);
 
+/*! \brief set parameter upper bound
+*	\param Block* block
+*	\param int index of parameter
+*	\param double bound (defaults to 0 if invalid)
+* \ingroup gablocks
+*/
+void setParamUpperBound(Block * block, int, double);
+
 /*! \brief parameter lower bound
 *	\param Block* block
 *	\param int index of parameter
@@ -170,6 +168,14 @@ double paramUpperBound(Block * block, int);
 * \ingroup gablocks
 */
 double paramLowerBound(Block * block, int);
+
+/*! \brief set parameter lower bound
+*	\param Block* block
+*	\param int index of parameter
+*	\param double bound (defaults to 0 if invalid)
+* \ingroup gablocks
+*/
+void setParamLowerBound(Block * block, int, double);
 
 /*! \brief number of internal molecules in the given block
 *	\return int 
@@ -337,21 +343,13 @@ void allowRewiringFor(const char *);
 */
 void disallowRewiringFor(const char *);
 
-/*! \brief (used during mutation events) disallow rewiring for a particular input in a particular block type
+/*! \brief (used during mutation events) allow or disallow rewiring for a particular input or output in a particular block type
  *	\param const char* name of block type
- *	\param int index of input
+ *	\param int index of input or output
  *	\param int 1=fix 0=free to rewire
 * \ingroup gablocks
 */
-void setInputFixed(const char * name, int input, int fixed);
-
-/*! \brief (used during mutation events) disallow rewiring for a particular input in a particular block type
- *	\param const char* name of block type
- *	\param int index of input
- *	\param int 1=fix 0=free to rewire
-* \ingroup gablocks
-*/
-void setOutputFixed(const char * name, int input, int fixed);
+void setExternalFixed(const char * name, int index, int fixed);
 
 /*! \brief (used during mutation events) set the number of changes to the system that occur during a single mutation event
 *	\param int must be positive
@@ -375,19 +373,12 @@ void disallowSameInputAndOutput();
 * \ingroup gablocks
 */
 
-/*! \brief get the stoichiometry matrix for a block
-*	\param Block * the block
-*	\return Matrix stoichiometry matrix
-* \ingroup gablocks
-*/
-Matrix blockStoichiometryMatrix(Block*, double t);
-
 /*! \brief get the stoichiometry matrix for the set of blocks in a system
 *	\param System * the block
 *	\return Matrix stoichiometry matrix
 * \ingroup gablocks
 */
-Matrix systemStoichiometryMatrix(System*);
+Matrix getStoichiometryMatrix(System*);
 
 /*! \brief get the rates for for a block given the concentrations and time
 *	\param double time
@@ -396,25 +387,29 @@ Matrix systemStoichiometryMatrix(System*);
 *	\param Block * the block
 * \ingroup gablocks
 */
-void getBlockRates(double time, double* conc, double* rates , Block*);
+void getRates(double time, double* conc, double* rates , void*);
 
-/*! \brief get the rates for for a block given the concentrations and time
-*	\param double time
-*	\param double* vector of concentration values
-*	\param double* output vector of rate values
-*	\param Block * the block
+/*! \brief simulate a system stochastically (Gillespie algorithm)
+*   \param System* the system to simulate
+*   \param double * initial values array
+*	\param double total time
+*	\param int final array size
+*   \return double * 2D array of values (see cvodesim.h)
 * \ingroup gablocks
 */
-void systemRates(double time, double* conc, double* rates , System*);
+double * simulateStochastic(System*, double * initialValues,  double time, int * sz);
 
-/*! \brief printing a block
-*	\param FILE* output
-*	\param Block * the block
+/*! \brief simulate a system deterministcally (CVODE numerical integrator)
+*   \param System* the system to simulate
+*   \param double * initial values array
+*	\param double total time
+*	\param double step size
+*   \return double * 2D array of values (see cvodesim.h)
 * \ingroup gablocks
 */
-void printBlock(FILE*,Block*);
+double * simulateODE(System*, double * initialValues, double time, double dt);
 
-/*! \brief printing a system
+/*! \brief printing a system in graphviz format
 *	\param FILE* output
 *	\param Block * the system
 * \ingroup gablocks

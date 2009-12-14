@@ -1,0 +1,19 @@
+R1 + Pr -> R1Pr; kf1*R1*Pr;
+R1Pr -> R1 + Pr; kb1*R1Pr;
+
+R2 + Pr -> R2Pr; kf2*R2*Pr;
+R2Pr -> R2 + Pr; kb2*R2Pr;
+
+ -> mRNA; k1*Pr;
+ mRNA ->; d1*mRNA;
+ -> S; k2*mRNA;
+ S ->; d2*S;
+
+kf1 = 1.0;
+kb1 = 1.0;
+kf2 = 1.0;
+kb2 = 1.0;
+k1 = 1.0;
+d1 = 1.0;
+k2 = 1.0;
+d2 = 0.1;

@@ -358,7 +358,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 
 	/* setup for simulation */
 
-	startTime = 0.0;
+	//startTime = 0.0;
 	t = startTime;
 	tout = startTime;
 	i = 0;

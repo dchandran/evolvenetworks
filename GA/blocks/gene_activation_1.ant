@@ -1,0 +1,12 @@
+A + Pr -> APr; kf*A*Pr;
+APr -> A + Pr; kb*APr;
+ -> mRNA; k1*APr;
+ mRNA ->; d1*mRNA;
+ -> S; k2*mRNA;
+ S ->; d2*S;
+kf = 1.0;
+kb = 1.0;
+k1 = 1.0;
+d1 = 1.0;
+k2 = 1.0;
+d2 = 0.1;

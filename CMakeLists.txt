@@ -37,13 +37,14 @@ INCLUDE_DIRECTORIES( BEFORE
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/optim/
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/lapack/INCLUDE
-	${NETWORKEVOLUTION_SOURCE_DIR}/external/optim/
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/cvode
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/nvec_ser
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/sundials
+	${NETWORKEVOLUTION_SOURCE_DIR}/external/antimony/src
 	${NETWORKEVOLUTION_SOURCE_DIR}/simulation
 	${NETWORKEVOLUTION_SOURCE_DIR}/GA
+	${NETWORKEVOLUTION_SOURCE_DIR}/GA/blocks
 	${NETWORKEVOLUTION_SOURCE_DIR}/parameters
 	${NETWORKEVOLUTION_SOURCE_DIR}/loops
 	${NETWORKEVOLUTION_SOURCE_DIR}/chemotaxis
@@ -64,20 +65,11 @@ LINK_DIRECTORIES(
 #---------------------------------------------------------------------------
 #---------------------------------------------------------------------------
 
-ADD_SUBDIRECTORY( external/lapack )
-
-#---------------------------------------------------------------------------
-#Nelder-Mead algorithm
-#---------------------------------------------------------------------------
-
-FILE( GLOB OPTIM_SRC ${NETWORKEVOLUTION_SOURCE_DIR}/external/optim/*.c )
-
-ADD_LIBRARY( optim 
-  STATIC
-  ${OPTIM_SRC}
-)
-
-SET_TARGET_PROPERTIES(optim PROPERTIES LINKER_LANGUAGE C)
+ADD_SUBDIRECTORY( external )
+ADD_SUBDIRECTORY( simulation )
+ADD_SUBDIRECTORY( GA )
+ADD_SUBDIRECTORY( parameters )
+ADD_SUBDIRECTORY( loops )
 
 #------------------------------
 # Output paths
@@ -91,75 +83,6 @@ SET(EXECUTABLE_OUTPUT_PATH
 SET(LIBRARY_OUTPUT_PATH
  ${NETWORKEVOLUTION_BINARY_DIR}/lib
  CACHE PATH "Single output directory for building all libraries."
-)
-
-#---------------------------------------------------------------------------
-#Wrapper functions for Sundials CVODE
-#---------------------------------------------------------------------------
-
-FILE( GLOB CVODE_SRC ${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/cvode/*.c )
-FILE( GLOB NVECSER_SRC ${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/nvec_ser/*.c )
-FILE( GLOB SUNDIALS_SRC ${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/sundials/*.c )
-
-ADD_LIBRARY( ode
-  STATIC
-  ${CVODE_SRC}
-  ${SUNDIALS_SRC}
-  ${NVECSER_SRC}
-  ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/eigen.c
-  ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/cvodesim.c
-)
-
-TARGET_LINK_LIBRARIES( ode ode lapack )
-
-SET_TARGET_PROPERTIES(ode PROPERTIES LINKER_LANGUAGE C)
-
-#---------------------------------------------------------------------------
-#stochastic simulation
-#---------------------------------------------------------------------------
-
-#Gillespie, Langevin, and custom multi-cell simulation
-
-ADD_LIBRARY( ssa
-  STATIC
-  ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/ssa.c
-  ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/cells_ssa.c
-  ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/langevin.c
-  ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/mtrand.c
-)
-
-#---------------------------------------------------------------------------
-# Genetic algorithm (GA)
-#---------------------------------------------------------------------------
-
-#generic GA
-
-ADD_LIBRARY( ga
-  STATIC
-  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/ga.c
-  ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/mtrand.c
-  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/blocks.c
-)
-
-
-#---------------------------------------------------------------------------
-# Evolve network library (using GA)
-#---------------------------------------------------------------------------
-
-ADD_LIBRARY( netga
-  SHARED
-  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/massActionNetwork.c
-  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/proteinInteractionNetwork.c
-  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/enzymeNetwork.c
-  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/geneRegulationNetwork.c
-  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/reactionNetwork.c
-)
-
-TARGET_LINK_LIBRARIES( netga
-  netga
-  ga
-  ode
-  ssa
 )
 
 #---------------------------------------------------------------------------
@@ -199,37 +122,6 @@ IF (SWIG_BINDINGS)
 	  ${PYTHON_LIBRARIES}
    )
 ENDIF(SWIG_BINDINGS)
-#---------------------------------------------------------------------------
-# Parameter related
-#---------------------------------------------------------------------------
-
-ADD_LIBRARY( gaBistabilize
-  STATIC
-  ${NETWORKEVOLUTION_SOURCE_DIR}/parameters/ga_bistable.c
-)
-
-TARGET_LINK_LIBRARIES( gaBistabilize
-  gaBistabilize
-  ga
-  optim
-)
-
-ADD_EXECUTABLE( parameterInformation ${NETWORKEVOLUTION_SOURCE_DIR}/parameters/ParameterInformationContent.c )
-TARGET_LINK_LIBRARIES( parameterInformation ode ssa )
-
-#---------------------------------------------------------------------------
-# Loops in interaction matrix finder
-#---------------------------------------------------------------------------
-
-ADD_LIBRARY( loops
-  STATIC
-  ${NETWORKEVOLUTION_SOURCE_DIR}/loops/loops.c
-)
-
-TARGET_LINK_LIBRARIES( loops
-  loops
-  ode
-)
 
 #---------------------------------------------------------------------------
 #---------------------------------------------------------------------------
@@ -239,25 +131,25 @@ TARGET_LINK_LIBRARIES( loops
 
 # Use GA library
 
-ADD_EXECUTABLE( evolveChemotaxis ${NETWORKEVOLUTION_SOURCE_DIR}/chemotaxis/evolve_chemotaxis.c )
-TARGET_LINK_LIBRARIES( evolveChemotaxis ga loops )
+#ADD_EXECUTABLE( evolveChemotaxis ${NETWORKEVOLUTION_SOURCE_DIR}/chemotaxis/evolve_chemotaxis.c )
+#TARGET_LINK_LIBRARIES( evolveChemotaxis ga loops )
 
-ADD_EXECUTABLE( bistabilize ${NETWORKEVOLUTION_SOURCE_DIR}/parameters/test_bistable.c )
-TARGET_LINK_LIBRARIES( bistabilize gaBistabilize )
+#ADD_EXECUTABLE( bistabilize ${NETWORKEVOLUTION_SOURCE_DIR}/parameters/test_bistable.c )
+#TARGET_LINK_LIBRARIES( bistabilize gaBistabilize )
 
-ADD_EXECUTABLE( evolveOscillator ${NETWORKEVOLUTION_SOURCE_DIR}/examples/ga_oscillator.c )
-TARGET_LINK_LIBRARIES( evolveOscillator ga )
+#ADD_EXECUTABLE( evolveOscillator ${NETWORKEVOLUTION_SOURCE_DIR}/examples/ga_oscillator.c )
+#TARGET_LINK_LIBRARIES( evolveOscillator ga )
 
-ADD_EXECUTABLE( evolveNoiseDamper ${NETWORKEVOLUTION_SOURCE_DIR}/examples/ga_reduceNoise.c )
-TARGET_LINK_LIBRARIES( evolveNoiseDamper ga )
+#ADD_EXECUTABLE( evolveNoiseDamper ${NETWORKEVOLUTION_SOURCE_DIR}/examples/ga_reduceNoise.c )
+#TARGET_LINK_LIBRARIES( evolveNoiseDamper ga )
 
-ADD_EXECUTABLE( evolveXOR ${NETWORKEVOLUTION_SOURCE_DIR}/examples/ga_logicGate.c )
-TARGET_LINK_LIBRARIES( evolveXOR ga )
+#ADD_EXECUTABLE( evolveXOR ${NETWORKEVOLUTION_SOURCE_DIR}/examples/ga_logicGate.c )
+#TARGET_LINK_LIBRARIES( evolveXOR ga )
 
 # Not related to GA
 
-ADD_EXECUTABLE( findLoops ${NETWORKEVOLUTION_SOURCE_DIR}/loops/test_loops.c )
-TARGET_LINK_LIBRARIES( findLoops loops )
+#ADD_EXECUTABLE( findLoops ${NETWORKEVOLUTION_SOURCE_DIR}/loops/test_loops.c )
+#TARGET_LINK_LIBRARIES( findLoops loops )
 
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------

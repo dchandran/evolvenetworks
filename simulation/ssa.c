@@ -19,8 +19,9 @@ double * SSA(int m, int n, double * N, PropensityFunction propensity, double *x0
 	v = (double*) malloc( n * sizeof(double) );   //rates
 	
 	iter = i = k = 0;
-	rand = lambda = time = sum = 0;
+	rand = lambda = sum = 0;
 	
+	time = startTime;
 	//initialize values
 	getValue(x,1+m,0,0) = startTime;
 	for (i = 0; i < m; ++i)

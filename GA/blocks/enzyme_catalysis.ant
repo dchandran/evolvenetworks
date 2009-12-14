@@ -1,0 +1,12 @@
+S + E -> ES; kf1*S*E;
+ES -> S + E; kb1*ES;
+ES -> EP; kf2*ES;
+EP -> ES; kb2*EP;
+EP -> P + E; kf3*EP;
+P + E -> EP; kb3*P*E;
+kf1 = 1.0;
+kb1 = 1.0;
+kf2 = 1.0;
+kb2 = 1.0;
+kf3 = 1.0;
+kb3 = 0.00001;
