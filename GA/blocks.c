@@ -5,6 +5,7 @@
 
 static int MIN_SIZE = 1;  //minimum allowed size of a system (size = num. of blocks)
 static int MAX_SIZE = 20;  //maximum allowed size of a system (size = num. of blocks)
+static int PERCENT_OVERLAP = 0.2; //expected percent of two blocks that will overlap
 
 static double PROB_PARAM_CHANGE = 0.0; //prob. of changing parameter (during mutation)
 static double PROB_REWIRE = 0.3;  //prob. of rewiring vs. changing parameter (during mutation)
@@ -24,11 +25,11 @@ static int NO_SAME_INPUT_OUTPUT = 0; //whether the same species can be an input 
 
 static int stringsAreSame(const char * a, const char * b) // a == b
 {
-	int i=0;	
+	int i=0;
 	if (!a || !b) return 0;
-	
+
 	while (a[i] && b[i] && a[i]==b[i]) ++i;
-	
+
 	return (!a[i] && !b[i] && i > 0);
 }
 
@@ -39,28 +40,28 @@ static int stringsAreSame(const char * a, const char * b) // a == b
 static void initialzeArrays() //initialize the above arrays
 {
 	int total, i, j;
-	
+
 	total = numBlockTypes();
 	FIXED_PARAM_VALUES = (double**)malloc(total * sizeof(double*));
 	FIXED_PARAMS = (int**)malloc(total * sizeof(int*));
 	FIXED_IO = (int**)malloc(total * sizeof(int*));
 	ALLOWED_BLOCKS = (int*)malloc(total * sizeof(int));
-	
+
 	for (i=0; i < total; ++i)
 	{
 		ALLOWED_BLOCKS[i] = 1; //all blocks are allowed by default
-		
+
 		FIXED_PARAM_VALUES[i] = (double*)malloc( BlockTypesTable[i].numParams * sizeof(double) );
 		FIXED_PARAMS[i] = (int*)malloc( BlockTypesTable[i].numParams * sizeof(int) );
 		FIXED_IO[i] = (int*)malloc( BlockTypesTable[i].numExternals * sizeof(int) );
-		
+
 		//nothing fixed by default
 		for (j=0; j < BlockTypesTable[i].numParams; ++j)
 		{
 			FIXED_PARAMS[i][j] = 0;
 			FIXED_PARAM_VALUES[i][j] = 1.0;
 		}
-		
+
 		for (j=0; j < BlockTypesTable[i].numExternals; ++j)
 			FIXED_IO[i][j] = 0;
 	}
@@ -103,21 +104,21 @@ int isNullBlockType(BlockType type)
 	return (type.name == 0 || type.numReactions < 1);
 }
 
-int isNullBlock(Block * block) 
-{ 
+int isNullBlock(Block * block)
+{
 	int i = block->type;
-	return isNullBlockType(BlockTypesTable[i]); 
+	return isNullBlockType(BlockTypesTable[i]);
 }
 
 int getBlockTypeIndex(const char * name)
 {
 	int i;
 	int sz = numBlockTypes();
-	
+
 	for (i=0; i < sz; ++i)
 		if (stringsAreSame(name,BlockTypesTable[i].name))
 			break;
-	
+
 	if (i >= sz) i = -1;
 	return i;
 }
@@ -125,7 +126,7 @@ int getBlockTypeIndex(const char * name)
 const char* getBlockTypeName(int i)
 {
 	int sz = numBlockTypes();
-	
+
 	if (i < 0 || i >= sz) i = 0;
 	return BlockTypesTable[i].name;
 }
@@ -152,7 +153,7 @@ void disallowSameInputAndOutput()
 
 void setMutateParameterProb(double d)
 {
-	if (d >= 0.0 && d <= 1.0) 
+	if (d >= 0.0 && d <= 1.0)
 	{
 		PROB_REWIRE = 1.0 - d;
 		PROB_PARAM_CHANGE = d;
@@ -166,15 +167,15 @@ void setRewiringProb(double d)
 
 void allowParameterChange()
 {
-	int total, i, j;	
+	int total, i, j;
 	total = numBlockTypes();
-	
+
 	if (!ALLOWED_BLOCKS) initialzeArrays();
-	
-	for (i=0; i < total; ++i)	
+
+	for (i=0; i < total; ++i)
 		for (j=0; j < BlockTypesTable[i].numParams; ++j)
 				FIXED_PARAMS[i][j] = 0;
-				
+
 	if (PROB_REWIRE == 1.0)
 		PROB_REWIRE = 0.3;
 
@@ -183,26 +184,26 @@ void allowParameterChange()
 
 void disallowParameterChange()
 {
-	int total, i, j;	
+	int total, i, j;
 	total = numBlockTypes();
-	
+
 	if (!ALLOWED_BLOCKS) initialzeArrays();
-	
-	for (i=0; i < total; ++i)	
+
+	for (i=0; i < total; ++i)
 		for (j=0; j < BlockTypesTable[i].numParams; ++j)
 				FIXED_PARAMS[i][j] = 1;
-	
+
 	setMutateParameterProb(0.0);
 }
 
 void allowParameterChangeFor(const char* name)
 {
 	int j, i = getBlockTypeIndex(name);
-	
+
 	if (i < 0) return;
-	
+
 	if (!ALLOWED_BLOCKS) initialzeArrays();
-	
+
 	for (j=0; j < BlockTypesTable[i].numParams; ++j)
 		FIXED_PARAMS[i][j] = 0;
 }
@@ -210,11 +211,11 @@ void allowParameterChangeFor(const char* name)
 void disallowParameterChangeFor(const char* name)
 {
 	int j, i = getBlockTypeIndex(name);
-	
+
 	if (i < 0) return;
-	
+
 	if (!ALLOWED_BLOCKS) initialzeArrays();
-	
+
 	for (j=0; j < BlockTypesTable[i].numParams; ++j)
 		FIXED_PARAMS[i][j] = 1;
 }
@@ -222,48 +223,48 @@ void disallowParameterChangeFor(const char* name)
 void fixParameter(const char* name, int j, double value)
 {
 	int i = getBlockTypeIndex(name);
-	
+
 	if (i < 0 || j < 0 || (j >= BlockTypesTable[i].numParams)) return;
-	
+
 	if (!ALLOWED_BLOCKS) initialzeArrays();
-	
+
 	FIXED_PARAMS[i][j] = 1;
 	FIXED_PARAM_VALUES[i][j] = value;
 }
 
 void allowRewiring()
 {
-	int total, i, j;	
+	int total, i, j;
 	total = numBlockTypes();
-	
+
 	if (!ALLOWED_BLOCKS) initialzeArrays();
-	
-	for (i=0; i < total; ++i)	
+
+	for (i=0; i < total; ++i)
 	{
 		for (j=0; j < BlockTypesTable[i].numExternals; ++j)
 				FIXED_IO[i][j] = 0;
 	}
-	
+
 	if (PROB_PARAM_CHANGE == 1.0)
 		PROB_PARAM_CHANGE = 0.7;
 
 	PROB_REWIRE = 1 - PROB_PARAM_CHANGE;
-	
+
 }
 
 void disallowRewiring()
 {
-	int total, i, j;	
+	int total, i, j;
 	total = numBlockTypes();
-	
+
 	if (!ALLOWED_BLOCKS) initialzeArrays();
-	
-	for (i=0; i < total; ++i)	
+
+	for (i=0; i < total; ++i)
 	{
 		for (j=0; j < BlockTypesTable[i].numExternals; ++j)
 				FIXED_IO[i][j] = 1;
 	}
-	
+
 	PROB_PARAM_CHANGE = 1.0;
 	PROB_REWIRE = 0.0;
 }
@@ -271,11 +272,11 @@ void disallowRewiring()
 void allowRewiringFor(const char * name)
 {
 	int j, i = getBlockTypeIndex(name);
-	
+
 	if (i < 0) return;
-	
+
 	if (!ALLOWED_BLOCKS) initialzeArrays();
-	
+
 	for (j=0; j < BlockTypesTable[i].numExternals; ++j)
 		FIXED_IO[i][j] = 0;
 }
@@ -283,11 +284,11 @@ void allowRewiringFor(const char * name)
 void disallowRewiringFor(const char * name)
 {
 	int j, i = getBlockTypeIndex(name);
-	
+
 	if (i < 0) return;
-	
+
 	if (!ALLOWED_BLOCKS) initialzeArrays();
-	
+
 	for (j=0; j < BlockTypesTable[i].numExternals; ++j)
 		FIXED_IO[i][j] = 1;
 }
@@ -295,18 +296,18 @@ void disallowRewiringFor(const char * name)
 void setExternalFixed(const char * name, int j, int fixed)
 {
 	int i = getBlockTypeIndex(name);
-	
+
 	if (i < 0 || j < 0 || j > BlockTypesTable[i].numExternals) return;
-	
+
 	if (!ALLOWED_BLOCKS) initialzeArrays();
-	
+
 	FIXED_IO[i][j] = fixed;
 }
 
 void addBlockTypeByIndex(int i)
 {
-	if (i < 0 || i >= numBlockTypes()) return;	
-	
+	if (i < 0 || i >= numBlockTypes()) return;
+
 	if (!ALLOWED_BLOCKS) initialzeArrays();
 	ALLOWED_BLOCKS[i] = 1;
 }
@@ -318,8 +319,8 @@ void addBlockType(const char * name)
 
 void removeBlockTypeByIndex(int i)
 {
-	if (i < 0 || i >= numBlockTypes()) return;	
-	
+	if (i < 0 || i >= numBlockTypes()) return;
+
 	if (!ALLOWED_BLOCKS) initialzeArrays();
 	ALLOWED_BLOCKS[i] = 0;
 }
@@ -350,10 +351,16 @@ void setSizeRange(int min, int max)
 	}
 }
 
+void setPercentOverlap(double p)
+{
+    if (p > 0.0 && p < 1.0)
+        PERCENT_OVERLAP = p;
+}
+
 int systemSize(System* s)
 {
 	int i,n,total=0;
-	
+
 	n = s->numBlocks;
 	for (i=0; i < n; ++i)
 		total += numReactions(s->blocks[i]);
@@ -365,7 +372,7 @@ double paramUpperBound(Block * block, int k)
 {
 	if (!block || block->type > numBlockTypes()) return 1.0;
 
-	if (BlockTypesTable[block->type].paramsUpperBound && 
+	if (BlockTypesTable[block->type].paramsUpperBound &&
 		k >= 0 &&
 		k < BlockTypesTable[block->type].numParams)
 		return BlockTypesTable[block->type].paramsUpperBound[k];
@@ -376,7 +383,7 @@ void setParamUpperBound(Block * block, int k, double d)
 {
 	if (!block || block->type > numBlockTypes()) return;
 
-	if (BlockTypesTable[block->type].paramsUpperBound && 
+	if (BlockTypesTable[block->type].paramsUpperBound &&
 		k >= 0 &&
 		k < BlockTypesTable[block->type].numParams)
 		BlockTypesTable[block->type].paramsUpperBound[k] = d;
@@ -386,7 +393,7 @@ double paramLowerBound(Block * block, int k)
 {
 	if (!block || block->type > numBlockTypes()) return 0.0;
 
-	if (BlockTypesTable[block->type].paramsLowerBound && 
+	if (BlockTypesTable[block->type].paramsLowerBound &&
 		k >= 0 &&
 		k < BlockTypesTable[block->type].numParams)
 		return BlockTypesTable[block->type].paramsLowerBound[k];
@@ -397,7 +404,7 @@ void setParamLowerBound(Block * block, int k, double d)
 {
 	if (!block || block->type > numBlockTypes()) return;
 
-	if (BlockTypesTable[block->type].paramsLowerBound && 
+	if (BlockTypesTable[block->type].paramsLowerBound &&
 		k >= 0 &&
 		k < BlockTypesTable[block->type].numParams)
 		BlockTypesTable[block->type].paramsLowerBound[k] = d;
@@ -410,16 +417,16 @@ void setParamLowerBound(Block * block, int k, double d)
 static void freeBlock(Block * block)
 {
 	if (!block) return;
-	
+
 	if (block->internals)
 		free(block->internals);
-		
+
 	if (block->externals)
 		free(block->externals);
-	
+
 	if (block->params)
 		free(block->params);
-	
+
 	free(block);
 }
 
@@ -462,7 +469,7 @@ static void freeSystem(GAindividual X)
 	free(s);
 }
 
-static GAindividual * cloneSystem(GAindividual X)
+static GAindividual cloneSystem(GAindividual X)
 {
 	System * s = (System*)X;
 	int i;
@@ -471,15 +478,15 @@ static GAindividual * cloneSystem(GAindividual X)
 
 	numBlocks = s->numBlocks;
 	s2 = (System*)malloc(sizeof(System));
-	
+
 	s2->blocks = (Block**)malloc(numBlocks * sizeof(Block*));
-	
+
 	for (i=0; i < numBlocks; ++i)
 		s2->blocks[i] = copyBlock(s->blocks[i]);
 
 	s2->numBlocks = s->numBlocks;
 	s2->numSpecies = s->numSpecies;
-	
+
 	return (GAindividual)s2;
 }
 
@@ -490,10 +497,10 @@ static GAindividual * cloneSystem(GAindividual X)
 static int totalInternalSpecies(System * s)
 {
 	int i = 0, sz = 0;
-	
+
 	for (i=0; i < s->numBlocks; ++i)
 		sz += numInternals(s->blocks[i]);
-	
+
 	return sz;
 }
 
@@ -502,9 +509,9 @@ static void pruneSystem(System * s) //find unconnected inputs/outputs
 	int i,j,k,n,b1,b2,total,maxi;
 	int * isUsed;
 	total = s->numSpecies;
-	
+
 	isUsed = (int*)malloc(total * sizeof(int));
-	
+
 	for (i=0; i < s->numSpecies; ++i)
 	{
 		b1 = b2 = 0;
@@ -518,12 +525,12 @@ static void pruneSystem(System * s) //find unconnected inputs/outputs
 					break;
 				}
 		}
-		
+
 		k = (int)(b1 && b2);
 		isUsed[i] = k;
 		total -= (1 - k);
 	}
-	
+
 	maxi = 0;
 	for (i=0; i < s->numSpecies; ++i)
 	{
@@ -534,7 +541,7 @@ static void pruneSystem(System * s) //find unconnected inputs/outputs
 				if (s->blocks[j]->externals[k] == i)
 					s->blocks[j]->externals[k] = isUsed[i] ? maxi : -1;
 		}
-		
+
 		maxi += isUsed[i];
 	}
 	s->numSpecies = total;
@@ -545,11 +552,11 @@ static System * randomSubsystem(System * s, double prob) //get random subset of 
 	int i, i2;
 	int numBlocks = s->numBlocks, numBlocks2;
 	System * s2 = (System*)malloc(sizeof(System));
-	
+
 	numBlocks2 = (int)(prob * (double)numBlocks);
-	
+
 	s2->blocks = (Block**)malloc(numBlocks2 * sizeof(Block*));
-	
+
 	for (i=0, i2=0; i2 < numBlocks2; ++i)
 	{
 		if (i >= numBlocks)
@@ -563,7 +570,7 @@ static System * randomSubsystem(System * s, double prob) //get random subset of 
 
 	s2->numBlocks = numBlocks2;
 	s2->numSpecies = s->numSpecies;
-	
+
 	pruneSystem(s2);
 	return s2;
 }
@@ -596,16 +603,16 @@ static void reassignInputsOutputs(Block * block, int numSpecies)
 	}
 }
 
-static GAindividual * crossoverBlocks(GAindividual X, GAindividual Y) //place two subsets together
+static GAindividual crossoverBlocks(GAindividual X, GAindividual Y) //place two subsets together
 {
 	System * s1 = randomSubsystem((System*)X, 0.6);
 	System * s2 = randomSubsystem((System*)Y, 0.6);
 	System * s3;
-	
+
 	int sz1 = s1->numSpecies,
 		sz2 = s2->numSpecies;
 	int i,j,n;
-	
+
 	for (i=0; i < s1->numBlocks; ++i)
 	{
 		n = numExternals(s1->blocks[i]);
@@ -623,7 +630,7 @@ static GAindividual * crossoverBlocks(GAindividual X, GAindividual Y) //place tw
 			else
 				s2->blocks[i]->externals[j] += sz1;
 	}
-	
+
 	s3 = (System*)malloc(sizeof(System));
 	s3->numBlocks = s1->numBlocks + s2->numBlocks;
 	s3->numSpecies = s1->numSpecies + s2->numSpecies;
@@ -689,19 +696,19 @@ static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 {
 	System * S = (System*)X;
 	int i,j,k,k0,k1,m0,m1,n;
-	
+
 	int numBlocks = S->numBlocks,
 		type = 0;
-	
+
 	Block ** oldBlocks, *block;
-	
+
 	if (mtrand() < PROB_PARAM_CHANGE) //mutate parameter
-	{	
+	{
 		k0 = (int)(mtrand() * numBlocks);
 		k1 = k0;
-		
+
 		while (1)
-		{	
+		{
 			n = numParams(S->blocks[k1]);
 			m0 = (int)(mtrand() * n);
 			type = S->blocks[k1]->type;
@@ -712,19 +719,19 @@ static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 				if (m1 >= n) m1 = 0; //cycle
 				if (m1 == m0) break;
 			}
-			
+
 			if (!FIXED_PARAMS[type][m1] || m1!=m0)
 			{
 				S->blocks[k1]->params[m1] *= 2.0 * mtrand();  //mutate (k0,k3)
 				return (GAindividual)S;
 			}
-			
+
 			++k1;
 			if (k1 >= numBlocks) k1 = 0;
 			if (k0==k1) break;
 		}
 	}
-	
+
 	//add or remove block?
 	if ((mtrand() < (PROB_NEW_BLOCK + PROB_DEL_BLOCK)) && (S->numBlocks > MIN_SIZE || S->numBlocks < MAX_SIZE))
 	{
@@ -735,7 +742,7 @@ static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 			for (i=0; i < S->numBlocks; ++i)
 				S->blocks[i] = oldBlocks[i];
 			free(oldBlocks);
-			
+
 			block = randomBlock();
 
 			n = numExternals(block);
@@ -763,7 +770,7 @@ static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 					else
 						freeBlock(oldBlocks[i]);
 				free(oldBlocks);
-				
+
 				S->numBlocks--;
 				pruneSystem(S);
 
@@ -779,16 +786,16 @@ static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 				}
 			}
 	}
-	
+
 	//rewire
-	
+
 	if (mtrand() < 0.5) //input or output
-	{	
+	{
 		k0 = (int)(mtrand() * numBlocks);
 		k1 = k0;
-		
+
 		while (1)
-		{	
+		{
 			n = numExternals(S->blocks[k1]);
 			m0 = (int)(mtrand() * n);
 			type = S->blocks[k1]->type;
@@ -816,9 +823,9 @@ static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 	{
 		k0 = (int)(mtrand() * numBlocks);
 		k1 = k0;
-		
+
 		while (1)
-		{	
+		{
 			n = numExternals(S->blocks[k1]);
 			m0 = (int)(mtrand() * n);
 			type = S->blocks[k1]->type;
@@ -842,14 +849,14 @@ static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 			}
 		}
 	}
-	
+
 	return (GAindividual)S;
 }
 
 static GAindividual mutateBlocks(GAindividual X)  //rewire or change parameter n times
 {
 	int i;
-	
+
 	if ((PROB_PARAM_CHANGE + PROB_REWIRE) > 0.0)
 		for (i=0; i < MUTATION_RATE; ++i)
 			mutateBlocksH(X);
@@ -868,16 +875,16 @@ Matrix getStoichiometryMatrix(System * S)
 	double * values = 0;
 	int i,j,k,n;
 	StiochiometryFunction f;
-	
+
 	N.rownames = N.colnames = 0;
 	N.values = 0;
-	
+
 	for (i = 0; i < S->numBlocks; ++i)
 	{
 		numInt += numInternals(S->blocks[i]);
 		numReacs += numReactions(S->blocks[i]);
 	}
-	
+
 	k = S->numSpecies;
 	for (i = 0; i < S->numBlocks; ++i)
 	{
@@ -885,23 +892,23 @@ Matrix getStoichiometryMatrix(System * S)
 		for (j = 0; j < n; ++j, ++k)
 			S->blocks[i]->internals[j] = k;
 	}
-	
+
 	numSpecies = S->numSpecies + numInt;
-	
+
 	N.cols = numReacs;
 	N.rows = numSpecies;
 	N.values = (double*)malloc(numReacs * numSpecies * sizeof(double));
 	for (i = 0; i < (numReacs*numSpecies); ++i)
 		N.values[i] = 0.0;
 	k = 0;
-	
+
 	for (i = 0; i < S->numBlocks; ++i)
 	{
 		f = BlockTypesTable[ S->blocks[i]->type ].stoic;
 		f(&N,S->blocks[i],k);
 		k += BlockTypesTable[ S->blocks[i]->type ].numReactions;
 	}
-	
+
 	return N;
 }
 
@@ -910,7 +917,7 @@ void getRates(double time, double* conc, double* rates, void * s)
 	int i,k,n;
 	RatesFunction f;
 	System * S = (System*)s;
-	
+
 	k = 0;
 	for (i = 0; i < S->numBlocks; ++i)
 	{
@@ -929,11 +936,11 @@ double * simulateStochastic(System * S, double * init, double time, int * sz)
 {
 	Matrix N = getStoichiometryMatrix(S);
 	double * y;
-	
+
 	y = SSA(N.rows, N.cols, N.values , &getRates, init, 0.0, time, 100000, sz, S);
-	
+
 	free(N.values);
-	
+
 	return y;
 }
 
@@ -941,11 +948,11 @@ double * simulateODE(System * S, double * init, double time, double dt)
 {
 	Matrix N = getStoichiometryMatrix(S);
 	double * y;
-	
+
 	y = ODEsim2(N.rows, N.cols, N.values , &getRates, init, 0.0, time, dt, S);
-	
+
 	free(N.values);
-	
+
 	return y;
 }
 
@@ -953,21 +960,30 @@ double * simulateODE(System * S, double * init, double time, double dt)
 * main evolution function
 ***************************/
 
-static System * randomSystem(int numBlocks, int numSpecies)
+static System * randomSystem(int numBlocks)
 {
-	int i,j,n;
+	int i,j,n,numSpecies;
 	System * S = (System*)malloc(sizeof(System));
 	S->blocks = (Block**)malloc(numBlocks * sizeof(Block*));
 
 	S->numBlocks = numBlocks;
-	S->numSpecies = numSpecies;
+	numSpecies = 0;
 
 	for (i=0; i < numBlocks; ++i)
 	{
 		S->blocks[i] = randomBlock();
+		initializeBlock(S->blocks[i]);
+		numSpecies += numExternals(S->blocks[i]);
+    }
 
-		n = numExternals(S->blocks[i]);
-		for (j=0; j < n; ++j)
+    numSpecies *= (1.0 - PERCENT_OVERLAP);
+    S->numSpecies = numSpecies;
+
+    for (i=0; i < numBlocks; ++i)
+	{
+        n = numExternals(S->blocks[i]);
+
+	    for (j=0; j < n; ++j)
 			S->blocks[i]->externals[j] = (int)(mtrand() * numSpecies);
 
 		if (NO_SAME_INPUT_OUTPUT)
@@ -991,7 +1007,13 @@ void initializeSystem(System * S)
 
 GApopulation evolveNetworks(GAFitnessFunc fitness, int initialPopulationSize, int finalPopulationSize, int iter, GACallbackFunc callback)
 {
-	GApopulation P = (GApopulation)randomSystem(initialPopulationSize);
+    int i;
+	GApopulation P;
+
+	P = (GApopulation)malloc(initialPopulationSize * sizeof(GAindividual));
+
+	for (i=0; i < initialPopulationSize; ++i)
+        P[i] = (GApopulation)randomSystem(MIN_SIZE + mtrand() * (MAX_SIZE - MIN_SIZE));
 	GAinit( &freeSystem, &cloneSystem , fitness, &crossoverBlocks, &mutateBlocks, &GArouletteWheelSelection, callback);
-	return GApopulation GArun(P,initialPopulationSize,finalPopulationSize,iter);
+	return GArun(P,initialPopulationSize,finalPopulationSize,iter);
 }

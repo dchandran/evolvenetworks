@@ -6,14 +6,14 @@
    This file defines the structs called Block and System. A Block represents a single biological process
    that is defined by a stoichiometry matrix and reaction rate equations. Each block contains unique
    parameter values, inputs, outputs, and internal molecules. The input and output molecules are used to connect
-   two or more blocks to each other. Each block has a BlockType, which is a struct that stores the stoichiometry and 
+   two or more blocks to each other. Each block has a BlockType, which is a struct that stores the stoichiometry and
    rate function for blocks of that type. It also stores the number of inputs and outputs and other information
-   about all blocks of that type. 
-   
+   about all blocks of that type.
+
    A System is composed of a set number of molecules and a set number of interacting blocks. By generating
    the rates and stoichiometry matrices for each block, the entire system can be reduced to a single
    dynamical system.
-	
+
 **/
 
 #ifndef GA_BLOCK_BASED_EVOLUTION
@@ -23,18 +23,18 @@
 #include "cvodesim.h"
 #include "ssa.h"
 
-/*! \brief a 2D matrix with rownames and colnames. 
+/*! \brief a 2D matrix with rownames and colnames.
 The 2D matrix is stored as a single array for efficient memory management.
-Use valueAt(M,i,j) macro to get i,j-th element of matrix M. 
+Use valueAt(M,i,j) macro to get i,j-th element of matrix M.
 * \ingroup gablocks
 */
-typedef struct 
+typedef struct
 {
 	int rows, cols;
 	double * values;
 	char** rownames;
 	char** colnames;
-} 
+}
 Matrix;
 
 #ifndef valueAt
@@ -53,7 +53,7 @@ typedef struct
 }
 Block;
 
-/*! \brief function type for getting the stoichiometry matrix of a block 
+/*! \brief function type for getting the stoichiometry matrix of a block
 *	\param Matrix the output stoichiometry matrix
 *	\param Block * the block
 * \ingroup gablocks
@@ -102,8 +102,8 @@ typedef struct
 }
 BlockType;
 
-/*! 
-* \brief a system is defined as a set of blocks and a set number of molecular species. 
+/*!
+* \brief a system is defined as a set of blocks and a set number of molecular species.
 	Important: the number of molecular species does NOT include the number of internal
 	molecules (this makes the code simpler). The total number of molecules are only calculated
 	when generating the stoichiometry matrix.
@@ -186,13 +186,13 @@ double paramLowerBound(Block * block, int);
 void setParamLowerBound(Block * block, int, double);
 
 /*! \brief number of internal molecules in the given block
-*	\return int 
+*	\return int
 * \ingroup gablocks
 */
 int numInternals(Block * block);
 
 /*! \brief number of reactions in the given block
-*	\return int 
+*	\return int
 * \ingroup gablocks
 */
 int numReactions(Block * block);
@@ -217,14 +217,14 @@ int numBlockTypes();
 
 /*! \brief get the index of the block type with given name
 *	\param const char* name
-*	\return int 
+*	\return int
 * \ingroup gablocks
 */
 int getBlockTypeIndex(const char* name);
 
 /*! \brief get the name of the block type with given index
 *	\param int index
-*	\return char* name 
+*	\return char* name
 * \ingroup gablocks
 */
 const  char* getBlockTypeName(int);
@@ -271,14 +271,14 @@ void removeBlockTypeByIndex(int);
 */
 void setMutateParameterProb(double);
 
-/*! \brief (used during mutation events) set the probability for adding a new block. 
+/*! \brief (used during mutation events) set the probability for adding a new block.
 *	Important: this probability is multiplied by (1 - parameter mutation prob.)
 *	\param double probability
 * \ingroup gablocks
 */
 void setAddBlockProb(double);
 
-/*! \brief (used during mutation events) set the probability for removing a new block 
+/*! \brief (used during mutation events) set the probability for removing a new block
 *	Important: this probability is multiplied by (1 - parameter mutation prob.)
 *	\param double probability
 * \ingroup gablocks
@@ -292,23 +292,32 @@ void setRemoveBlockProb(double);
 */
 void setSizeRange(int min, int max);
 
+/*! \brief set the number of molecules that will be shared initially between
+two blocks in the system. This is an average value; some blocks may have
+more molecules shared and some may have less. As the evolution progresses, there
+is no guarantee that this average value will be maintained.
+*	\param double value between 0 and 1
+* \ingroup gablocks
+*/
+void setPercentOverlap(double p);
+
 /*! \brief (used during mutation events) set the probability for rewiring two blocks in a system
 *	\param double probability
 * \ingroup gablocks
 */
 void setRewiringProb(double);
 
-/*! \brief (used during mutation events) allow for mutating of parameter values 
+/*! \brief (used during mutation events) allow for mutating of parameter values
 * \ingroup gablocks
 */
 void allowParameterChange();
 
-/*! \brief (used during mutation events) disallow for mutating of parameter values 
+/*! \brief (used during mutation events) disallow for mutating of parameter values
 * \ingroup gablocks
 */
 void disallowParameterChange();
 
-/*! \brief (used during mutation events) allow for mutating of all parameter values for a particular block type 
+/*! \brief (used during mutation events) allow for mutating of all parameter values for a particular block type
 *	\param const char* name of block type
 * \ingroup gablocks
 */
@@ -320,7 +329,7 @@ void allowParameterChangeFor(const char* name);
 */
 void disallowParameterChangeFor(const char* name);
 
-/*! \brief (used during mutation events) fix a particular parameter of a particular block type (i.e. it will not change). 
+/*! \brief (used during mutation events) fix a particular parameter of a particular block type (i.e. it will not change).
 	Note: calling allowParameterChange() after this function will remove the fixed-ness
 *	\param const char* name of block type
 * 	\param int parameter index
