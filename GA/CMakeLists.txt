@@ -14,7 +14,10 @@ ADD_LIBRARY( ga
   ${NETWORKEVOLUTION_SOURCE_DIR}/GA/blocks.c
 )
 
-TARGET_LINK_LIBRARIES( ga )
+TARGET_LINK_LIBRARIES( ga ga ode ssa)
+
+ADD_EXECUTABLE( testblocks ${NETWORKEVOLUTION_SOURCE_DIR}/GA/testBlocks.c )
+TARGET_LINK_LIBRARIES( testblocks ga )
 
 #---------------------------------------------------------------------------
 # Evolve network library (using GA)

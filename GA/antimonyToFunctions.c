@@ -76,8 +76,9 @@ void convertToBlock(const char * name, const char * antimonyFile, const char * f
 		else
 			fprintf(fp1,"1.0E30};\n\n",name);
 	
+	
 	numInputs = 0;
-	fprintf(fp2,"    {\"%s\",&%s_stoic,&%s_rates,%i,%i,%i,%i,1,%s_paramLowerBound,%s_paramUpperBound},\n",name,name,name,n,numSpecies,numInputs,numParams,name,name);
+	fprintf(fp2,"    {\"%s\",&%s_stoic,&%s_rates,&%s_init,%i,%i,%i,%i,1,%s_paramLowerBound,%s_paramUpperBound},\n",name,name,name,name,n,numSpecies,numInputs,numParams,name,name);
 
 	fclose(fp1);
 	fclose(fp2);

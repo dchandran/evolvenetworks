@@ -462,7 +462,7 @@ static void freeSystem(GAindividual X)
 	free(s);
 }
 
-static System * cloneSystem(GAindividual X)
+static GAindividual * cloneSystem(GAindividual X)
 {
 	System * s = (System*)X;
 	int i;
@@ -480,7 +480,7 @@ static System * cloneSystem(GAindividual X)
 	s2->numBlocks = s->numBlocks;
 	s2->numSpecies = s->numSpecies;
 	
-	return s2;
+	return (GAindividual)s2;
 }
 
 /***********************************************************************
@@ -875,11 +875,10 @@ Matrix getStoichiometryMatrix(System * S)
 	for (i = 0; i < S->numBlocks; ++i)
 	{
 		numInt += numInternals(S->blocks[i]);
-		numExt += numExternals(S->blocks[i]);
 		numReacs += numReactions(S->blocks[i]);
 	}
 	
-	k = 0;
+	k = S->numSpecies;
 	for (i = 0; i < S->numBlocks; ++i)
 	{
 		n = numInternals(S->blocks[i]);
@@ -887,11 +886,13 @@ Matrix getStoichiometryMatrix(System * S)
 			S->blocks[i]->internals[j] = k;
 	}
 	
-	numSpecies = numExt + numInt;
+	numSpecies = S->numSpecies + numInt;
 	
 	N.cols = numReacs;
 	N.rows = numSpecies;
 	N.values = (double*)malloc(numReacs * numSpecies * sizeof(double));
+	for (i = 0; i < (numReacs*numSpecies); ++i)
+		N.values[i] = 0.0;
 	k = 0;
 	
 	for (i = 0; i < S->numBlocks; ++i)
@@ -976,17 +977,21 @@ static System * randomSystem(int numBlocks, int numSpecies)
 	return S;
 }
 
-GApopulation evolveNetworks(int initialPopulationSize, int finalPopulationSize, GAFitnessFunc fitness, GACallbackFunc callback)
+void initializeBlock(Block * block)
 {
-	return 0;
+	BlockTypesTable[ block->type ].init(block);
 }
 
-int main(int args, char** argv)
+void initializeSystem(System * S)
 {
 	int i;
-	initMTrand();
-	
-	
+	for (i = 0; i < S->numBlocks; ++i)
+		initializeBlock(S->blocks[i]);
+}
 
-	return 0;
+GApopulation evolveNetworks(GAFitnessFunc fitness, int initialPopulationSize, int finalPopulationSize, int iter, GACallbackFunc callback)
+{
+	GApopulation P = (GApopulation)randomSystem(initialPopulationSize);
+	GAinit( &freeSystem, &cloneSystem , fitness, &crossoverBlocks, &mutateBlocks, &GArouletteWheelSelection, callback);
+	return GApopulation GArun(P,initialPopulationSize,finalPopulationSize,iter);
 }

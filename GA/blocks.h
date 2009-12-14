@@ -69,6 +69,12 @@ typedef void (*StiochiometryFunction)(Matrix*,Block*,int);
 */
 typedef void (*RatesFunction)(double,double*,double*,Block*);
 
+/*! \brief function type for initializing parameters of a block
+*	\param Block * the block
+* \ingroup gablocks
+*/
+typedef void (*InitializingFunction)(Block*);
+
 /*! \brief function type for printing a block
 *	\param FILE* output
 *	\param Block * the block
@@ -85,6 +91,7 @@ typedef struct
 	char * name;
 	StiochiometryFunction stoic;
 	RatesFunction rates;
+	InitializingFunction init;
 	int numReactions;
 	int numExternals;
 	int numInternals;
@@ -116,14 +123,15 @@ System;
 */
 
 /*! \brief evolve a population of Systems for optimizing the given fitness function
+*	\param GAFitnessFunc the fitness function (see ga.h)
 *	\param int initial size of population (number of systems)
 *	\param int final size of population (number of systems)
-*	\param GAFitnessFunc the fitness function (see ga.h)
+*   \param int maximum number of generations
 *	\param GACallbackFunc optional callback funtion (see ga.h)
 *	\return GApopulation a set of Systems sorted by fitness, null terminated. use GAfree to remove.
 * \ingroup gablocks
 */
-GApopulation evolveNetworks(int initialPopulationSize, int finalPopulationSize, GAFitnessFunc fitness, GACallbackFunc callback);
+GApopulation evolveNetworks(GAFitnessFunc fitness, int initialPopulationSize, int finalPopulationSize, int maxiter, GACallbackFunc callback);
 
 /*! \}
     \name getting information about blocks
@@ -408,6 +416,17 @@ double * simulateStochastic(System*, double * initialValues,  double time, int *
 * \ingroup gablocks
 */
 double * simulateODE(System*, double * initialValues, double time, double dt);
+
+/*! \brief initialize the parameters of the block to the default values
+*   \param Block* block to initialize
+*/
+void initializeBlock(Block*);
+
+/*! \brief initialize the parameters of all blocks in the sytem to the default values
+*   \param System* system to initialize
+*/
+
+void initializeSystem(System*);
 
 /*! \brief printing a system in graphviz format
 *	\param FILE* output
