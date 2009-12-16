@@ -5,23 +5,27 @@
 
 	This library provides the basic functions for running a Genetic Algorithm (GA), but
 	the user is required to setup the fitness function and related functions.
-	
+
 	The user MUST define:
 		1) a struct that represents an "individual"
 		2) a function that returns the fitness of an individual
 		3) a mutation function that randomly alters an individual
 		4) a function to free an individual
 		5) a function to clone an individual
-	
+
 	The following function definition is optional but highly recommended:
 		1) a crossover function to make a new individual from two individuals
-	
+
 	The following functions definitions are entirely optional:
 		1) A function that selects individuals using fitness as probabilities (library provides one by default)
 		2) A callback function can be used to examine or terminate the GA at any iteration
-		
+
+    The following function definition are required for keeping an optional log file:
+		1) print summary of an individual, e.g. size or other key attributes
+		2) print the entire individual, e.g. the entire array, set of equations, entire network
+
 	The main functions are: GAinit and GArun
-	
+
 **/
 #ifndef GA_MAIN_LOOP
 #define GA_MAIN_LOOP
@@ -82,19 +86,41 @@ typedef GAindividual (*GACrossoverFunc)(GAindividual, GAindividual);
 /*! \brief
  * Change an individual randomly. If a new individual is created, then this function must delete (free) the old one.
  * \param GAindividual parent individual
- * \return GAindividual pointer to the same individual or a new one. If a new individual is created, 
+ * \return GAindividual pointer to the same individual or a new one. If a new individual is created,
         the original individual must be deleted inside the mutation function
  * \ingroup ga
 */
 typedef GAindividual (*GAMutateFunc)(GAindividual);
 
+/*! \}
+    \name Printing functions
+    If a log file is needed, then these two functions must be set.
+	\{
+*/
+
+/*! \brief
+ * Print basic summary of an individual (e.g., size)
+ * \param GAindividual a single individual
+ * \param FILE* file handle
+ * \ingroup ga
+*/
+typedef void (*GAPrintSummaryFunc)(GAindividual,FILE*);
+
+/*! \brief
+ * Print an individual
+ * \param GAindividual a single individual
+ * \param FILE* file handle
+ * \ingroup ga
+*/
+typedef void (*GAPrintFunc)(GAindividual,FILE*);
+
 /*!
   \}
   \name Optional functions
-  The following two functions are entirely optional. 
-  The GA library provides default Selection Function, 
+  The following two functions are entirely optional.
+  The GA library provides default Selection Function,
   which can be overwritten
-  They may or may not affect the GA performance 
+  They may or may not affect the GA performance
   \{
 */
 
@@ -110,7 +136,7 @@ typedef GAindividual (*GAMutateFunc)(GAindividual);
 */
 typedef int(*GASelectionFunc)(GApopulation , double * , double , int , int);
 /*! \brief
- * Callback function. If not null, then this function is called during each iteration of the GA. 
+ * Callback function. If not null, then this function is called during each iteration of the GA.
  * This function can be used to terminate the GA at any step
  * \param int current generation (iteration)
  * \param int number of individuals in the population
@@ -130,7 +156,7 @@ typedef int(*GACallbackFunc)(int iter,int popSz, GApopulation,double* fitnesses,
 
 /*! \brief Initialize the GA. This function MUST be called before GArun
  * \param GADeleteFunc deletion function (cannot be 0)
- * \param GACloneFunc cloning function (cannot be 0) 
+ * \param GACloneFunc cloning function (cannot be 0)
  * \param GAFitnessFunc fitness function pointer (cannot be 0)
  * \param GACrossoverFunc crossover function pointer (can be 0, but not recommended)
  * \param GAMutateFunc mutation function pointer (can be 0, but not recommended)
@@ -229,12 +255,26 @@ void GAsetMutationFunction(GAMutateFunc);
  * \ingroup ga
 */
 void GAsetSelectionFunction(GASelectionFunc);
-/*! \brief set the callback function for the GA. 
+/*! \brief set the callback function for the GA.
            This function can be used to monitor the GA progress or stopping the GA before reaching maximum iterations.
  * \param GACallbackFunc function pointer (can be 0)
  * \ingroup ga
 */
 void GAsetCallbackFunction(GACallbackFunc);
+
+/*! \brief set the print summary function
+           This function is used for keeping a log file with summary of each individual during each iteration.
+ * \param GAPrintSummaryFunc function pointer (can be 0)
+ * \ingroup ga
+*/
+void GAsetPrintSummaryFunction(GAPrintSummaryFunc);
+
+/*! \brief set the print summary function
+           This function is used for keeping a log file with summary of each individual during each iteration.
+ * \param GAPrintSummaryFunc function pointer (can be 0)
+ * \ingroup ga
+*/
+void GAsetPrintFunction(GAPrintFunc);
 
 /*! \}
   \name functions that are being used by the GA
@@ -305,8 +345,8 @@ void GAsort(GApopulation, double *, int **, int);
   \{
 */
 
-/*! \brief deallocate a population of individuals. 
-	All populations returned by GArun will be null terminated. 
+/*! \brief deallocate a population of individuals.
+	All populations returned by GArun will be null terminated.
 	The population is ASSUMED to be null terminated.
  * \return void
  * \ingroup ga
@@ -319,11 +359,60 @@ void GAfree(GApopulation population);
   @name Related to lineage tracking
   \{
 */
+
+/*! \brief set a log file where information will be written during each generation
+   \param FILE* file pointer (can be stdout)
+ \ingroup ga
+*/
+void GAenableLog(FILE *);
+/*! \brief do not write the log file
+ \ingroup ga
+*/
+void GAdisableLog();
+
+/*! \brief All arguments must be 0 or 1 (Boolean). This function allows the evolution experiment
+	to report information during each generation. The information to report can be configured
+	using the arguments. The GA uses a custom callback routine to write the information to
+	the log file.
+	\param int report the best fitness score during each generation
+	\param int print the best individual's script during each generation
+	\param int report the best individual's size during each generation
+	\param int report the best individual's parents during each generation
+	\param int report all fitness values during each generation
+	\param int report all individuals' parents during each generation
+    \ingroup ga
+*/
+void GAconfigureContinuousLog(int bestFitness,
+							int bestsScript,
+							int bestsSize,
+							int bestsLineage,
+							int allFitness,
+							int allLineage );
+
+/*! \brief All arguments must be 0 or 1 (Boolean). This function allows the evolution experiment
+	to report information at the end of the GA.
+	\param int report the best fitness score at the end
+	\param int print the best individual's script at the end
+	\param int report the best individual's size at the end
+	\param int report the best individual's parents at the end
+	\param int report all fitness value at the end
+	\param int report all individuals' parents at the end
+	\param int report the random number generator's seeds (useful for duplicating the experiment)
+    \ingroup ga
+*/
+void GAconfigureFinalLog(int bestNetworkFitness,
+							int bestsScript,
+							int bestsSummary,
+							int bestsLineage,
+							int allFitness,
+							int allLineage,
+							int seeds);
+
 /*! \brief turn on lineage tracking. This will track the parents of each individual when crossover occurs
  \ingroup ga
 */
 void GAlineageTrackingON();
-/*! \brief turn on lineage tracking. 
+/*! \brief turn on lineage tracking.
 	This will prevent tracking of the parents of each individual when crossover occurs
 	ReactioNetwork's parent field will be 0.
  \ingroup ga

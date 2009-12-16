@@ -50,6 +50,7 @@ typedef struct
 	int * externals;
 	int * internals;
 	double * params;
+	double * initVals;
 }
 Block;
 
@@ -138,6 +139,14 @@ GApopulation evolveNetworks(GAFitnessFunc fitness, int initialPopulationSize, in
 	\{
 * \ingroup gablocks
 */
+
+/*! \brief number of inputs and outputs and internal species in the given block.
+           same as numExternals() + numInternals()
+*	\param Block* block
+*	\return int
+* \ingroup gablocks
+*/
+int numSpecies(Block * block);
 
 /*! \brief number of inputs and outputs in the given block
 *	\param Block* block
@@ -329,14 +338,14 @@ void allowParameterChangeFor(const char* name);
 */
 void disallowParameterChangeFor(const char* name);
 
-/*! \brief (used during mutation events) fix a particular parameter of a particular block type (i.e. it will not change).
+/*! \brief (used during mutation events) fix a particular parameter of a particular block type
+   (i.e. it will not change).
 	Note: calling allowParameterChange() after this function will remove the fixed-ness
 *	\param const char* name of block type
 * 	\param int parameter index
-*	\param double value of parameter
 * \ingroup gablocks
 */
-void fixParameter(const char* name, int param, double value);
+void fixParameter(const char* name, int param);
 
 /*! \brief (used during mutation events) allow rewiring
 * \ingroup gablocks
@@ -414,7 +423,7 @@ void getRates(double time, double* conc, double* rates , void*);
 *   \return double * 2D array of values (see cvodesim.h)
 * \ingroup gablocks
 */
-double * simulateStochastic(System*, double * initialValues,  double time, int * sz);
+double * simulateStochastic(System*,  double time, int * sz);
 
 /*! \brief simulate a system deterministcally (CVODE numerical integrator)
 *   \param System* the system to simulate
@@ -424,7 +433,12 @@ double * simulateStochastic(System*, double * initialValues,  double time, int *
 *   \return double * 2D array of values (see cvodesim.h)
 * \ingroup gablocks
 */
-double * simulateODE(System*, double * initialValues, double time, double dt);
+double * simulateODE(System*, double time, double dt);
+
+/*! \brief get initial values for the system
+*   \param Block* block to initialize
+*/
+double * getInitialValues(System*);
 
 /*! \brief initialize the parameters of the block to the default values
 *   \param Block* block to initialize
@@ -434,15 +448,21 @@ void initializeBlock(Block*);
 /*! \brief initialize the parameters of all blocks in the sytem to the default values
 *   \param System* system to initialize
 */
-
 void initializeSystem(System*);
 
-/*! \brief printing a system in graphviz format
+/*! \brief print a system in graphviz format
+*	\param GAindividual * the system
 *	\param FILE* output
-*	\param Block * the system
 * \ingroup gablocks
 */
-void printSystem(FILE*,System*);
+void printSystem(GAindividual,FILE*);
+
+/*! \brief print size of system in graphviz format
+*	\param GAindividual * the system
+*	\param FILE* output
+* \ingroup gablocks
+*/
+void printSystemStats(GAindividual,FILE*);
 
 /*! \} */
 

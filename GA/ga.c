@@ -18,6 +18,34 @@ static GACrossoverFunc crossover = 0;
 static GAMutateFunc mutate = 0;
 static GASelectionFunc selection = 0;
 static GACallbackFunc callback = 0;
+static GAPrintSummaryFunc printSummary = 0;
+static GAPrintFunc printIndividual = 0;
+
+/********************************************************
+		Parameters for keeping log file
+*********************************************************/
+
+static FILE * _LOGFILE = 0;
+
+static int _PRINT_SEEDS = 1;
+
+static int _PRINT_EACH_FITNESS = 1;
+static int _PRINT_FINAL_FITNESS = 1;
+
+static int _PRINT_EACH_SCRIPT = 0;
+static int _PRINT_FINAL_SCRIPT = 1;
+
+static int _PRINT_EACH_SUMMARY = 1;
+static int _PRINT_FINAL_SUMMARY = 1;
+
+static int _PRINT_EACH_BEST_LINEAGE = 1;
+static int _PRINT_FINAL_BEST_LINEAGE = 1;
+
+static int _PRINT_EACH_ALL_FITNESS = 0;
+static int _PRINT_FINAL_ALL_FITNESS = 1;
+
+static int _PRINT_EACH_ALL_LINEAGE = 1;
+static int _PRINT_FINAL_ALL_LINEAGE = 1;
 
 /****************************
 * options
@@ -49,6 +77,16 @@ GAFitnessFunc GAgetFitnessFunction()
 void GAsetCallbackFunction(GACallbackFunc f)
 {
 	callback = f;
+}
+
+void GAsetPrintSummaryFunction(GAPrintSummaryFunc p1)
+{
+    printSummary = p1;
+}
+
+void GAsetPrintFunction(GAPrintFunc p2)
+{
+    printIndividual = p2;
 }
 
 GACallbackFunc GAgetCallbackFunction()
@@ -98,7 +136,7 @@ GASelectionFunc GAgetSelectionFunction()
 int GArouletteWheelSelection(GApopulation population, double * fitnessValues, double sumOfFitness, int popSz, int k)
 {
 	int i;
-	double randNum = mtrand() * sumOfFitness, 
+	double randNum = mtrand() * sumOfFitness,
 		total = 0;
 	for (i=0; i < popSz-1; ++i)
 		if (total < randNum && randNum < (total+fitnessValues[i]))
@@ -152,9 +190,9 @@ int GAeliteSelection(GApopulation population, double * fitnessValues, double sum
 */
 int GAhyperbolicSelection(GApopulation population, double * fitnessValues, double sumOfFitness, int popSz, int k)
 {
-	double u = mtrand(), 
+	double u = mtrand(),
 			b = _SELECTION_PARAMETER * (double)popSz, a;
-	
+
 	a = (b+popSz)/popSz;
 	return (int)( b*u/(a-u) );
 }
@@ -163,8 +201,8 @@ int GAhyperbolicSelection(GApopulation population, double * fitnessValues, doubl
  * \ingroup ga
 */
 void GAsetParameterForSelection( double p )
-{ 
-	_SELECTION_PARAMETER = p; 
+{
+	_SELECTION_PARAMETER = p;
 }
 
 /*
@@ -189,7 +227,7 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 	nextGApopulation = (void*)malloc( (1+newPopSz) * sizeof(void*) );
 	nextGApopulation[newPopSz] = 0;
 
-	if (nextGApopulation == NULL) 
+	if (nextGApopulation == NULL)
 	{
 		return (0);
 	}
@@ -204,19 +242,19 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 		if (fitnessArray[i] < 0) fitnessArray[i] = 0;   //negative fitness not allowed
 
 		totalFitness += fitnessArray[i];
-		if (fitnessArray[i] > fitnessArray[best]) 
+		if (fitnessArray[i] > fitnessArray[best])
 			best = i;
 	}
 
 	//keep the best
 	nextGApopulation[0] = clone(currentGApopulation[best]);
-	
+
 	if (parents)
 	{
 		parents[gen][0][0] = best;
 		parents[gen][0][1] = 0;
 	}
-	
+
 	//select the fit individuals
 	x1 = NULL;
 	x2 = NULL;
@@ -225,14 +263,14 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 		k = selection(currentGApopulation,fitnessArray,totalFitness,oldPopSz,i);
 
 		x1 = currentGApopulation[k];
-		
+
 		if (parents)
 		{
 			parents[gen][i][0] = k;
 			parents[gen][i][1] = 0;
 		}
-		
-		if (crossover != NULL && mtrand() < _CROSSOVER_PROB) 
+
+		if (crossover != NULL && mtrand() < _CROSSOVER_PROB)
 		{
 			temp = fitnessArray[k];
 			fitnessArray[k] = 0;   //this is to prevent self-self crossover
@@ -240,13 +278,13 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 			fitnessArray[k] = temp;
 			x2 = currentGApopulation[k2];
 			x1 = crossover(x1,x2);
-			
-			if (!x1) 
+
+			if (!x1)
 				x1 = currentGApopulation[k];
 
 			if (x1 == currentGApopulation[k] || x1 == currentGApopulation[k2])
 				x1 = clone(x1); //cannot allow the same x1
-			
+
 			if (parents)
 				parents[gen][i][1] = k2;
 		}
@@ -255,12 +293,12 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 			x1 = clone(x1);
 		}
 
-		if (mutate != NULL) 
+		if (mutate != NULL)
 			x1 = mutate(x1);
-		
+
 		if (!x1)
 			x1 = clone( currentGApopulation[k] );
-		
+
 		nextGApopulation[i] = x1; //add to the new population
 	}
 	/*free the memory from the old population*/
@@ -277,6 +315,265 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 	return (nextGApopulation);
 }
 
+/*********************
+* Log file
+**********************/
+
+void GAenableLog(FILE * file)
+{
+	_LOGFILE = file;
+}
+
+void GAdisableLog()
+{
+	enableLogFile(0);
+}
+
+void GAconfigureContinuousLog(int bestNetworkFitness,
+							int bestNetworkScript,
+							int bestNetworkInfo,
+							int bestNetworkLineage,
+							int allFitness,
+							int allNetworkLineage )
+{
+
+	_PRINT_EACH_FITNESS = bestNetworkFitness > 0;
+	_PRINT_EACH_SCRIPT = bestNetworkScript > 0;
+	_PRINT_EACH_SUMMARY = bestNetworkInfo > 0;
+	_PRINT_EACH_BEST_LINEAGE = bestNetworkLineage > 0;
+	_PRINT_EACH_ALL_FITNESS = allFitness > 0;
+	_PRINT_EACH_ALL_LINEAGE = allNetworkLineage > 0;
+	if (_PRINT_EACH_ALL_LINEAGE || _PRINT_EACH_BEST_LINEAGE)
+		_TRACK_PARENTS = 1;
+}
+
+void GAconfigureFinalLog(int bestNetworkFitness,
+							int bestNetworkScript,
+							int bestNetworkInfo,
+							int bestNetworkLineage,
+							int allFitness,
+							int allNetworkLineage,
+							int seeds)
+{
+	_PRINT_FINAL_FITNESS = bestNetworkFitness > 0;
+	_PRINT_FINAL_SCRIPT = bestNetworkScript > 0;
+	_PRINT_FINAL_SUMMARY = bestNetworkInfo > 0;
+	_PRINT_FINAL_BEST_LINEAGE = bestNetworkLineage > 0;
+	_PRINT_FINAL_ALL_FITNESS = allFitness > 0;
+	_PRINT_FINAL_ALL_LINEAGE = allNetworkLineage > 0;
+	_PRINT_SEEDS = seeds > 0;
+	if (_PRINT_FINAL_BEST_LINEAGE || _PRINT_FINAL_ALL_LINEAGE)
+		_TRACK_PARENTS = 1;
+}
+
+static void GAkeepLog(int iter, int stop, int popSz, GApopulation pop, double * fitnessArray, int *** parentsArray)
+{
+	unsigned long long * seeds;
+	double f;
+	int i,j,k,*parents, num = 10*popSz, max = 0;
+	int * temp = 0, * ids = 0;
+	GAindividual * p;
+	//save
+	int each_fitness = _PRINT_EACH_FITNESS,
+		each_script = _PRINT_EACH_SCRIPT,
+		each_size = _PRINT_EACH_SUMMARY,
+		each_best_lineage = _PRINT_EACH_BEST_LINEAGE,
+		each_all_fitness = _PRINT_EACH_ALL_FITNESS,
+		each_all_lineage = _PRINT_EACH_ALL_LINEAGE;
+
+	if (stop)
+	{
+		//cheat
+		_PRINT_EACH_FITNESS = _PRINT_FINAL_FITNESS;
+		_PRINT_EACH_SCRIPT = _PRINT_FINAL_SCRIPT;
+		_PRINT_EACH_SUMMARY = _PRINT_FINAL_SUMMARY;
+		_PRINT_EACH_BEST_LINEAGE = _PRINT_FINAL_BEST_LINEAGE;
+		_PRINT_EACH_ALL_FITNESS = _PRINT_FINAL_ALL_FITNESS;
+		_PRINT_EACH_ALL_LINEAGE = _PRINT_FINAL_ALL_LINEAGE;
+
+		//printf("\n========final results=======\n");
+		fprintf(_LOGFILE,"\n========final results=======\n");
+
+		if (_LOGFILE && _PRINT_SEEDS)
+		{
+			seeds = getMTseeds();
+			fprintf(_LOGFILE,"random number generator seeds: %llf,%llf,%llf,%llf\n",seeds[0],seeds[1],seeds[2],seeds[3]);
+		}
+	}
+
+	if (iter == 0) //header
+	{
+		printf("gen");
+		fprintf(_LOGFILE,"gen");
+		if (_PRINT_EACH_FITNESS && !_PRINT_EACH_ALL_FITNESS)
+		{
+			printf("\tfitness ");
+			fprintf(_LOGFILE,"\tfitness ");
+		}
+
+		if (_PRINT_EACH_ALL_FITNESS)
+		{
+			for (i=0; i < popSz; ++i)
+			{
+				//printf("\tfitness_%i",i);
+				fprintf(_LOGFILE,"\tfitness_%i",i);
+			}
+		}
+
+		if (_PRINT_EACH_SUMMARY)
+		{
+			printf("\tinfo");
+			fprintf(_LOGFILE,"\tinfo");
+		}
+
+		if (_TRACK_PARENTS && (_PRINT_EACH_BEST_LINEAGE || _PRINT_EACH_ALL_LINEAGE))
+		{
+			fprintf(_LOGFILE,"\tparents");
+		}
+
+		printf("\n");
+		fprintf(_LOGFILE,"\n");
+
+		printf("---");
+		fprintf(_LOGFILE,"---");
+
+		if (_PRINT_EACH_FITNESS && !_PRINT_EACH_ALL_FITNESS)
+		{
+			printf("\t------- ");
+			fprintf(_LOGFILE,"\t------- ");
+		}
+
+		if (_PRINT_EACH_ALL_FITNESS)
+		{
+			for (i=0; i < popSz; ++i)
+			{
+				fprintf(_LOGFILE,"\t -------- ",i);
+			}
+		}
+
+		if (_PRINT_EACH_SUMMARY)
+		{
+			printf("\t-------\t---------");
+			fprintf(_LOGFILE,"\t-------\t---------");
+		}
+
+		if (_TRACK_PARENTS && (_PRINT_EACH_BEST_LINEAGE || _PRINT_EACH_ALL_LINEAGE))
+		{
+			//printf("\t-------");
+			fprintf(_LOGFILE,"\t-------");
+		}
+
+		printf("\n");
+		fprintf(_LOGFILE,"\n");
+	}
+
+	if (_TRACK_PARENTS && (_PRINT_EACH_BEST_LINEAGE || _PRINT_EACH_ALL_LINEAGE))
+	{
+		ids = (int*)malloc(num * sizeof(int));
+
+		for (i=0; i < num; ++i)
+			ids[i] = 0;
+
+		for (i=0; i < popSz; ++i)
+		{
+			p = pop[i];
+
+			if (!p) continue;
+
+			parents = GAgetOriginalParents(i,iter,parentsArray);
+			if (parents)
+			{
+				for (j=0; parents[j] > 0; ++j)
+				{
+					if (parents[j] >= max)
+						max = parents[j];
+
+					if (parents[j] >= num)
+					{
+						temp = ids;
+						ids = (int*)malloc( num * 2 * sizeof(int) );
+
+						for (k=0; k < num; ++k)
+							ids[k] = temp[k];
+
+						num *= 2;
+
+						for (; k < num; ++k)
+							ids[k] = 0;
+
+						free(temp);
+					}
+
+					ids[ parents[j] ] += 1;
+				}
+			}
+			else
+			{
+			}
+
+			if (_PRINT_EACH_BEST_LINEAGE && !_PRINT_EACH_ALL_LINEAGE)
+				break;
+		}
+	}
+
+	printf("%i",iter);
+	fprintf(_LOGFILE,"%i",iter);
+	if (_PRINT_EACH_FITNESS && !_PRINT_EACH_ALL_FITNESS)
+	{
+		f = fitnessArray[0];
+		printf("\t%lf",f);
+		fprintf(_LOGFILE,"\t%lf",f);
+	}
+
+	if (_PRINT_EACH_ALL_FITNESS)
+	{
+		for (i=0; i < popSz; ++i)
+		{
+			f = fitnessArray[i];
+			fprintf(_LOGFILE,"\t%lf",f);
+		}
+	}
+
+	if (_PRINT_EACH_SUMMARY && printSummary)
+	{
+        printSummary(_LOGFILE,pop[0]);
+	}
+
+	if (_TRACK_PARENTS && (_PRINT_EACH_BEST_LINEAGE || _PRINT_EACH_ALL_LINEAGE))
+	{
+		for (i=0; i < max; ++i)
+		{
+			fprintf(_LOGFILE,"\t%i",ids[i]);
+		}
+	}
+
+	if (_PRINT_EACH_SCRIPT && printIndividual)
+	{
+		fprintf(_LOGFILE,"\n======== best individual =======\n");
+
+		printIndividual(_LOGFILE,pop[0]);
+
+		fprintf(_LOGFILE,"\n=====================\n");
+	}
+
+	printf("\n");
+	fprintf(_LOGFILE,"\n");
+
+	if (ids && (num > 0))
+		free(ids);
+
+	if (stop)
+	{
+		//restore
+		_PRINT_EACH_FITNESS = each_fitness;
+		_PRINT_EACH_SCRIPT = each_script;
+		_PRINT_EACH_SUMMARY = each_size;
+		_PRINT_EACH_BEST_LINEAGE = each_best_lineage;
+		_PRINT_EACH_ALL_FITNESS = each_all_fitness;
+		_PRINT_EACH_ALL_LINEAGE = each_all_lineage;
+	}
+}
+
 /*
 * Initialize the GA. This function MUST be called before GArun
 * \param: cloning function (cannot be 0)
@@ -286,11 +583,11 @@ GApopulation GAnextGen(int gen, GApopulation currentGApopulation, int oldPopSz, 
 * \param: mutation function pointer (can bt 0, but not recommended)
 * \param: selection function pointer (can be 0)
 */
-void GAinit(GADeleteFunc deleteGAindividualPtr, 
+void GAinit(GADeleteFunc deleteGAindividualPtr,
 			GACloneFunc clonePtr,
-			GAFitnessFunc fitnessPtr, 
-			GACrossoverFunc crossoverPtr, 
-			GAMutateFunc mutatePtr, 
+			GAFitnessFunc fitnessPtr,
+			GACrossoverFunc crossoverPtr,
+			GAMutateFunc mutatePtr,
 			GASelectionFunc selectionPtr,
 			GACallbackFunc callbackPtr)
 {
@@ -321,17 +618,17 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 	GApopulation population = initialGApopulation;
 	int*** parents = 0;
 	double* fitnessScores = 0;
-	
+
 	FILE * errfile = freopen("GArun_errors.log", "w", stderr);
-	
+
 	/*function pointers*/
 	if (!deleteGAindividual || !clone || !fitness || (!crossover && !mutate) || !selection) return 0;
 
 	if (!MTrandHasBeenInitialized())
 		initMTrand(); /*initialize seeds for MT random number generator*/
-		
+
 	fitnessScores = (double*)malloc(initPopSz * sizeof(double));
-	
+
 	if (_TRACK_PARENTS)
 	{
 		parents = (int***)malloc((1+numGenerations) * sizeof(int**));
@@ -339,7 +636,7 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 		{
 			parents[i] = (int**)malloc((1+popSz) * sizeof(int*));
 			parents[i][popSz] = 0;
-			
+
 			for (j=0; j < popSz; ++j)
 			{
 				parents[i][j] = (int*)malloc(3 * sizeof(int));
@@ -349,7 +646,7 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 			}
 		}
 	}
-	
+
 	for (j=0; j < initPopSz; ++j)
 		if (population[j])
 			fitnessScores[j] = fitness(population[j]);
@@ -377,12 +674,18 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 		if (callback != NULL)
 			stop = callback(i,popSz, population,fitnessScores,parents);   //callback function can stop the GA
 
+        if (_LOGFILE != NULL)
+            GAkeepLog(i, 0, popSz, population, fitnessScores, parents);
+
 		++i;
 
-		if (i > numGenerations) 
+		if (i > numGenerations)
 			stop = 1;  //max number of iterations
 	}
-	
+
+    if (_LOGFILE != NULL)
+        GAkeepLog(i, 1, popSz, population, fitnessScores, parents);
+
 	if (population[popSz-1])
 	{
 		deleteGAindividual(population[popSz-1]);
@@ -390,7 +693,7 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 	}
 
 	fclose(errfile);
-	
+
 	if (parents)
 	{
 		for (i=0; i <= numGenerations; ++i)
@@ -413,7 +716,7 @@ void GAfree(GApopulation pop)
 	int i=0;
 	if (pop)
 	{
-		while (pop[i]) 
+		while (pop[i])
 		{
 			deleteGAindividual(pop[i]);
 			++i;
@@ -427,18 +730,18 @@ void GAfree(GApopulation pop)
 ***********************************************************************/
 
 // is x < y ?
-static int less(double x, double y) 
+static int less(double x, double y)
 {
 	return (x > y);
 }
 
 // exchange a[i] and a[j]
-static void exch(double* a, int i, int j, GApopulation population, int ** parents) 
+static void exch(double* a, int i, int j, GApopulation population, int ** parents)
 {
 	int * p;
 	void * temp;
 	double swap;
-	
+
 	swap = a[i];
 	a[i] = a[j];
 	a[j] = swap;
@@ -458,11 +761,11 @@ static void exch(double* a, int i, int j, GApopulation population, int ** parent
 }
 
 // partition a[left] to a[right], assumes left < right
-static int partition(double* a, int left, int right, GApopulation population, int ** parents) 
+static int partition(double* a, int left, int right, GApopulation population, int ** parents)
 {
 	int i = left - 1;
 	int j = right;
-	while (1) 
+	while (1)
 	{
 		while (less(a[++i], a[right]))      // find item on left to swap
 			;                               // a[right] acts as sentinel
@@ -476,7 +779,7 @@ static int partition(double* a, int left, int right, GApopulation population, in
 }
 
 // quicksort helper a[left] to a[right]
-static void quicksort(double* a, int left, int right, GApopulation population, int ** parents) 
+static void quicksort(double* a, int left, int right, GApopulation population, int ** parents)
 {
 	int i = partition(a, left, right, population, parents);
 
@@ -488,13 +791,13 @@ static void quicksort(double* a, int left, int right, GApopulation population, i
 }
 
 //quicksort
-void GAsort(GApopulation population, double * a, int** parents, int populationSz) 
+void GAsort(GApopulation population, double * a, int** parents, int populationSz)
 {
 	/*
 	int i;
 	double biggest = -1.0;
 	GAindividual best = 0;
-	
+
 	for (i=0; i < populationSz; ++i)
 	{
 		if (a[i] > biggest || best == 0)
@@ -534,14 +837,14 @@ int* GAgetOriginalParents(int individual, int generation, int *** _PARENTS)
 	int maxSz = 1, i=0, j=0;
 	int sz = 0;
 	int * parents, * clone;
-	
+
 	if (_PARENTS == 0 || generation < 0 || individual <= 0)
 	{
 		parents = (int*)malloc(1 * sizeof(int));
 		parents[0] = 0;
 		return parents;
 	}
-	
+
 	maxSz = 100;
 	parents = (int*)malloc(maxSz * sizeof(int));
 	sz = 0;
@@ -556,12 +859,12 @@ int* GAgetOriginalParents(int individual, int generation, int *** _PARENTS)
 		parents[sz] = _PARENTS[generation][individual][1];
 		++sz;
 	}
-	
+
 	i = 0;
 	while (i < sz && parents[i] && generation > 0)
 	{
 		--generation;
-		
+
 		if (sz >= (maxSz-1))
 		{
 			clone = parents;
@@ -571,27 +874,27 @@ int* GAgetOriginalParents(int individual, int generation, int *** _PARENTS)
 			free(clone);
 			maxSz = sz*2;
 		}
-		
+
 		individual = parents[i];
 		if (_PARENTS[generation][individual][0])
 		{
 			parents[sz] = _PARENTS[generation][individual][0];
 			++sz;
 		}
-		
+
 		if (_PARENTS[generation][individual][1])
 		{
 			parents[sz] = _PARENTS[generation][individual][1];
 			++sz;
 		}
 	}
-	
+
 	clone = parents;
 	parents = (int*)malloc((1+sz) * sizeof(int));
 	parents[sz] = 0;
 	for (j=0; j < sz; ++j)
 		parents[j] = clone[j];
-	
+
 	free(clone);
 	return parents;
 }
@@ -607,10 +910,10 @@ int* GAgetImmediateParents(int individual, int generation, int *** _PARENTS)
 		parents[0] = 0;
 		return parents;
 	}
-	
+
 	p1 = _PARENTS[generation][individual][0];
 	p2 = _PARENTS[generation][individual][1];
-	
+
 	if (p1 > 0 && p2 > 0)
 	{
 		parents = (int*)malloc(3 * sizeof(int));
@@ -619,7 +922,7 @@ int* GAgetImmediateParents(int individual, int generation, int *** _PARENTS)
 		parents[2] = 0;
 		return parents;
 	}
-	
+
 	if (p1 > 0)
 	{
 		parents = (int*)malloc(2 * sizeof(int));
@@ -627,7 +930,7 @@ int* GAgetImmediateParents(int individual, int generation, int *** _PARENTS)
 		parents[1] = 0;
 		return parents;
 	}
-	
+
 	if (p2 > 0)
 	{
 		parents = (int*)malloc(2 * sizeof(int));
@@ -635,10 +938,10 @@ int* GAgetImmediateParents(int individual, int generation, int *** _PARENTS)
 		parents[1] = 0;
 		return parents;
 	}
-	
+
 	parents = (int*)malloc(1 * sizeof(int));
 	parents[0] = 0;
-	
+
 	return parents;
 }
 
@@ -650,7 +953,8 @@ double GAgetCrossoverProb()
 void GAsetCrossoverProb(double p)
 {
 	_CROSSOVER_PROB = p;
-	
+
 	if (_CROSSOVER_PROB < 0.0) _CROSSOVER_PROB = 0.0;
 	if (_CROSSOVER_PROB > 1.0) _CROSSOVER_PROB = 1.0;
 }
+
