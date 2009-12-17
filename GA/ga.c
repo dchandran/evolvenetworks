@@ -326,7 +326,7 @@ void GAenableLog(FILE * file)
 
 void GAdisableLog()
 {
-	enableLogFile(0);
+	GAenableLog(0);
 }
 
 void GAconfigureContinuousLog(int bestNetworkFitness,
@@ -403,11 +403,9 @@ static void GAkeepLog(int iter, int stop, int popSz, GApopulation pop, double * 
 
 	if (iter == 0) //header
 	{
-		printf("gen");
 		fprintf(_LOGFILE,"gen");
 		if (_PRINT_EACH_FITNESS && !_PRINT_EACH_ALL_FITNESS)
 		{
-			printf("\tfitness ");
 			fprintf(_LOGFILE,"\tfitness ");
 		}
 
@@ -415,14 +413,12 @@ static void GAkeepLog(int iter, int stop, int popSz, GApopulation pop, double * 
 		{
 			for (i=0; i < popSz; ++i)
 			{
-				//printf("\tfitness_%i",i);
 				fprintf(_LOGFILE,"\tfitness_%i",i);
 			}
 		}
 
 		if (_PRINT_EACH_SUMMARY)
 		{
-			printf("\tinfo");
 			fprintf(_LOGFILE,"\tinfo");
 		}
 
@@ -431,15 +427,12 @@ static void GAkeepLog(int iter, int stop, int popSz, GApopulation pop, double * 
 			fprintf(_LOGFILE,"\tparents");
 		}
 
-		printf("\n");
 		fprintf(_LOGFILE,"\n");
 
-		printf("---");
 		fprintf(_LOGFILE,"---");
 
 		if (_PRINT_EACH_FITNESS && !_PRINT_EACH_ALL_FITNESS)
 		{
-			printf("\t------- ");
 			fprintf(_LOGFILE,"\t------- ");
 		}
 
@@ -453,17 +446,14 @@ static void GAkeepLog(int iter, int stop, int popSz, GApopulation pop, double * 
 
 		if (_PRINT_EACH_SUMMARY)
 		{
-			printf("\t-------\t---------");
 			fprintf(_LOGFILE,"\t-------\t---------");
 		}
 
 		if (_TRACK_PARENTS && (_PRINT_EACH_BEST_LINEAGE || _PRINT_EACH_ALL_LINEAGE))
 		{
-			//printf("\t-------");
 			fprintf(_LOGFILE,"\t-------");
 		}
 
-		printf("\n");
 		fprintf(_LOGFILE,"\n");
 	}
 
@@ -516,12 +506,10 @@ static void GAkeepLog(int iter, int stop, int popSz, GApopulation pop, double * 
 		}
 	}
 
-	printf("%i",iter);
 	fprintf(_LOGFILE,"%i",iter);
 	if (_PRINT_EACH_FITNESS && !_PRINT_EACH_ALL_FITNESS)
 	{
 		f = fitnessArray[0];
-		printf("\t%lf",f);
 		fprintf(_LOGFILE,"\t%lf",f);
 	}
 
@@ -556,7 +544,6 @@ static void GAkeepLog(int iter, int stop, int popSz, GApopulation pop, double * 
 		fprintf(_LOGFILE,"\n=====================\n");
 	}
 
-	printf("\n");
 	fprintf(_LOGFILE,"\n");
 
 	if (ids && (num > 0))
@@ -655,6 +642,7 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 
 	while (stop == 0) //keep going until max iterations or until callback function signals a stop
 	{
+        printf("gen %i\n",i);
 		if (i == 0)  //initial population
 		{
 			population = GAnextGen(i, population, initPopSz, popSz, 0, fitnessScores, parents);

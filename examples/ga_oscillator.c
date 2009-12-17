@@ -24,17 +24,16 @@
 void init()
 {
     setSizeRange(2,10);
-    GAsetCrossoverRate(0.5);
+    GAsetCrossoverProb(0.5);
     GAconfigureContinuousLog(1,0,1,0,0,1);
     GAconfigureFinalLog(1,1,1,0,1,1,1);
-    GAenableLogFile("evolution.log");
     GAlineageTrackingON();
 
     GAenableLog(stdout);
 }
 
 /* Fitness function that tests for oscillations by using correlation to a sine wave */
-double fitness(GAindividual p);
+double fitness(System * p);
 
 #define INITIAL_POPULATION_SIZE 1000
 #define SUCCESSIVE_POPULATION_SIZE 200
@@ -57,17 +56,15 @@ int main()
 
 	printf ("Oscillator Evolution\n\n");
 
-	pop = evolveNetworks(&fitness, int INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, &callback);
+	pop = evolveNetworks(&fitness, INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, &callback);
 
 	best = pop[0]; // Get the best network
 
 	/******simulate the best network and write the result to a file************/
 
-	N = getNumSpecies(best);                // Number of variables in the network
+	y = simulateODE((System*)best, 500.0, 1.0);   // Simulate
 
-	y = simulateODE(best, 500, 1);   // Simulate
-
-	writeToFile("dat.txt",y,500,N+1);       // Save to file
+	writeToFile("dat.txt",y,500,3);       // Save to file
 
 	free(y);
 
@@ -81,16 +78,16 @@ int main()
 }
 
 /* Fitness function that tests for oscillations by counting the number of peaks*/
-double fitness(GAindividual net)
+double fitness(System * net)
 {
 	int i, N, n;
 	double x, * y, time, f, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0, dx = 0.01;
 
-	N = getNumSpecies(net);
+	N = net->numSpecies;
 
 	time = 500.0;
 
-	y = simulateNetworkODE(net,time,1);  //simulate
+	y = simulateODE(net,time,1);  //simulate
 
 	f = 0;   // Calculate correlation to sine wave
 	if (y != 0)

@@ -708,9 +708,12 @@ static Block * randomBlock()
 
 	block->type = k1;
 
-	block->externals = (int*)malloc( numExternals(block) * sizeof(int) );
-	block->internals = (int*)malloc( numInternals(block) * sizeof(int) );
-	block->initVals = (double*)malloc( (block->externals + block->internals) * sizeof(double));
+	k1 = numInternals(block);
+	k2 = numExternals(block);
+
+	block->externals = (int*)malloc( k1 * sizeof(int) );
+	block->internals = (int*)malloc( k2 * sizeof(int) );
+	block->initVals = (double*)malloc( (k1 + k2) * sizeof(double));
 
 	n = numParams(block);
 	block->params = (double*)malloc( n * sizeof(double) );
@@ -953,12 +956,24 @@ void getRates(double time, double* conc, double* rates, void * s)
 	}
 }
 
+/*graphviz format*/
 void printSystem(GAindividual s, FILE * fp)
 {
+    int i,j,n;
+    System * S = (System*)s;
+
+    for (i=0; i < S->numBlocks; ++i)
+    {
+        n = numExternals(S->blocks[i]);
+        for (j=0; j < n; ++j)
+            fprintf(fp,"M%i -- x%i",i,S->blocks[i]->externals[j]);
+    }
 }
 
 void printSystemStats(GAindividual s,FILE * fp)
 {
+    System * S = (System*)s;
+    fprintf(fp,"%i\t%i",S->numBlocks,S->numSpecies);
 }
 
 double * getInitialValues(System * S)
@@ -1083,6 +1098,8 @@ GApopulation evolveNetworks(GAFitnessFunc fitness, int initialPopulationSize, in
 
 	for (i=0; i < initialPopulationSize; ++i)
         P[i] = (GApopulation)randomSystem(MIN_SIZE + mtrand() * (MAX_SIZE - MIN_SIZE));
+
+    printf("here1\n");
 	GAinit( &freeSystem, &cloneSystem , fitness, &crossoverBlocks, &mutateBlocks, &GArouletteWheelSelection, callback);
 	return GArun(P,initialPopulationSize,finalPopulationSize,iter);
 }
