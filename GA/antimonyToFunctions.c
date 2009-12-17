@@ -37,8 +37,10 @@ void convertToBlock(const char * name, const char * antimonyFile, const char * f
 	paramValues = getSymbolEquationsOfType (mainModule, 16);
 
 	fprintf(fp1,"void %s_init(Block * block) {\n",name);
+
 	for (i=0; i < numParams; ++i)
 		fprintf(fp1,"\tblock->params[%i] = %s;\n",i,paramValues[i]);
+
     for (i=0; i < numSpecies; ++i)
 		fprintf(fp1,"\tblock->initVals[%i] = %s;\n",i,speciesValues[i]);
 
@@ -63,6 +65,7 @@ void convertToBlock(const char * name, const char * antimonyFile, const char * f
 		if (i < (m-1))
 			fprintf(fp1,"\n");
 	}
+
 	fprintf(fp1,"}\n\n");
 
 	fprintf(fp1,"double %s_paramLowerBound[] = {",name);
