@@ -134,6 +134,14 @@ System;
 */
 GApopulation evolveNetworks(GAFitnessFunc fitness, int initialPopulationSize, int finalPopulationSize, int maxiter, GACallbackFunc callback);
 
+/*! \brief generate a random system of blocks. 
+	This function is used inside evolveNetworks to generate the initial population.
+*	\param int number of blocks in the system
+*	\return System * 
+* \ingroup gablocks
+*/
+System * randomSystem(int numBlocks)
+
 /*! \}
     \name getting information about blocks
 	\{

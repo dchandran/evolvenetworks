@@ -461,7 +461,10 @@ static Block * copyBlock(Block * block)
 {
 	int i;
 	int n;
-	Block * block2 = (Block*)malloc(sizeof(Block));
+	Block * block2 = 0;
+	
+	while (!block2)
+		block2 = (Block*)malloc(sizeof(Block));
 
 	block2->type = block->type;
 
@@ -576,14 +579,21 @@ static void pruneSystem(System * s) //find unconnected inputs/outputs
 
 		maxi += isUsed[i];
 	}
-	s->numSpecies = total;
+
+	if (total < s->numBlocks)
+		s->numSpecies = s->numBlocks+1;
+	else
+		s->numSpecies = total+1;
 }
 
 static System * randomSubsystem(System * s, double prob) //get random subset of blocks
 {
 	int i, i2;
 	int numBlocks = s->numBlocks, numBlocks2;
-	System * s2 = (System*)malloc(sizeof(System));
+	System * s2 = 0;
+	
+	while (!s2)
+		s2 = (System*)malloc(sizeof(System));
 
 	numBlocks2 = (int)(prob * (double)numBlocks);
 
@@ -663,7 +673,9 @@ static GAindividual crossoverBlocks(GAindividual X, GAindividual Y) //place two 
 				s2->blocks[i]->externals[j] += sz1;
 	}
 
-	s3 = (System*)malloc(sizeof(System));
+	s3 = 0;
+	while (!s3)
+		s3 = (System*)malloc(sizeof(System));
 	s3->numBlocks = s1->numBlocks + s2->numBlocks;
 	s3->numSpecies = s1->numSpecies + s2->numSpecies;
 	s3->blocks = (Block**)malloc(s3->numBlocks * sizeof(Block*));
@@ -693,7 +705,11 @@ static Block * randomBlock()
 	int i,k1,k2;
 	int n = numBlockTypes();
 	double d1,d2;
-	Block * block = (Block*)malloc(sizeof(Block));
+	Block * block = 0;
+	
+	while (!block)
+		block = (Block*)malloc(sizeof(Block));
+
 	k1 = (int)(mtrand()*n);
 
 	if (!ALLOWED_BLOCKS) initialzeArrays();
@@ -711,8 +727,8 @@ static Block * randomBlock()
 	k1 = numInternals(block);
 	k2 = numExternals(block);
 
-	block->externals = (int*)malloc( k1 * sizeof(int) );
-	block->internals = (int*)malloc( k2 * sizeof(int) );
+	block->internals = (int*)malloc( k1 * sizeof(int) );
+	block->externals = (int*)malloc( k2 * sizeof(int) );
 	block->initVals = (double*)malloc( (k1 + k2) * sizeof(double));
 
 	n = numParams(block);
@@ -1046,10 +1062,13 @@ double * simulateODE(System * S, double time, double dt)
 static System * randomSystem(int numBlocks)
 {
 	int i,j,n,numSpecies;
-	System * S = (System*)malloc(sizeof(System));
-	S->blocks = (Block**)malloc(numBlocks * sizeof(Block*));
+	System * S = 0;
+	
+	while (!S)
+		S = (System*)malloc(sizeof(System));
 
 	S->numBlocks = numBlocks;
+	S->blocks = (Block**)malloc(numBlocks * sizeof(Block*));
 	numSpecies = 0;
 
 	for (i=0; i < numBlocks; ++i)
@@ -1066,8 +1085,10 @@ static System * randomSystem(int numBlocks)
         n = numExternals(S->blocks[i]);
 
 	    for (j=0; j < n; ++j)
+		{
 			S->blocks[i]->externals[j] = (int)(mtrand() * numSpecies);
-
+		}
+		
 		if (NO_SAME_INPUT_OUTPUT)
 			reassignInputsOutputs(S->blocks[i],numSpecies);
 	}
@@ -1099,7 +1120,6 @@ GApopulation evolveNetworks(GAFitnessFunc fitness, int initialPopulationSize, in
 	for (i=0; i < initialPopulationSize; ++i)
         P[i] = (GApopulation)randomSystem(MIN_SIZE + mtrand() * (MAX_SIZE - MIN_SIZE));
 
-    printf("here1\n");
-	GAinit( &freeSystem, &cloneSystem , fitness, &crossoverBlocks, &mutateBlocks, &GArouletteWheelSelection, callback);
+	GAinit(&freeSystem, &cloneSystem , fitness, &crossoverBlocks, &mutateBlocks, &GArouletteWheelSelection, callback);
 	return GArun(P,initialPopulationSize,finalPopulationSize,iter);
 }

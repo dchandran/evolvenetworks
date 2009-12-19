@@ -6,9 +6,10 @@ int main(int args, char** argv)
 	double * y = 0;
 	Matrix M;
 	System S;
+	GApopulation P;
 
 	initMTrand();
-
+/*
 	S.numBlocks = 2;
 	S.blocks = (Block**)malloc(2*sizeof(Block*));
 	S.blocks[0] = (Block*)malloc(sizeof(Block));
@@ -49,6 +50,8 @@ int main(int args, char** argv)
 		}
 		free(y);
 	}
+*/
+	
 	return 0;
 }
 
