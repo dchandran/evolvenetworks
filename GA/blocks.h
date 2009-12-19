@@ -140,7 +140,7 @@ GApopulation evolveNetworks(GAFitnessFunc fitness, int initialPopulationSize, in
 *	\return System * 
 * \ingroup gablocks
 */
-System * randomSystem(int numBlocks)
+System * randomSystem(int numBlocks);
 
 /*! \}
     \name getting information about blocks

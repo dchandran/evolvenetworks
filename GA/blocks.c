@@ -823,9 +823,9 @@ static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 				{
 					block = S->blocks[i];
 					n = numExternals(block);
-					for (i=0; i < n; ++i)
-						if (block->externals[i] < 0)
-							block->externals[i] = (int)(mtrand() * S->numSpecies);
+					for (j=0; j < n; ++j)
+						if (block->externals[j] < 0)
+							block->externals[j] = (int)(mtrand() * S->numSpecies);
 					if (NO_SAME_INPUT_OUTPUT)
 						reassignInputsOutputs(block,S->numSpecies);
 				}
@@ -833,6 +833,8 @@ static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 	}
 
 	//rewire
+
+	numBlocks = S->numBlocks;
 
 	if (mtrand() < 0.5) //input or output
 	{
@@ -1059,7 +1061,7 @@ double * simulateODE(System * S, double time, double dt)
 * main evolution function
 ***************************/
 
-static System * randomSystem(int numBlocks)
+System * randomSystem(int numBlocks)
 {
 	int i,j,n,numSpecies;
 	System * S = 0;
