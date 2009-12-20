@@ -524,7 +524,8 @@ static void GAkeepLog(int iter, int stop, int popSz, GApopulation pop, double * 
 
 	if (_PRINT_EACH_SUMMARY && printSummary)
 	{
-        printSummary(_LOGFILE,pop[0]);
+		fprintf(_LOGFILE,"\t");
+		printSummary(_LOGFILE,pop[0]);
 	}
 
 	if (_TRACK_PARENTS && (_PRINT_EACH_BEST_LINEAGE || _PRINT_EACH_ALL_LINEAGE))

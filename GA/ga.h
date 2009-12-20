@@ -104,7 +104,7 @@ typedef GAindividual (*GAMutateFunc)(GAindividual);
  * \param FILE* file handle
  * \ingroup ga
 */
-typedef void (*GAPrintSummaryFunc)(GAindividual,FILE*);
+typedef void (*GAPrintSummaryFunc)(FILE*,GAindividual);
 
 /*! \brief
  * Print an individual
@@ -112,7 +112,7 @@ typedef void (*GAPrintSummaryFunc)(GAindividual,FILE*);
  * \param FILE* file handle
  * \ingroup ga
 */
-typedef void (*GAPrintFunc)(GAindividual,FILE*);
+typedef void (*GAPrintFunc)(FILE*,GAindividual);
 
 /*!
   \}

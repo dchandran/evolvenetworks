@@ -25,7 +25,7 @@ void init()
 {
     setSizeRange(2,10);
     GAsetCrossoverProb(0.0);
-    GAconfigureContinuousLog(1,0,1,0,0,1);
+    GAconfigureContinuousLog(1,0,1,0,0,0);
     GAconfigureFinalLog(1,1,1,0,1,1,1);
     GAlineageTrackingON();
 
@@ -35,9 +35,9 @@ void init()
 /* Fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(System * p);
 
-#define INITIAL_POPULATION_SIZE 1000
-#define SUCCESSIVE_POPULATION_SIZE 200
-#define NUM_GENERATIONS 80
+#define INITIAL_POPULATION_SIZE 500
+#define SUCCESSIVE_POPULATION_SIZE 100
+#define NUM_GENERATIONS 50
 
 int callback(int iter,int popSz, GApopulation P, double * fitnessArray, int *** parents)
 {

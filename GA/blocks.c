@@ -445,13 +445,13 @@ static void freeBlock(Block * block)
 {
 	if (!block) return;
 
-	if (block->internals)
-		free(block->internals);
-	block->internals = 0;
-
 	if (block->externals)
 		free(block->externals);
 	block->externals = 0;
+
+	if (block->internals)
+		free(block->internals);
+	block->internals = 0;
 
 	if (block->params)
 		free(block->params);
@@ -476,22 +476,22 @@ static Block * copyBlock(Block * block)
 	block2->type = block->type;
 
 	n = numInternals(block);
-	block2->internals = (int*)malloc(n * sizeof(int));
+	block2->internals = (int*)malloc((n+2) * sizeof(int));
 	for (i=0; i < n; ++i)
 		block2->internals[i] = block->internals[i];
 
 	n = numExternals(block);
-	block2->externals = (int*)malloc(n * sizeof(int));
+	block2->externals = (int*)malloc((n+2) * sizeof(int));
 	for (i=0; i < n; ++i)
 		block2->externals[i] = block->externals[i];
 
 	n = numParams(block);
-	block2->params = (double*)malloc(n * sizeof(double));
+	block2->params = (double*)malloc((n+2) * sizeof(double));
 	for (i=0; i < n; ++i)
 		block2->params[i] = block->params[i];
 
     n = numSpecies(block);
-	block2->initVals = (double*)malloc(n * sizeof(double));
+	block2->initVals = (double*)malloc((n+2) * sizeof(double));
 	for (i=0; i < n; ++i)
 		block2->initVals[i] = block->initVals[i];
 
@@ -729,12 +729,12 @@ static Block * randomBlock()
 	k1 = numInternals(block);
 	k2 = numExternals(block);
 
-	block->internals = (int*)malloc( k1 * sizeof(int) );
-	block->externals = (int*)malloc( k2 * sizeof(int) );
-	block->initVals = (double*)malloc( (k1 + k2) * sizeof(double));
+	block->internals = (int*)malloc( (k1+2) * sizeof(int) );
+	block->externals = (int*)malloc( (k2+2) * sizeof(int) );
+	block->initVals = (double*)malloc( (k1 + k2 + 2) * sizeof(double));
 
 	n = numParams(block);
-	block->params = (double*)malloc( n * sizeof(double) );
+	block->params = (double*)malloc( (n+2) * sizeof(double) );
 
 	return block;
 }
@@ -848,65 +848,35 @@ static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 
 	numBlocks = S->numBlocks;
 
-	if (mtrand() < 0.5) //input or output
+	k0 = (int)(mtrand() * numBlocks);
+	k1 = k0;
+
+	while (k1 < numBlocks)
 	{
-		k0 = (int)(mtrand() * numBlocks);
-		k1 = k0;
-
-		while (1)
+		n = numExternals(S->blocks[k1]);
+		m0 = (int)(mtrand() * n);
+		type = S->blocks[k1]->type;
+		m1 = m0;
+		while (FIXED_IO[type][m1])
 		{
-			n = numExternals(S->blocks[k1]);
-			m0 = (int)(mtrand() * n);
-			type = S->blocks[k1]->type;
-			m1 = m0;
-			while (FIXED_IO[type][m1])
-			{
-				++m1;
-				if (m1 >= n) m1 = 0; //cycle
-				if (m1 == m0) break;
-			}
-
-			++k1;
-			if (k1 >= numBlocks) k1 = 0;
-			if (k0==k1) break;
-			if (!FIXED_IO[type][m1])
-			{
-				S->blocks[k1]->externals[m1] = (int)(mtrand() * S->numSpecies);
-				if (NO_SAME_INPUT_OUTPUT)
-					reassignInputsOutputs(S->blocks[k1],S->numSpecies);
-				return (GAindividual)S;
-			}
+			++m1;
+			if (m1 >= n) m1 = 0; //cycle
+			if (m1 == m0) break;
 		}
-	}
-	else
-	{
-		k0 = (int)(mtrand() * numBlocks);
-		k1 = k0;
 
-		while (1)
+		if (m1 >= n) m1 = 0;
+
+		if (!FIXED_IO[type][m1])
 		{
-			n = numExternals(S->blocks[k1]);
-			m0 = (int)(mtrand() * n);
-			type = S->blocks[k1]->type;
-			m1 = m0;
-			while (FIXED_IO[type][m1])
-			{
-				++m1;
-				if (m1 >= n) m1 = 0; //cycle
-				if (m1 == m0) break;
-			}
-
-			++k1;
-			if (k1 >= numBlocks) k1 = 0;
-			if (k0==k1) break;
-			if (!FIXED_IO[type][m1])
-			{
-				S->blocks[k1]->externals[m1] = (int)(mtrand() * S->numSpecies);
-				if (NO_SAME_INPUT_OUTPUT)
-					reassignInputsOutputs(S->blocks[k1],S->numSpecies);
-				return (GAindividual)S;
-			}
+			S->blocks[k1]->externals[m1] = (int)(mtrand() * S->numSpecies);
+			if (NO_SAME_INPUT_OUTPUT)
+				reassignInputsOutputs(S->blocks[k1],S->numSpecies);
+			return (GAindividual)S;
 		}
+
+		++k1;
+		if (k1 >= numBlocks) k1 = 0;
+		if (k0==k1) break;
 	}
 
 	return (GAindividual)S;
@@ -987,20 +957,23 @@ void getRates(double time, double* conc, double* rates, void * s)
 }
 
 /*graphviz format*/
-void printSystem(GAindividual s, FILE * fp)
+static void printSystem(FILE * fp, GAindividual s)
 {
     int i,j,n;
     System * S = (System*)s;
+
+	fprintf(fp,"graph {\n");
 
     for (i=0; i < S->numBlocks; ++i)
     {
         n = numExternals(S->blocks[i]);
         for (j=0; j < n; ++j)
-            fprintf(fp,"M%i -- x%i",i,S->blocks[i]->externals[j]);
+            fprintf(fp,"M%i -- x%i\n",i,S->blocks[i]->externals[j]);
     }
+	fprintf(fp,"}\n");
 }
 
-void printSystemStats(GAindividual s,FILE * fp)
+static void printSystemStats(FILE * fp, GAindividual s)
 {
     System * S = (System*)s;
     fprintf(fp,"%i\t%i",S->numBlocks,S->numSpecies);
@@ -1144,5 +1117,7 @@ GApopulation evolveNetworks(GAFitnessFunc fitness, int initialPopulationSize, in
         P[i] = (GApopulation)randomSystem((int)(MIN_SIZE + mtrand() * (MAX_SIZE - MIN_SIZE)));
 
 	GAinit(&freeSystem, &cloneSystem , fitness, &crossoverBlocks, &mutateBlocks, &GArouletteWheelSelection, callback);
+	GAsetPrintSummaryFunction(&printSystemStats);
+	GAsetPrintFunction(&printSystem);
 	return GArun(P,initialPopulationSize,finalPopulationSize,iter);
 }

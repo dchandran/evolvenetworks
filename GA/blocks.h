@@ -47,8 +47,8 @@ Matrix;
 typedef struct
 {
 	int type;
-	int * externals;
 	int * internals;
+	int * externals;
 	double * params;
 	double * initVals;
 }
