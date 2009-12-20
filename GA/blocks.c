@@ -5,10 +5,10 @@
 
 static int MIN_SIZE = 1;  //minimum allowed size of a system (size = num. of blocks)
 static int MAX_SIZE = 20;  //maximum allowed size of a system (size = num. of blocks)
-static int PERCENT_OVERLAP = 0.2; //expected percent of two blocks that will overlap
+static double PERCENT_OVERLAP = 0.2; //expected percent of two blocks that will overlap
 
 static double PROB_PARAM_CHANGE = 0.5; //prob. of changing parameter (during mutation)
-static double PROB_REWIRE = 0.3;  //prob. of rewiring vs. changing parameter (during mutation)
+static double PROB_REWIRE = 0.5;  //prob. of rewiring vs. changing parameter (during mutation)
 static double PROB_NEW_BLOCK = 0.1;  //prob. of adding new block (during mutation)
 static double PROB_DEL_BLOCK = 0.1;  //prob. of removing a block (during mutation)
 static int MUTATION_RATE = 1; //number of changes made during a single mutation event. Cannot be < 1
@@ -65,7 +65,7 @@ static void initialzeArrays() //initialize the above arrays
 
 void clearArrays()
 {
-    int total, i, j;
+    int total, i;
 
 	total = numBlockTypes();
 
@@ -447,12 +447,19 @@ static void freeBlock(Block * block)
 
 	if (block->internals)
 		free(block->internals);
+	block->internals = 0;
 
 	if (block->externals)
 		free(block->externals);
+	block->externals = 0;
 
 	if (block->params)
 		free(block->params);
+	block->params = 0;
+
+	if (block->initVals)
+		free(block->initVals);
+	block->initVals = 0;
 
 	free(block);
 }
@@ -681,15 +688,11 @@ static GAindividual crossoverBlocks(GAindividual X, GAindividual Y) //place two 
 	s3->blocks = (Block**)malloc(s3->numBlocks * sizeof(Block*));
 
 	for (i=0; i < s1->numBlocks; ++i)
-	{
 		s3->blocks[i] = s1->blocks[i];
-	}
 
 	for (i = 0; i < s2->numBlocks; ++i)
-		s3->blocks[i + s1->numBlocks] = s2->blocks[i];
+		s3->blocks[i + sz1] = s2->blocks[i];
 
-	s1->blocks = 0;
-	s2->blocks = 0;
 	free(s1);
 	free(s2);
 
@@ -702,9 +705,8 @@ static GAindividual crossoverBlocks(GAindividual X, GAindividual Y) //place two 
 
 static Block * randomBlock()
 {
-	int i,k1,k2;
+	int k1,k2;
 	int n = numBlockTypes();
-	double d1,d2;
 	Block * block = 0;
 	
 	while (!block)
@@ -785,7 +787,10 @@ static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 			oldBlocks = S->blocks;
 			S->blocks = (Block**)malloc((S->numBlocks+1)*sizeof(Block*));
 			for (i=0; i < S->numBlocks; ++i)
+			{
 				S->blocks[i] = oldBlocks[i];
+				oldBlocks[i] = 0;
+			}
 			free(oldBlocks);
 
 			block = randomBlock();
@@ -797,7 +802,7 @@ static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 			if (NO_SAME_INPUT_OUTPUT)
 				reassignInputsOutputs(block,S->numSpecies);
 
-			S->blocks[S->numBlocks+1] = block;
+			S->blocks[S->numBlocks] = block;
 			S->numBlocks++;
 		}
 		else
@@ -807,13 +812,18 @@ static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 				oldBlocks = S->blocks;
 				S->blocks = (Block**)malloc((S->numBlocks-1)*sizeof(Block*));
 				for (i=0,j=0; i < S->numBlocks; ++i)
+				{
 					if (i != k)
 					{
 						S->blocks[j] = oldBlocks[i];
 						++j;
 					}
 					else
+					{
 						freeBlock(oldBlocks[i]);
+					}
+					oldBlocks[i] = 0;
+				}
 				free(oldBlocks);
 
 				S->numBlocks--;
@@ -823,9 +833,11 @@ static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 				{
 					block = S->blocks[i];
 					n = numExternals(block);
+
 					for (j=0; j < n; ++j)
 						if (block->externals[j] < 0)
 							block->externals[j] = (int)(mtrand() * S->numSpecies);
+
 					if (NO_SAME_INPUT_OUTPUT)
 						reassignInputsOutputs(block,S->numSpecies);
 				}
@@ -961,7 +973,7 @@ Matrix getStoichiometryMatrix(System * S)
 
 void getRates(double time, double* conc, double* rates, void * s)
 {
-	int i,k,n;
+	int i,k;
 	RatesFunction f;
 	System * S = (System*)s;
 
@@ -996,7 +1008,7 @@ void printSystemStats(GAindividual s,FILE * fp)
 
 double * getInitialValues(System * S)
 {
-    int i,j,k1,k2,n,t;
+    int i,j,k1,k2,n;
     double * y = 0;
 
     n = S->numSpecies;
@@ -1004,7 +1016,11 @@ double * getInitialValues(System * S)
     for (i=0; i < S->numBlocks; ++i)
         n += numInternals(S->blocks[i]);
 
-    y = (double*)malloc(n * sizeof(double));
+	while (!y)
+	    y = (double*)malloc((1+n) * sizeof(double));
+
+	y[n] = 0;
+
     for (i=0; i < n; ++i)
         y[i] = 0.0;
 
@@ -1030,7 +1046,6 @@ double * simulateStochastic(System * S, double time, int * sz)
 {
 	Matrix N = getStoichiometryMatrix(S);
 	double * y, * y0;
-	int n;
 
 	y0 = getInitialValues(S);
 
@@ -1065,6 +1080,9 @@ System * randomSystem(int numBlocks)
 {
 	int i,j,n,numSpecies;
 	System * S = 0;
+
+	if (numBlocks < 2)
+		numBlocks = 2;
 	
 	while (!S)
 		S = (System*)malloc(sizeof(System));
@@ -1079,8 +1097,11 @@ System * randomSystem(int numBlocks)
 		numSpecies += numExternals(S->blocks[i]);
     }
 
-    numSpecies *= (1.0 - PERCENT_OVERLAP);
+    numSpecies -= (int)(numSpecies * PERCENT_OVERLAP);
     S->numSpecies = numSpecies;
+
+	if (numSpecies < 1) 
+		numSpecies = 10;
 
     for (i=0; i < numBlocks; ++i)
 	{
@@ -1120,7 +1141,7 @@ GApopulation evolveNetworks(GAFitnessFunc fitness, int initialPopulationSize, in
 	P = (GApopulation)malloc(initialPopulationSize * sizeof(GAindividual));
 
 	for (i=0; i < initialPopulationSize; ++i)
-        P[i] = (GApopulation)randomSystem(MIN_SIZE + mtrand() * (MAX_SIZE - MIN_SIZE));
+        P[i] = (GApopulation)randomSystem((int)(MIN_SIZE + mtrand() * (MAX_SIZE - MIN_SIZE)));
 
 	GAinit(&freeSystem, &cloneSystem , fitness, &crossoverBlocks, &mutateBlocks, &GArouletteWheelSelection, callback);
 	return GArun(P,initialPopulationSize,finalPopulationSize,iter);

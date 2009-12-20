@@ -642,7 +642,6 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 
 	while (stop == 0) //keep going until max iterations or until callback function signals a stop
 	{
-        printf("gen %i\n",i);
 		if (i == 0)  //initial population
 		{
 			population = GAnextGen(i, population, initPopSz, popSz, 0, fitnessScores, parents);

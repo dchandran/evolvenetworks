@@ -24,7 +24,7 @@
 void init()
 {
     setSizeRange(2,10);
-    GAsetCrossoverProb(1.0);
+    GAsetCrossoverProb(0.0);
     GAconfigureContinuousLog(1,0,1,0,0,1);
     GAconfigureFinalLog(1,1,1,0,1,1,1);
     GAlineageTrackingON();
