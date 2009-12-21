@@ -50,7 +50,7 @@ void convertToBlock(const char * name, const char * antimonyFile, const char * f
 		fprintf(fp1,"\tdouble %s = block->params[%i];\n",params[i],i);
 
 	for (i=0; i < numSpecies; ++i)
-		fprintf(fp1,"\tdouble %s = y[%i];\n",species[i],i);
+		fprintf(fp1,"\tdouble %s = y[ block->externals[%i] ];\n",species[i],i);
 
 	for (i=0; i < n; ++i)
 		fprintf(fp1,"\tr[%i] = %s;\n",i,rates[i]);

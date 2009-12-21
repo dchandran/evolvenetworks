@@ -24,7 +24,7 @@
 void init()
 {
     setSizeRange(2,10);
-    GAsetCrossoverProb(0.0);
+    GAsetCrossoverProb(0.5);
     GAconfigureContinuousLog(1,0,1,0,0,0);
     GAconfigureFinalLog(1,1,1,0,1,1,1);
     GAlineageTrackingON();
@@ -35,7 +35,7 @@ void init()
 /* Fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(System * p);
 
-#define INITIAL_POPULATION_SIZE 500
+#define INITIAL_POPULATION_SIZE 1000
 #define SUCCESSIVE_POPULATION_SIZE 100
 #define NUM_GENERATIONS 50
 
@@ -47,10 +47,10 @@ int callback(int iter,int popSz, GApopulation P, double * fitnessArray, int *** 
 /* main */
 int main()
 {
-	int N;
+	int i,j,n;
 	double * y;
 	GApopulation pop;
-	GAindividual * best;
+	System * best;
 
 	init();
 
@@ -58,13 +58,15 @@ int main()
 
 	pop = evolveNetworks(&fitness, INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, &callback);
 
-	best = pop[0]; // Get the best network
+	best = (System*)pop[0]; // Get the best network
 
 	/******simulate the best network and write the result to a file************/
 
 	y = simulateODE((System*)best, 500.0, 1.0);   // Simulate
 
-	writeToFile("dat.txt",y,500,3);       // Save to file
+	n = numSpeciesTotal(best);
+
+	writeToFile("dat.txt",y,500,n+1);       // Save to file
 
 	free(y);
 

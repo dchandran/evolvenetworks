@@ -408,11 +408,25 @@ void disallowSameInputAndOutput();
 */
 
 /*! \brief get the stoichiometry matrix for the set of blocks in a system
-*	\param System * the block
+*	\param System * the system
 *	\return Matrix stoichiometry matrix
 * \ingroup gablocks
 */
 Matrix getStoichiometryMatrix(System*);
+
+/*! \brief get the number of total species in a system (same as number of rows in the stoichiometry matrix)
+*	\param System * the system
+*	\return int total number of species
+* \ingroup gablocks
+*/
+int numSpeciesTotal(System*);
+
+/*! \brief get the number of total reactions in a system (same as number of columns in the stoichiometry matrix)
+*	\param System * the system
+*	\return int total number of reactions
+* \ingroup gablocks
+*/
+int numReactionsTotal(System*);
 
 /*! \brief get the rates for for a block given the concentrations and time
 *	\param double time

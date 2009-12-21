@@ -654,13 +654,22 @@ static void reassignInputsOutputs(Block * block, int numSpecies)
 
 static GAindividual crossoverBlocks(GAindividual X, GAindividual Y) //place two subsets together
 {
+	int i,j,n;
 	System * s1 = randomSubsystem((System*)X, 0.6);
 	System * s2 = randomSubsystem((System*)Y, 0.6);
-	System * s3;
+	System * s3 = 0;
+	int sz1, sz2;
 
-	int sz1 = s1->numSpecies,
-		sz2 = s2->numSpecies;
-	int i,j,n;
+	while (!s3)
+		s3 = (System*)malloc(sizeof(System));
+
+	s3->numBlocks = s1->numBlocks + s2->numBlocks;
+	s3->blocks = (Block**)malloc(s3->numBlocks * sizeof(Block*));
+
+	sz1 = s1->numSpecies;
+	sz2 = s2->numSpecies;
+
+	s3->numSpecies = sz1 + sz2;
 
 	for (i=0; i < s1->numBlocks; ++i)
 	{
@@ -668,6 +677,7 @@ static GAindividual crossoverBlocks(GAindividual X, GAindividual Y) //place two 
 		for (j=0; j < n; ++j)
 			if (s1->blocks[i]->externals[j] < 0)
 				s1->blocks[i]->externals[j] = sz1 + (int)(mtrand() * sz2);
+		s3->blocks[i] = s1->blocks[i];
 	}
 
 	for (i=0; i < s2->numBlocks; ++i)
@@ -678,24 +688,13 @@ static GAindividual crossoverBlocks(GAindividual X, GAindividual Y) //place two 
 				s2->blocks[i]->externals[j] = (int)(mtrand() * sz1);
 			else
 				s2->blocks[i]->externals[j] += sz1;
+		s3->blocks[i + s1->numBlocks] = s2->blocks[i];
 	}
 
-	s3 = 0;
-	while (!s3)
-		s3 = (System*)malloc(sizeof(System));
-	s3->numBlocks = s1->numBlocks + s2->numBlocks;
-	s3->numSpecies = s1->numSpecies + s2->numSpecies;
-	s3->blocks = (Block**)malloc(s3->numBlocks * sizeof(Block*));
-
-	for (i=0; i < s1->numBlocks; ++i)
-		s3->blocks[i] = s1->blocks[i];
-
-	for (i = 0; i < s2->numBlocks; ++i)
-		s3->blocks[i + sz1] = s2->blocks[i];
+	s1->blocks = s2->blocks = 0;
 
 	free(s1);
 	free(s2);
-
 	return (void*)s3;
 }
 
@@ -896,6 +895,32 @@ static GAindividual mutateBlocks(GAindividual X)  //rewire or change parameter n
 /****************************
 * simulation functions
 ****************************/
+
+
+int numSpeciesTotal(System* S)
+{
+	int numInt = 0;
+	int i;
+	for (i = 0; i < S->numBlocks; ++i)
+	{
+		numInt += numInternals(S->blocks[i]);
+	}
+
+	return (S->numSpecies + numInt);
+}
+
+int numReactionsTotal(System* S)
+{
+	int numReacs = 0;
+	int i;
+
+	for (i = 0; i < S->numBlocks; ++i)
+	{
+		numReacs += numReactions(S->blocks[i]);
+	}
+
+	return numReacs;
+}
 
 Matrix getStoichiometryMatrix(System * S)
 {

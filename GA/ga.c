@@ -672,7 +672,7 @@ GApopulation GArun(GApopulation initialGApopulation, int initPopSz, int popSz, i
 	}
 
     if (_LOGFILE != NULL)
-        GAkeepLog(i, 1, popSz, population, fitnessScores, parents);
+        GAkeepLog(numGenerations, 1, popSz, population, fitnessScores, parents);
 
 	if (population[popSz-1])
 	{
