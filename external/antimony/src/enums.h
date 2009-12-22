@@ -14,7 +14,7 @@
  * - rdInhibits: An inhibition interaction: -|
  * - rdInfluences: A generic interaction: -(
  */
-enum rd_type {rdBecomes = 0, rdActivates, rdInhibits, rdInfluences};
+typedef enum {rdBecomes = 0, rdActivates, rdInhibits, rdInfluences} rd_type;
 
 /**
  * var_types define internally what a symbol is; they are not used in the API anywhere.  But for the curious, they are:
@@ -43,8 +43,7 @@ typedef enum {varSpeciesUndef = 0,
                varModule,
                varEvent,
                varCompartment,
-               varStrand}
-var_type;
+               varStrand} var_type;
 /**
  * return_types are used in the API when requesting information about different symbols.  Each return_type refers to a different group of symbols, and are overlapping--i.e. a single symbol can be included in 'allGenes' and 'allReactions'. 
   * - allSymbols:        Every symbol of every type in Antimony
@@ -70,7 +69,7 @@ var_type;
   * - expandedStrands:   DNA strands containing nothing but operators and genes--any sub-strands have been expanded to their component DNA objects, and those sub-strands are not included in any lists.
   * - modularStrands:    All defined DNA strands, with some being subparts of the others.
   */
-typedef enum  {allSymbols = 0,
+typedef enum {allSymbols = 0,
                   allSpecies,
                   allFormulas,
                   allDNA,
@@ -91,8 +90,7 @@ typedef enum  {allSymbols = 0,
                   constCompartments,
                   subModules,
                   expandedStrands,
-                  modularStrands}
-return_type;
+                  modularStrands} return_type;
 
 /**
  * const_type values are not used in the API, but are used internally in libAntimony.  Every symbol starts off being constDEFAULT, which means that the model never stated explicitly whether the symbol was to be constant or variable, so the program will use a heuristic to determine which is the case.  Once set, the heuristic is ignored, and the type (constVAR for variable symbols, constCONST for constant ones) is permanent.  Not all symbols can actually be variable or constant (for example, submodules and reactions), so attempts to set this value for those symbols will fail.

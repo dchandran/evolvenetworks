@@ -23,13 +23,13 @@
 
 void init()
 {
-    setSizeRange(2,10);
-    GAsetCrossoverProb(0.5);
-    GAconfigureContinuousLog(1,0,1,0,0,0);
-    GAconfigureFinalLog(1,1,1,0,1,1,1);
-    GAlineageTrackingON();
-
-    GAenableLog(stdout);
+	setSizeRange(2,10);
+	setMutationRate(5);
+	GAsetCrossoverProb(0.5);
+	GAconfigureContinuousLog(1,0,1,0,0,0);
+	GAconfigureFinalLog(1,1,1,0,1,1,1);
+	GAlineageTrackingON();
+	GAenableLog(stdout);
 }
 
 /* Fitness function that tests for oscillations by using correlation to a sine wave */

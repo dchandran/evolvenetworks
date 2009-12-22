@@ -50,7 +50,8 @@ typedef struct
 	int * internals;
 	int * externals;
 	double * params;
-	double * initVals;
+	double * initValsExternals;
+	double * initValsInternals;
 }
 Block;
 

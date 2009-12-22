@@ -16,7 +16,7 @@ static int MUTATION_RATE = 1; //number of changes made during a single mutation 
 static int** FIXED_PARAMS = 0; //indicates whether or not to mutate specific parameters
 static int** FIXED_IO = 0; //indicates whether or not to rewire specific inputs/outputs
 static int* ALLOWED_BLOCKS = 0; //indicates which block types to use
-static int NO_SAME_INPUT_OUTPUT = 0; //whether the same species can be an input and output of same block
+static int NO_SAME_INPUT_OUTPUT = 1; //whether the same species can be an input and output of same block
 
 /*******************
 * helper functions
@@ -457,9 +457,13 @@ static void freeBlock(Block * block)
 		free(block->params);
 	block->params = 0;
 
-	if (block->initVals)
-		free(block->initVals);
-	block->initVals = 0;
+	if (block->initValsInternals)
+		free(block->initValsInternals);	
+	block->initValsInternals = 0;
+	
+	if (block->initValsExternals)
+		free(block->initValsExternals);	
+	block->initValsExternals = 0;
 
 	free(block);
 }
@@ -480,20 +484,23 @@ static Block * copyBlock(Block * block)
 	for (i=0; i < n; ++i)
 		block2->internals[i] = block->internals[i];
 
+	block2->initValsInternals = (double*)malloc((n+2) * sizeof(double));
+	for (i=0; i < n; ++i)
+		block2->initValsInternals[i] = block->initValsInternals[i];
+
 	n = numExternals(block);
 	block2->externals = (int*)malloc((n+2) * sizeof(int));
 	for (i=0; i < n; ++i)
 		block2->externals[i] = block->externals[i];
+	
+	block2->initValsExternals = (double*)malloc((n+2) * sizeof(double));
+	for (i=0; i < n; ++i)
+		block2->initValsExternals[i] = block->initValsExternals[i];
 
 	n = numParams(block);
 	block2->params = (double*)malloc((n+2) * sizeof(double));
 	for (i=0; i < n; ++i)
 		block2->params[i] = block->params[i];
-
-    n = numSpecies(block);
-	block2->initVals = (double*)malloc((n+2) * sizeof(double));
-	for (i=0; i < n; ++i)
-		block2->initVals[i] = block->initVals[i];
 
 	return block2;
 }
@@ -729,8 +736,10 @@ static Block * randomBlock()
 	k2 = numExternals(block);
 
 	block->internals = (int*)malloc( (k1+2) * sizeof(int) );
+	block->initValsInternals = (double*)malloc( (k1+2) * sizeof(double));
+	
 	block->externals = (int*)malloc( (k2+2) * sizeof(int) );
-	block->initVals = (double*)malloc( (k1 + k2 + 2) * sizeof(double));
+	block->initValsExternals = (double*)malloc( (k2+2) * sizeof(double));
 
 	n = numParams(block);
 	block->params = (double*)malloc( (n+2) * sizeof(double) );
@@ -984,17 +993,31 @@ void getRates(double time, double* conc, double* rates, void * s)
 /*graphviz format*/
 static void printSystem(FILE * fp, GAindividual s)
 {
-    int i,j,n;
-    System * S = (System*)s;
+	int i,j,n;
+	System * S = (System*)s;
 
-	fprintf(fp,"graph {\n");
+	fprintf(fp,"graph G \n{\n");
 
-    for (i=0; i < S->numBlocks; ++i)
-    {
-        n = numExternals(S->blocks[i]);
-        for (j=0; j < n; ++j)
-            fprintf(fp,"M%i -- x%i\n",i,S->blocks[i]->externals[j]);
-    }
+	fprintf(fp, "node [shape = doublecircle]; ");
+
+	for (i=0; i < S->numBlocks; ++i)	
+		fprintf(fp,"M%i ",i,S->blocks[i]->externals[j]);
+
+	fprintf(fp, ";\nnode [shape = diamond]; ");
+
+	for (i=0; i < S->numBlocks; ++i)
+	{
+		n = numExternals(S->blocks[i]);
+		for (j=0; j < n; ++j)
+			fprintf(fp,"x%i ",S->blocks[i]->externals[j]);
+	}
+
+	for (i=0; i < S->numBlocks; ++i)
+	{
+		n = numExternals(S->blocks[i]);
+		for (j=0; j < n; ++j)
+			fprintf(fp,"M%i -- x%i\n",i,S->blocks[i]->externals[j]);
+	}
 	fprintf(fp,"}\n");
 }
 
@@ -1028,13 +1051,13 @@ double * getInitialValues(System * S)
         n = numExternals(S->blocks[i]);
         k1=0;
 
-        for (j=0; j < n; ++j, ++k1)
-            y[ S->blocks[i]->externals[j] ] = S->blocks[i]->initVals[k1];
+        for (j=0; j < n; ++j)
+            y[ S->blocks[i]->externals[j] ] = S->blocks[i]->initValsExternals[j];
 
         n = numInternals(S->blocks[i]);
 
-        for (j=0; j < n; ++j, ++k1)
-            y[ S->blocks[i]->internals[j] ] = S->blocks[i]->initVals[k1];
+        for (j=0; j < n; ++j)
+            y[ S->blocks[i]->internals[j] ] = S->blocks[i]->initValsInternals[j];
     }
 
     return y;

@@ -1,0 +1,132 @@
+module biuni(A,B,C)
+	A + B -> C; k*A*B;
+	k = 1.0;
+	A = 5.0;
+	B = 5.0;
+	C = 5.0;
+end
+
+module enzyme_catalysis(S,E,P)
+	S + E -> ES; kf1*S*E;
+	ES -> S + E; kb1*ES;
+	ES -> EP; kf2*ES;
+	EP -> ES; kb2*EP;
+	EP -> P + E; kf3*EP;
+	P + E -> EP; kb3*P*E;
+	kf1 = 1.0;
+	kb1 = 1.0;
+	kf2 = 1.0;
+	kb2 = 1.0;
+	kf3 = 1.0;
+	kb3 = 0.00001;
+	S = 100.0;
+	E = 10.0;
+	ES = 0.0;
+	EP = 0.0;
+	P = 5.0;
+end
+
+module gene_repression_1(R,S)
+	R + Pr -> RPr; kf*R*Pr;
+	RPr -> R + Pr; kb*RPr;
+	 -> mRNA; k1*Pr;
+	 mRNA ->; d1*mRNA;
+	 -> S; k2*mRNA;
+	 S ->; d2*S;
+	kf = 1.0;
+	kb = 1.0;
+	k1 = 1.0;
+	d1 = 1.0;
+	k2 = 1.0;
+	d2 = 0.1;
+	R = 10.0;
+	Pr = 1.0;
+	RPr = 0.0;
+	mRNA = 0.0;
+	S = 0.0;
+end
+
+module influx(A)
+	 -> A; k;
+	k = 1.0;
+	A = 10.0;
+end
+
+module unibi(A,B,C)
+	A -> B + C; k*A;
+	k = 1.0;
+	A = 10.0;
+	B = 5.0;
+	C = 5.0;
+end
+
+module bibi(A,B,C,D)
+	A + B -> C + D; k*A*B;
+	k = 1.0;
+	A = 5.0;
+	B = 5.0;
+	C = 5.0;
+	D = 5.0;
+end
+
+module gene_activation_1(A,S)
+	A + Pr -> APr; kf*A*Pr;
+	APr -> A + Pr; kb*APr;
+	 -> mRNA; k1*APr;
+	 mRNA ->; d1*mRNA;
+	 -> S; k2*mRNA;
+	 S ->; d2*S;
+	kf = 1.0;
+	kb = 1.0;
+	k1 = 1.0;
+	d1 = 1.0;
+	k2 = 1.0;
+	d2 = 0.1;
+	A = 10.0;
+	Pr = 1.0;
+	APr = 0.0;
+	mRNA = 0.0;
+	S = 0.0;
+end
+
+module gene_repression_2(R1,R2,S)
+	R1 + Pr -> R1Pr; kf1*R1*Pr;
+	R1Pr -> R1 + Pr; kb1*R1Pr;
+
+	R2 + Pr -> R2Pr; kf2*R2*Pr;
+	R2Pr -> R2 + Pr; kb2*R2Pr;
+
+	 -> mRNA; k1*Pr;
+	 mRNA ->; d1*mRNA;
+	 -> S; k2*mRNA;
+	 S ->; d2*S;
+
+	kf1 = 1.0;
+	kb1 = 1.0;
+	kf2 = 1.0;
+	kb2 = 1.0;
+	k1 = 1.0;
+	d1 = 1.0;
+	k2 = 1.0;
+	d2 = 0.1;
+	R1 = 10.0;
+	Pr = 1.0;
+	R1Pr = 0.0;
+	R2 = 10.0;
+	R2Pr = 0.0;
+	mRNA = 0.0;
+	S = 0.0;
+end
+
+module uniuni(A,B)
+	A -> B; k*A;
+	k = 1.0;
+	A = 10.0;
+	B = 10.0;
+end
+
+module degradation(A)
+	A -> ; k*A;
+	k = 1.0;
+	A = 10.0;
+end

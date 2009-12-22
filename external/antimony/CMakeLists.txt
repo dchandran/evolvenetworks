@@ -20,6 +20,7 @@ SET( ANTIMONY_SRC
 	src/typex.cpp
 	src/userfunction.cpp
 	src/variable.cpp
+	src/module-sbml.cpp
 )
 
 ADD_DEFINITIONS(-D__cplusplus=1)

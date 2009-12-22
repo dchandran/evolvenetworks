@@ -181,12 +181,12 @@ LIB_EXTERN void   clearPreviousLoads();
 /**
  * Writes out an antimony-formatted file containing the given module.  If no module name is given, all modules in the current set are returned.  If the module depends on any sub-modules, those modules are written out as well, also in the antimony format.  Returns 0 on failure (and sets an error), 1 on success.
  */
-LIB_EXTERN int   writeAntimonyFile(const char* filename, const char* moduleName );
+LIB_EXTERN int   writeAntimonyFile(const char* filename, const char* moduleName);
 
 /**
  * Returns the same output as writeAntimonyFile, but to a char* array instead of to a file.  Returns NULL on failure, and sets an error.
  */
-LIB_EXTERN char* getAntimonyString(const char* moduleName );
+LIB_EXTERN char* getAntimonyString(const char* moduleName);
 
 #ifndef NSBML
 /**
@@ -291,6 +291,21 @@ LIB_EXTERN char** getModuleNames();
  */
 LIB_EXTERN char*  getNthModuleName(unsigned long n);
 /** \} */
+
+/**
+ * Returns the number of symbols defined to be in the interface of the given module.  In other words, if a module is defined 'module M(x, y, z)', this returns '3'.
+ */
+LIB_EXTERN unsigned long getNumSymbolsInInterfaceOf(const char* moduleName);
+
+/**
+ * Returns the names of the symbols defined to be in the interface of the given module.  In other words, if a module is defined 'module M(x, y, z)', this returns the list 'x, y, z'.
+ */
+LIB_EXTERN char** getSymbolNamesInInterfaceOf(const char* moduleName);
+
+/**
+ * Returns the names of the symbols defined to be in the interface of the given module.  In other words, if a module is defined 'module M(x, y, z)', this returns the list 'x, y, z'.
+ */
+LIB_EXTERN char* getNthSymbolNameInInterfaceOf(const char* moduleName, unsigned long n);
 
 /**
   * @name Symbols and symbol information
@@ -563,12 +578,12 @@ LIB_EXTERN char**  getNthInteractionMthInteracteeName(const char* modulename, un
 /**
  * Returns an array of all the interaction dividers in the given module.  The length of the array can be obtained with 'getNumInteractions'.
  */
-LIB_EXTERN enum rd_type* getInteractionDividers(const char* moduleName);
+LIB_EXTERN rd_type* getInteractionDividers(const char* moduleName);
 
 /**
  * Returns the Nth interaction divider in the module.  If no such interaction is present, 0 is returned, which is 'rdBecomes, which is an invalid Interaction divider (since it's used for reactions instead).
  */
-LIB_EXTERN enum rd_type  getNthInteractionDivider(const char* moduleName, unsigned long n);
+LIB_EXTERN rd_type  getNthInteractionDivider(const char* moduleName, unsigned long n);
 
 /** \} */
 
@@ -649,6 +664,16 @@ LIB_EXTERN unsigned long  getNumAssignmentsForEvent(const char* moduleName, unsi
  * Returns the trigger for the given event, as an equation that can be interpreted in a boolean context.
  */
 LIB_EXTERN char*   getTriggerForEvent(const char* moduleName, unsigned long event);
+
+/**
+ * Returns the delay for the given event, as an equation (if present; if the event has no delay, "" is returned)..
+ */
+LIB_EXTERN char*   getDelayForEvent(const char* moduleName, unsigned long event);
+
+/**
+ * Returns 'true' if the given event has a delay; 'false' otherwise.
+ */
+LIB_EXTERN bool    getEventHasDelay(const char* moduleName, unsigned long event);
 
 /**
  * Each assignment for an event assigns a formula to a variable.  This function returns the variable in question for the given event and assignment.
