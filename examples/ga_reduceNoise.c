@@ -18,12 +18,16 @@
 	
 ****************************************************/
 
-#include "reactionNetwork.h"
+#include "blocks.h"
 
 /****************************************************/
 
+#define INITIAL_POPULATION_SIZE 1000
+#define SUCCESSIVE_POPULATION_SIZE 100
+#define NUM_GENERATIONS 50
+
 /* fitness that calculates the coefficient of variation (CV) */
-double fitness(GAindividual p);
+double fitness(System * p);
 
 /* print the generation number and fitness of best network during each iteration */
 int callback(int iter,int popSz, GApopulation pop, double * fitnessArray, int *** );
@@ -31,26 +35,27 @@ int callback(int iter,int popSz, GApopulation pop, double * fitnessArray, int **
 /*Main*/
 int main()
 {	
-	int i, r, n, sz;
+	int n, sz;
 	double * y;
 	GApopulation pop;
-	GAindividual * best;
-	setNetworkType( GENE_REGULATION_NETWORK );  //use this network type 
-	setNetworkSize(2,8,2,20);  //network size
+	System * best;
+	
+	setSizeRange(2,10);
+	setMutationRate(5);
+	GAsetCrossoverProb(0.5);
+	GAconfigureContinuousLog(1,0,1,0,0,0);
+	GAconfigureFinalLog(1,1,1,0,1,1,1);
+	GAlineageTrackingON();
+	GAenableLog(stdout);
 
-	//evolve using 1000 initial networks, 500 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(200,100,20,&fitness,&callback);  
+	pop = evolveNetworks(&fitness, INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, &callback);
 
-	best = pop[0];  //get the best network
-
-	printNetwork(stdout,best); //print the best network
-	printNetworkToFile("noise_damper.txt",best); //print the best network
+	best = (System*)pop[0];  //get the best network
 
 	/******simulate the best network and write the result to a file************/
 
-	r = getNumReactions(best);
-	n = getNumSpecies(best);
-	y = simulateNetworkStochastically(best,500,&sz);  //stochastic simulation
+	n = numSpeciesTotal(best);
+	y = simulateStochastic(best,500.0,&sz);  //stochastic simulation
 	
 	writeToFile("dat.txt",y,sz,n+1);  //write table to file
 
@@ -64,17 +69,17 @@ int main()
 }
 
 /* fitness that calculates the coefficient of variation (CV) */
-double fitness(GAindividual p)
+double fitness(System * p)
 {
 	int i,r,n,sz;
 	double f, sd, dt, time, * y, mXY = 0,mX = 0, mY = 0, mX2 = 0, mY2 = 0;
 
-	n = getNumSpecies(p);
-	r = getNumReactions(p);
+	n = numSpeciesTotal(p);
+	r = numReactionsTotal(p);
 
 	time = 500.0;
 
-	y = simulateNetworkStochastically(p,time,&sz);  //stochastic simulation
+	y = simulateStochastic(p,time,&sz);  //stochastic simulation
 
 	f = 0;
 	if (y != 0)         //compute the variance
@@ -100,9 +105,6 @@ double fitness(GAindividual p)
 		free(y);
 	}
 
-	if(getNumSpecies(p) > 5)       //disallow large networks
-		f = 0.0;
-
 	return (f);
 }
 
@@ -111,15 +113,13 @@ int callback(int iter,int popSz, GApopulation pop, double * fitnessArray, int **
 {
 	int i,j;
 	double f = fitnessArray[0];
-	ReactionNetwork * net = (ReactionNetwork*)(pop[0]);
-
-	printf("%i\t%i\t%lf\n",iter,getNumSpecies(net),f);
+	
 	if (iter > 50 && f < 0.5)
 	{
 		for (i=1; i < popSz; ++i)
 		{
 			for (j=0; j < 10; ++j)
-				pop[i] = mutateNetwork(pop[i]);
+				pop[i] = mutateSystem(pop[i]);
 		}
 	}
 	return 0;

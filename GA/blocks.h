@@ -47,11 +47,11 @@ Matrix;
 typedef struct
 {
 	int type;
-	int * internals;
-	int * externals;
-	double * params;
-	double * initValsExternals;
-	double * initValsInternals;
+	int * internals;            //molecules that cannot interact with other modules
+	int * externals;            //molecules that can interact with other modules
+	double * params;            //parameters used in the rate equations of this module
+	double * initValsExternals; //initial concentrations for external molecules in this module
+	double * initValsInternals; //initial concentrations for internal molecules in this module
 }
 Block;
 
@@ -113,9 +113,10 @@ BlockType;
 */
 typedef struct
 {
-	Block ** blocks;
-	int numBlocks;
-	int numSpecies;
+	Block ** blocks;    //the array of blocks (see struct block)
+	int numBlocks;      //number of blocks in the blocks array
+	int numSpecies;     //number of external species in the system. the number of internal species is generated automatically
+	double * fixedSpecies; //binary array indicating which molecules are fixed
 }
 System;
 
@@ -402,6 +403,21 @@ void allowSameInputAndOutput();
 */
 void disallowSameInputAndOutput();
 
+/*! \brief mutates a system and returns the same system
+* \param GAindividual a system (same as return value)
+* \return GAindividual the same system by slightly altered
+* \ingroup gablocks
+*/
+GAindividual mutateSystem(GAindividual);
+
+/*! \brief creates a new child system by taking sections of two parent systems. parent systems are unaltered
+* \param GAindividual a parent system (not changed)
+* \param GAindividual a parent system (not changed)
+* \return GAindividual a new system made by taking fragments of both parent systems
+* \ingroup gablocks
+*/
+GAindividual crossoverSystem(GAindividual, GAindividual);
+
 /*! \}
     \name functions for simulating and printing blocks and systems
 	\{
@@ -459,9 +475,29 @@ double * simulateStochastic(System*,  double time, int * sz);
 double * simulateODE(System*, double time, double dt);
 
 /*! \brief get initial values for the system
-*   \param Block* block to initialize
+*   \param System* system to initialize
+*	\return double * initial values
 */
 double * getInitialValues(System*);
+
+/*! \brief set initial values for the system (only for external species, i.e. numSpecies)
+*   \param System* system to initialize
+*	\param double * initial values
+*/
+void setInitialValues(System * , double *);
+
+/*! \brief set fixed concentration values for molecules in the system. 
+		   use -1 for not fixed. 
+		   fixed species do not change during simulation.
+*   \param System* system to initialize
+*	\param double * initial values
+*/
+void setFixedSpecies(System * , double *);
+
+/*! \brief set all species to floating (variable) species, same as using -1 in setInitialValues
+*   \param System* system to initialize
+*/
+void unsetFixedSpecies(System * S);
 
 /*! \brief initialize the parameters of the block to the default values
 *   \param Block* block to initialize
@@ -473,19 +509,73 @@ void initializeBlock(Block*);
 */
 void initializeSystem(System*);
 
+/*!
+  \}
+  \name additional functions related to simulation
+  \{
+*/
+
+/*! \brief compares the steady state values of the network to an input/output table provided. 
+           Sets the first n input species as fixed species, and compares the output
+		   again each of the other species.
+		   returns the fitness value 1/(1 + sum_of_square_differences), where
+		   sum_of_square_differences is the sum of square differences between the desired
+		   outputs and the best matching species in the network.
+	\param GAindividual must be a System*
+	\param double** input/output table. 
+			Number of inputs + number of outputs <= number of species in network.
+	\param int number of rows in the input table
+	\param int number of input columns (first set of columns)
+	\param int number of output columns (last set of columns)
+	\param int 1=use correlation, not absolute differences. 0 = use absolute differences.
+	\param double ** can be 0. if non-zero, this matrix MUST BE THE SAME SIZE as the input table. 
+			The output from the network will be placed in this table. This is for the purpose of
+			comparing the results against the original table.
+	\return double fitness score = 1/(1 + sum_of_square_differences)
+	\ingroup gablocks
+*/
+double compareSteadyStates(GAindividual, double **, int , int, int, int, double ** );
+
+/*! \brief set parameters for networkSteadyState()
+	\param double the allowed error. When the sum of squares of all derivatives is
+			between two time points that is delta apart is within this error range, 
+			then the system is considered to be at steady state.
+			default = 1.0E-3 (quite good for the default delta)
+	\param double the time separation for checking error tolerance.
+			default = 0.1
+	\param double maximum time allows. after this time limit, a 0 is returned, i.e. no steady state
+			default = 100.0 (default is set for speed. you may want to increase this if the system is slow to converge).
+	\ingroup gablocks
+*/
+void setSteadyStateError(double tolerance, double delta, double maxTime);
+
+/*! \brief get steady state of a system using a system (see cvodesim.h)
+ \param System * system to simulate
+ \param double * initial values. use getInitialValues(System*) for default values.
+ \return double* steady state values
+ \ingroup gablocks
+*/
+double * getSteadyState( System * );
+
+/*!
+  \}
+  \name printing
+  \{
+*/
+
 /*! \brief print a system in graphviz format
 *	\param GAindividual * the system
 *	\param FILE* output
 * \ingroup gablocks
 */
-void printSystem(GAindividual,FILE*);
+void printSystem(FILE*,GAindividual);
 
 /*! \brief print size of system in graphviz format
 *	\param GAindividual * the system
 *	\param FILE* output
 * \ingroup gablocks
 */
-void printSystemStats(GAindividual,FILE*);
+void printSystemStats(FILE*,GAindividual);
 
 /*! \} */
 

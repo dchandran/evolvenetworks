@@ -19,6 +19,21 @@ static int* ALLOWED_BLOCKS = 0; //indicates which block types to use
 static int NO_SAME_INPUT_OUTPUT = 1; //whether the same species can be an input and output of same block
 
 /*******************
+* error tolerance
+********************/
+
+static double SS_FUNC_ERROR_TOLERANCE = 1.0E-3;
+static double SS_FUNC_MAX_TIME = 100.0;
+static double SS_FUNC_DELTA_TIME = 0.1;
+
+void setSteadyStateError(double tolerance, double delta, double maxTime)
+{
+	SS_FUNC_ERROR_TOLERANCE = tolerance;
+	SS_FUNC_DELTA_TIME = delta;
+	SS_FUNC_MAX_TIME = maxTime;
+}
+
+/*******************
 * helper functions
 ********************/
 
@@ -512,9 +527,18 @@ static void freeSystem(GAindividual X)
 	int numBlocks;
 
 	numBlocks = s->numBlocks;
-	for (i=0; i < numBlocks; ++i)
-		freeBlock(s->blocks[i]);
-	free(s->blocks);
+	if (s->blocks)
+	{
+		for (i=0; i < numBlocks; ++i)
+			freeBlock(s->blocks[i]);
+		free(s->blocks);
+		s->blocks = 0;
+	}
+	
+	if (s->fixedSpecies)
+		free(s->fixedSpecies);
+	s->fixedSpecies = 0;
+
 	free(s);
 }
 
@@ -535,6 +559,10 @@ static GAindividual cloneSystem(GAindividual X)
 
 	s2->numBlocks = s->numBlocks;
 	s2->numSpecies = s->numSpecies;
+	s2->fixedSpecies = (double*)malloc(s->numSpecies * sizeof(int));
+
+	for (i=0; i < s->numSpecies; ++i)
+		s2->fixedSpecies[i] = s->fixedSpecies[i];
 
 	return (GAindividual)s2;
 }
@@ -555,8 +583,9 @@ static int totalInternalSpecies(System * s)
 
 static void pruneSystem(System * s) //find unconnected inputs/outputs
 {
-	int i,j,k,n,b1,b2,total,maxi;
+	int i,j,k,n,b1,b2,total,maxi,n0;
 	int * isUsed;
+	double * fixed;
 	total = s->numSpecies;
 
 	isUsed = (int*)malloc(total * sizeof(int));
@@ -594,10 +623,18 @@ static void pruneSystem(System * s) //find unconnected inputs/outputs
 		maxi += isUsed[i];
 	}
 
+	k = s->numSpecies;
+	
 	if (total < s->numBlocks)
 		s->numSpecies = s->numBlocks+1;
 	else
 		s->numSpecies = total+1;
+	
+	fixed = s->fixedSpecies;
+	
+	s->fixedSpecies = (double*)malloc(s->numSpecies * sizeof(int));
+	for (i=0; i < s->numSpecies; ++i)
+		s->fixedSpecies[i] = fixed[i];
 }
 
 static System * randomSubsystem(System * s, double prob) //get random subset of blocks
@@ -659,7 +696,7 @@ static void reassignInputsOutputs(Block * block, int numSpecies)
 	}
 }
 
-static GAindividual crossoverBlocks(GAindividual X, GAindividual Y) //place two subsets together
+GAindividual crossoverSystem(GAindividual X, GAindividual Y) //place two subsets together
 {
 	int i,j,n;
 	System * s1 = randomSubsystem((System*)X, 0.6);
@@ -677,6 +714,14 @@ static GAindividual crossoverBlocks(GAindividual X, GAindividual Y) //place two 
 	sz2 = s2->numSpecies;
 
 	s3->numSpecies = sz1 + sz2;
+	
+	s3->fixedSpecies = (double*)malloc(s3->numSpecies * sizeof(int));
+	
+	for (i=0; i < sz1; ++i)
+		s3->fixedSpecies[i] = s1->fixedSpecies[i];
+	
+	for (i=0; i < sz2; ++i)
+		s3->fixedSpecies[i+sz1] = s2->fixedSpecies[i];
 
 	for (i=0; i < s1->numBlocks; ++i)
 	{
@@ -747,7 +792,7 @@ static Block * randomBlock()
 	return block;
 }
 
-static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
+static GAindividual mutateSystemH(GAindividual X)  //rewire or change parameter
 {
 	System * S = (System*)X;
 	int i,j,k,k0,k1,m0,m1,n;
@@ -890,13 +935,13 @@ static GAindividual mutateBlocksH(GAindividual X)  //rewire or change parameter
 	return (GAindividual)S;
 }
 
-static GAindividual mutateBlocks(GAindividual X)  //rewire or change parameter n times
+GAindividual mutateSystem(GAindividual X)  //rewire or change parameter n times
 {
 	int i;
 
 	if ((PROB_PARAM_CHANGE + PROB_REWIRE) > 0.0)
 		for (i=0; i < MUTATION_RATE; ++i)
-			mutateBlocksH(X);
+			mutateSystemH(X);
 
 	return X;
 }
@@ -971,7 +1016,12 @@ Matrix getStoichiometryMatrix(System * S)
 		f(&N,S->blocks[i],k);
 		k += BlockTypesTable[ S->blocks[i]->type ].numReactions;
 	}
-
+	
+	for (i=0; i < S->numSpecies; ++i)
+		if (S->fixedSpecies[i] >= 0.0)
+			for (j=0; j < N.cols; ++j)
+				valueAt(N,i,j) = 0.0;
+	
 	return N;
 }
 
@@ -991,7 +1041,7 @@ void getRates(double time, double* conc, double* rates, void * s)
 }
 
 /*graphviz format*/
-static void printSystem(FILE * fp, GAindividual s)
+void printSystem(FILE * fp, GAindividual s)
 {
 	int i,j,n;
 	System * S = (System*)s;
@@ -1021,7 +1071,7 @@ static void printSystem(FILE * fp, GAindividual s)
 	fprintf(fp,"}\n");
 }
 
-static void printSystemStats(FILE * fp, GAindividual s)
+void printSystemStats(FILE * fp, GAindividual s)
 {
     System * S = (System*)s;
     fprintf(fp,"%i\t%i",S->numBlocks,S->numSpecies);
@@ -1029,7 +1079,7 @@ static void printSystemStats(FILE * fp, GAindividual s)
 
 double * getInitialValues(System * S)
 {
-    int i,j,k1,k2,n;
+    int i,j,n;
     double * y = 0;
 
     n = S->numSpecies;
@@ -1045,11 +1095,10 @@ double * getInitialValues(System * S)
     for (i=0; i < n; ++i)
         y[i] = 0.0;
 
-    for (i=0, k2=0; i < S->numBlocks; ++i)
+    for (i=0; i < S->numBlocks; ++i)
     {
         initializeBlock(S->blocks[i]);
         n = numExternals(S->blocks[i]);
-        k1=0;
 
         for (j=0; j < n; ++j)
             y[ S->blocks[i]->externals[j] ] = S->blocks[i]->initValsExternals[j];
@@ -1059,8 +1108,52 @@ double * getInitialValues(System * S)
         for (j=0; j < n; ++j)
             y[ S->blocks[i]->internals[j] ] = S->blocks[i]->initValsInternals[j];
     }
+	
+	n = S->numSpecies;
+	
+	for (i=0; i < n; ++i)
+		if (S->fixedSpecies[i] >= 0.0)
+			y[i] = S->fixedSpecies[i];
 
     return y;
+}
+
+
+void setInitialValues(System * S, double * y)
+{
+    int i,j,n;
+	
+	if (!y) return;
+
+	for (i=0; i < S->numBlocks; ++i)
+    {
+        n = numExternals(S->blocks[i]);
+        for (j=0; j < n; ++j)
+            S->blocks[i]->initValsExternals[j] = y[ S->blocks[i]->externals[j] ];
+    }
+}
+
+void setFixedSpecies(System * S, double * y)
+{
+    int i,n;
+	
+	if (!y) return;
+
+    n = S->numSpecies;
+
+    for (i=0; i < n; ++i)
+        S->fixedSpecies[i] = y[i];
+}
+
+
+void unsetFixedSpecies(System * S)
+{
+    int i,n;
+
+    n = S->numSpecies;
+
+    for (i=0; i < n; ++i)
+        S->fixedSpecies[i] = -1.0;
 }
 
 double * simulateStochastic(System * S, double time, int * sz)
@@ -1120,6 +1213,11 @@ System * randomSystem(int numBlocks)
 
     numSpecies -= (int)(numSpecies * PERCENT_OVERLAP);
     S->numSpecies = numSpecies;
+	
+	S->fixedSpecies = (double*)malloc(S->numSpecies * sizeof(int));
+	
+	for (i=0; i < S->numSpecies; ++i)
+		S->fixedSpecies[i] = -1.0;
 
 	if (numSpecies < 1) 
 		numSpecies = 10;
@@ -1164,8 +1262,186 @@ GApopulation evolveNetworks(GAFitnessFunc fitness, int initialPopulationSize, in
 	for (i=0; i < initialPopulationSize; ++i)
         P[i] = (GApopulation)randomSystem((int)(MIN_SIZE + mtrand() * (MAX_SIZE - MIN_SIZE)));
 
-	GAinit(&freeSystem, &cloneSystem , fitness, &crossoverBlocks, &mutateBlocks, &GArouletteWheelSelection, callback);
+	GAinit(&freeSystem, &cloneSystem , fitness, &crossoverSystem, &mutateSystem, &GArouletteWheelSelection, callback);
 	GAsetPrintSummaryFunction(&printSystemStats);
 	GAsetPrintFunction(&printSystem);
-	return GArun(P,initialPopulationSize,finalPopulationSize,iter);
+	P = GArun(P,initialPopulationSize,finalPopulationSize,iter);
+	
+	clearArrays(); //cleanup
+	
+	return P;
+}
+
+double * getSteadyState( System * S )
+{
+	Matrix N = getStoichiometryMatrix(S);
+	double * y, * y0;
+	
+	y0 = getInitialValues(S);
+
+	y = steadyState2(N.rows, N.cols, N.values , &getRates, y0, S, SS_FUNC_ERROR_TOLERANCE,SS_FUNC_MAX_TIME,SS_FUNC_DELTA_TIME);
+
+	free(y0);
+	free(N.values);
+
+	return y;
+}
+
+double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs, int outputs, int corr, double ** res)
+{
+	int i, j, m, k, g, cols, n, *best;
+	double * ss, closest, temp, sumOfSq, corrcoef, *mXY, *mX, *mY, *mX2, *mY2;
+	double * ss2;
+	double a,b,c;
+	System * r = (System*)(p);
+
+	cols = inputs + outputs;
+
+	n = r->numSpecies;
+
+	if (n < cols) return 0.0; // not enough species
+
+	sumOfSq = 0.0;
+	corrcoef = 0.0;
+	best = (int*) malloc ( outputs * sizeof(int) );
+	mX = (double*)malloc( outputs * sizeof(double) );
+	mY = (double*)malloc( outputs * sizeof(double) );
+	mXY = (double*)malloc( outputs * sizeof(double) );
+	mX2 = (double*)malloc( outputs * sizeof(double) );
+	mY2 = (double*)malloc( outputs * sizeof(double) );
+
+	for (i=0; i < outputs; ++i)
+	{
+		best[i] = -1;
+		mXY[i] = mX[i] = mY[i] = mX2[i] = mY2[i] = 0;
+	}
+
+	ss2 = (double*)malloc(rows*sizeof(double));
+	
+	for (i=0; i < inputs; ++i)
+		r->fixedSpecies[i] = -1.0;
+
+	for (m=0; m < rows; ++m)
+	{
+		for (i=0; i < inputs && i < n; ++i)
+			r->fixedSpecies[i] = table[m][i];
+
+		ss = getSteadyState(r);
+
+		if (ss) //error in simulation?
+		{
+			if (res)
+			{
+				for (i=0; i < inputs; ++i)
+					res[m][i] = ss[i];
+			}
+			for (i=0; i < outputs; ++i) //for each target output
+			{
+				if (best[i] < 0)
+				{
+					closest = -1.0;
+					for (j=inputs; j < n; ++j) //find best match
+					{
+						g = 0;
+						for (k=0; k < outputs; ++k)
+							if (best[k] == j)
+							{
+								g = 1;
+								break;
+							}
+						if (g) continue;
+						temp = (ss[j] - table[m][inputs+i]);
+						if ((closest < 0.0) || ((temp*temp) < closest))
+						{
+							closest = temp*temp;
+							best[i] = j;
+						}
+					}
+				}
+
+				j = i+inputs;
+
+				if (res)
+				{
+					res[m][inputs+i] = ss[j];
+
+				}
+				ss2[m] = ss[j];
+
+				temp = (ss[j] - table[m][inputs+i]);
+				closest = temp*temp;
+
+				sumOfSq += closest;
+				mX[i] += ss[j];
+				mY[i] += table[m][inputs+i];
+				mXY[i] += table[m][inputs+i] * ss[j];
+				mX2[i] += ss[j]*ss[j];
+				mY2[i] += table[m][inputs+i]*table[m][inputs+i];
+
+				if (closest < 0.0)
+				{
+					sumOfSq = -1.0;
+					break;
+				}
+			}
+
+			free(ss);
+		}
+		else
+		{
+			sumOfSq = -1.0;
+			break;
+		}
+	}
+	
+	for (i=0; i < inputs; ++i)
+		r->fixedSpecies[i] = -1.0;
+
+	corrcoef = 0.0;
+	for (i=0; i < outputs; ++i)
+	{
+		mX[i] /= rows;
+		mY[i] /= rows;
+		mXY[i] /= rows;
+		mX2[i] /= rows;
+		mY2[i] /= rows;
+
+		if ( (mX2[i] - mX[i]*mX[i]) <= 0.0 || (mY2[i] - mY[i]*mY[i]) <= 0.0 )
+		{
+			sumOfSq = -1.0;
+			break;
+		}
+
+		a = mXY[i] - mX[i]*mY[i];
+		b = mX2[i] - mX[i]*mX[i];
+		c = mY2[i] - mY[i]*mY[i];
+
+		if (a > 1.0 && b > 1.0 && c > 1.0)
+		{
+			temp =  a/( sqrt(b)*sqrt(c));   //correlation formula
+			corrcoef = temp*temp; //between 0 and 1
+		}
+		else
+		{
+			corrcoef = 0.0;
+			sumOfSq = 0.0;
+		}
+
+		if (corrcoef > 0.9)
+		{
+			temp = temp + 0.0;
+		}
+	}
+
+	free(ss2);
+	free(mX);
+	free(mY);
+	free(mXY);
+	free(mX2);
+	free(mY2);
+
+	if (sumOfSq <= 0.0) return 0.0;
+
+	if (corr) return corrcoef;
+	return (1.0 / (1.0 + sumOfSq));
 }

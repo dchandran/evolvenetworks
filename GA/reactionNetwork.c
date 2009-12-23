@@ -68,9 +68,7 @@ void configureSteadyStateFunction(double tolerance,
 }
 
 /********************************************************
-
-		Pointers to the existing functions
-
+*		Pointers to the existing functions
 *********************************************************/
 
 static double networkProbs[] =

@@ -21,28 +21,15 @@
 
 /****************************************************/
 
-void init()
-{
-	setSizeRange(2,10);
-	setMutationRate(5);
-	GAsetCrossoverProb(0.5);
-	GAconfigureContinuousLog(1,0,1,0,0,0);
-	GAconfigureFinalLog(1,1,1,0,1,1,1);
-	GAlineageTrackingON();
-	GAenableLog(stdout);
-}
-
-/* Fitness function that tests for oscillations by using correlation to a sine wave */
-double fitness(System * p);
-
 #define INITIAL_POPULATION_SIZE 1000
 #define SUCCESSIVE_POPULATION_SIZE 100
 #define NUM_GENERATIONS 50
 
-int callback(int iter,int popSz, GApopulation P, double * fitnessArray, int *** parents)
-{
-	return (fitnessArray[0] > 0.45);
-}
+
+/* Fitness function that tests for oscillations by using correlation to a sine wave */
+double fitness(System * p);
+
+int callback(int iter,int popSz, GApopulation P, double * fitnessArray, int *** parents);
 
 /* main */
 int main()
@@ -52,7 +39,13 @@ int main()
 	GApopulation pop;
 	System * best;
 
-	init();
+	setSizeRange(2,10);
+	setMutationRate(5);
+	GAsetCrossoverProb(0.5);
+	GAconfigureContinuousLog(1,0,1,0,0,0);
+	GAconfigureFinalLog(1,1,1,0,1,1,1);
+	GAlineageTrackingON();
+	GAenableLog(stdout);
 
 	printf ("Oscillator Evolution\n\n");
 
@@ -62,7 +55,7 @@ int main()
 
 	/******simulate the best network and write the result to a file************/
 
-	y = simulateODE((System*)best, 500.0, 1.0);   // Simulate
+	y = simulateODE(best, 500.0, 1.0);   // Simulate
 
 	n = numSpeciesTotal(best);
 
@@ -126,4 +119,21 @@ double fitness(System * net)
 	}
 
 	return (f);
+}
+
+
+int callback(int iter,int popSz, GApopulation pop, double * fitnessArray, int *** parents)
+{
+	int i,j;
+	double f = fitnessArray[0];
+	
+	if (iter > 50 && f < 0.5)
+	{
+		for (i=1; i < popSz; ++i)
+		{
+			for (j=0; j < 10; ++j)
+				pop[i] = mutateSystem(pop[i]);
+		}
+	}
+	return (f > 0.45);
 }

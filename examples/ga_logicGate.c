@@ -18,9 +18,13 @@
 
 ****************************************************/
 
-#include "reactionNetwork.h"
+#include "blocks.h"
 
 /****************************************************/
+
+#define INITIAL_POPULATION_SIZE 1000
+#define SUCCESSIVE_POPULATION_SIZE 200
+#define NUM_GENERATIONS 50
 
 double ** XORtable(); //make XOR table
 
@@ -39,23 +43,22 @@ int main()
 	GAindividual * best;
 	double ** table, ** table2, f;
 
+	setSizeRange(2,10);
+	setMutationRate(5);
+	GAsetCrossoverProb(0.5);
+	GAconfigureContinuousLog(1,0,1,0,0,0);
+	GAconfigureFinalLog(1,1,1,0,1,1,1);
 	GAlineageTrackingON();
-	setNetworkType( GENE_REGULATION_NETWORK );  //use this network type
-	setNetworkSize(2,6,2,8);  //network size
+	GAenableLog(stdout);
 
 	printf ("Logic Gate Evolution\n\n");
 
 	enableLogFile("log.txt");
-	//evolve using 1000 initial networks, 200 neworks during each successive generation, for 20 generations
-	pop = evolveNetworks(1000,500,50,&fitness,&callback);
+	pop = evolveNetworks(&fitness, INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, &callback);
 	
 	best = pop[0]; //get the best network
 	
-	printNetwork(stdout,best); //print the best network
-	
-	printNetworkToFile("network.txt",best); //print the best network
-	
-	N = getNumSpecies(best);
+	N = numSpeciesTotal(best);
 	iv = (double*)malloc( N * sizeof(double) );
 	for (i=0; i < N; ++i)
 		iv[i] = 0.0;
