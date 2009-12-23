@@ -53,7 +53,6 @@ int main()
 
 	printf ("Logic Gate Evolution\n\n");
 
-	enableLogFile("log.txt");
 	pop = evolveNetworks(&fitness, INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, &callback);
 	
 	best = pop[0]; //get the best network
