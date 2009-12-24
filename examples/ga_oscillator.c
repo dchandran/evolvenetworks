@@ -23,8 +23,7 @@
 
 #define INITIAL_POPULATION_SIZE 1000
 #define SUCCESSIVE_POPULATION_SIZE 100
-#define NUM_GENERATIONS 50
-
+#define NUM_GENERATIONS 5
 
 /* Fitness function that tests for oscillations by using correlation to a sine wave */
 double fitness(System * p);
@@ -126,7 +125,7 @@ int callback(int iter,int popSz, GApopulation pop, double * fitnessArray, int **
 {
 	int i,j;
 	double f = fitnessArray[0];
-	
+
 	if (iter > 50 && f < 0.5)
 	{
 		for (i=1; i < popSz; ++i)

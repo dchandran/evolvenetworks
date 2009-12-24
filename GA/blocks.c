@@ -473,11 +473,11 @@ static void freeBlock(Block * block)
 	block->params = 0;
 
 	if (block->initValsInternals)
-		free(block->initValsInternals);	
+		free(block->initValsInternals);
 	block->initValsInternals = 0;
-	
+
 	if (block->initValsExternals)
-		free(block->initValsExternals);	
+		free(block->initValsExternals);
 	block->initValsExternals = 0;
 
 	free(block);
@@ -488,7 +488,7 @@ static Block * copyBlock(Block * block)
 	int i;
 	int n;
 	Block * block2 = 0;
-	
+
 	while (!block2)
 		block2 = (Block*)malloc(sizeof(Block));
 
@@ -507,7 +507,7 @@ static Block * copyBlock(Block * block)
 	block2->externals = (int*)malloc((n+2) * sizeof(int));
 	for (i=0; i < n; ++i)
 		block2->externals[i] = block->externals[i];
-	
+
 	block2->initValsExternals = (double*)malloc((n+2) * sizeof(double));
 	for (i=0; i < n; ++i)
 		block2->initValsExternals[i] = block->initValsExternals[i];
@@ -520,7 +520,7 @@ static Block * copyBlock(Block * block)
 	return block2;
 }
 
-static void freeSystem(GAindividual X)
+void freeSystem(GAindividual X)
 {
 	System * s = (System*)X;
 	int i;
@@ -534,7 +534,7 @@ static void freeSystem(GAindividual X)
 		free(s->blocks);
 		s->blocks = 0;
 	}
-	
+
 	if (s->fixedSpecies)
 		free(s->fixedSpecies);
 	s->fixedSpecies = 0;
@@ -559,7 +559,7 @@ static GAindividual cloneSystem(GAindividual X)
 
 	s2->numBlocks = s->numBlocks;
 	s2->numSpecies = s->numSpecies;
-	s2->fixedSpecies = (double*)malloc(s->numSpecies * sizeof(int));
+	s2->fixedSpecies = (double*)malloc(s->numSpecies * sizeof(double));
 
 	for (i=0; i < s->numSpecies; ++i)
 		s2->fixedSpecies[i] = s->fixedSpecies[i];
@@ -624,17 +624,23 @@ static void pruneSystem(System * s) //find unconnected inputs/outputs
 	}
 
 	k = s->numSpecies;
-	
+
 	if (total < s->numBlocks)
 		s->numSpecies = s->numBlocks+1;
 	else
 		s->numSpecies = total+1;
-	
+
 	fixed = s->fixedSpecies;
-	
-	s->fixedSpecies = (double*)malloc(s->numSpecies * sizeof(int));
-	for (i=0; i < s->numSpecies; ++i)
-		s->fixedSpecies[i] = fixed[i];
+
+	s->fixedSpecies = (double*)malloc(s->numSpecies * sizeof(double));
+
+	//for (i=0; i < k && i < s->numSpecies; ++i)
+		//s->fixedSpecies[i] = fixed[i];
+
+    for (i=k; i < s->numSpecies; ++i)
+		s->fixedSpecies[i] = -1.0;
+
+    free(fixed);
 }
 
 static System * randomSubsystem(System * s, double prob) //get random subset of blocks
@@ -642,7 +648,7 @@ static System * randomSubsystem(System * s, double prob) //get random subset of 
 	int i, i2;
 	int numBlocks = s->numBlocks, numBlocks2;
 	System * s2 = 0;
-	
+
 	while (!s2)
 		s2 = (System*)malloc(sizeof(System));
 
@@ -714,12 +720,12 @@ GAindividual crossoverSystem(GAindividual X, GAindividual Y) //place two subsets
 	sz2 = s2->numSpecies;
 
 	s3->numSpecies = sz1 + sz2;
-	
-	s3->fixedSpecies = (double*)malloc(s3->numSpecies * sizeof(int));
-	
+
+	s3->fixedSpecies = (double*)malloc(s3->numSpecies * sizeof(double));
+
 	for (i=0; i < sz1; ++i)
 		s3->fixedSpecies[i] = s1->fixedSpecies[i];
-	
+
 	for (i=0; i < sz2; ++i)
 		s3->fixedSpecies[i+sz1] = s2->fixedSpecies[i];
 
@@ -759,7 +765,7 @@ static Block * randomBlock()
 	int k1,k2;
 	int n = numBlockTypes();
 	Block * block = 0;
-	
+
 	while (!block)
 		block = (Block*)malloc(sizeof(Block));
 
@@ -782,7 +788,7 @@ static Block * randomBlock()
 
 	block->internals = (int*)malloc( (k1+2) * sizeof(int) );
 	block->initValsInternals = (double*)malloc( (k1+2) * sizeof(double));
-	
+
 	block->externals = (int*)malloc( (k2+2) * sizeof(int) );
 	block->initValsExternals = (double*)malloc( (k2+2) * sizeof(double));
 
@@ -987,16 +993,12 @@ Matrix getStoichiometryMatrix(System * S)
 	N.rownames = N.colnames = 0;
 	N.values = 0;
 
-	for (i = 0; i < S->numBlocks; ++i)
-	{
-		numInt += numInternals(S->blocks[i]);
-		numReacs += numReactions(S->blocks[i]);
-	}
-
 	k = S->numSpecies;
 	for (i = 0; i < S->numBlocks; ++i)
 	{
+        numReacs += numReactions(S->blocks[i]);
 		n = numInternals(S->blocks[i]);
+		numInt += n;
 		for (j = 0; j < n; ++j, ++k)
 			S->blocks[i]->internals[j] = k;
 	}
@@ -1016,12 +1018,12 @@ Matrix getStoichiometryMatrix(System * S)
 		f(&N,S->blocks[i],k);
 		k += BlockTypesTable[ S->blocks[i]->type ].numReactions;
 	}
-	
+
 	for (i=0; i < S->numSpecies; ++i)
 		if (S->fixedSpecies[i] >= 0.0)
 			for (j=0; j < N.cols; ++j)
 				valueAt(N,i,j) = 0.0;
-	
+
 	return N;
 }
 
@@ -1050,8 +1052,8 @@ void printSystem(FILE * fp, GAindividual s)
 
 	fprintf(fp, "node [shape = doublecircle]; ");
 
-	for (i=0; i < S->numBlocks; ++i)	
-		fprintf(fp,"M%i ",i,S->blocks[i]->externals[j]);
+	for (i=0; i < S->numBlocks; ++i)
+		fprintf(fp,"M%i ",i);
 
 	fprintf(fp, ";\nnode [shape = diamond]; ");
 
@@ -1061,6 +1063,8 @@ void printSystem(FILE * fp, GAindividual s)
 		for (j=0; j < n; ++j)
 			fprintf(fp,"x%i ",S->blocks[i]->externals[j]);
 	}
+
+	printf("\n");
 
 	for (i=0; i < S->numBlocks; ++i)
 	{
@@ -1108,9 +1112,9 @@ double * getInitialValues(System * S)
         for (j=0; j < n; ++j)
             y[ S->blocks[i]->internals[j] ] = S->blocks[i]->initValsInternals[j];
     }
-	
+
 	n = S->numSpecies;
-	
+
 	for (i=0; i < n; ++i)
 		if (S->fixedSpecies[i] >= 0.0)
 			y[i] = S->fixedSpecies[i];
@@ -1122,7 +1126,7 @@ double * getInitialValues(System * S)
 void setInitialValues(System * S, double * y)
 {
     int i,j,n;
-	
+
 	if (!y) return;
 
 	for (i=0; i < S->numBlocks; ++i)
@@ -1136,7 +1140,7 @@ void setInitialValues(System * S, double * y)
 void setFixedSpecies(System * S, double * y)
 {
     int i,n;
-	
+
 	if (!y) return;
 
     n = S->numSpecies;
@@ -1197,7 +1201,7 @@ System * randomSystem(int numBlocks)
 
 	if (numBlocks < 2)
 		numBlocks = 2;
-	
+
 	while (!S)
 		S = (System*)malloc(sizeof(System));
 
@@ -1213,13 +1217,13 @@ System * randomSystem(int numBlocks)
 
     numSpecies -= (int)(numSpecies * PERCENT_OVERLAP);
     S->numSpecies = numSpecies;
-	
-	S->fixedSpecies = (double*)malloc(S->numSpecies * sizeof(int));
-	
+
+	S->fixedSpecies = (double*)malloc(S->numSpecies * sizeof(double));
+
 	for (i=0; i < S->numSpecies; ++i)
 		S->fixedSpecies[i] = -1.0;
 
-	if (numSpecies < 1) 
+	if (numSpecies < 1)
 		numSpecies = 10;
 
     for (i=0; i < numBlocks; ++i)
@@ -1230,7 +1234,7 @@ System * randomSystem(int numBlocks)
 		{
 			S->blocks[i]->externals[j] = (int)(mtrand() * numSpecies);
 		}
-		
+
 		if (NO_SAME_INPUT_OUTPUT)
 			reassignInputsOutputs(S->blocks[i],numSpecies);
 	}
@@ -1266,9 +1270,9 @@ GApopulation evolveNetworks(GAFitnessFunc fitness, int initialPopulationSize, in
 	GAsetPrintSummaryFunction(&printSystemStats);
 	GAsetPrintFunction(&printSystem);
 	P = GArun(P,initialPopulationSize,finalPopulationSize,iter);
-	
+
 	clearArrays(); //cleanup
-	
+
 	return P;
 }
 
@@ -1276,7 +1280,7 @@ double * getSteadyState( System * S )
 {
 	Matrix N = getStoichiometryMatrix(S);
 	double * y, * y0;
-	
+
 	y0 = getInitialValues(S);
 
 	y = steadyState2(N.rows, N.cols, N.values , &getRates, y0, S, SS_FUNC_ERROR_TOLERANCE,SS_FUNC_MAX_TIME,SS_FUNC_DELTA_TIME);
@@ -1317,7 +1321,7 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 	}
 
 	ss2 = (double*)malloc(rows*sizeof(double));
-	
+
 	for (i=0; i < inputs; ++i)
 		r->fixedSpecies[i] = -1.0;
 
@@ -1393,7 +1397,7 @@ double compareSteadyStates(GAindividual p, double ** table, int rows, int inputs
 			break;
 		}
 	}
-	
+
 	for (i=0; i < inputs; ++i)
 		r->fixedSpecies[i] = -1.0;
 

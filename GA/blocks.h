@@ -144,6 +144,11 @@ GApopulation evolveNetworks(GAFitnessFunc fitness, int initialPopulationSize, in
 */
 System * randomSystem(int numBlocks);
 
+/*! \brief free a system
+*   \ingroup gablocks
+*/
+void freeSystem(GAindividual);
+
 /*! \}
     \name getting information about blocks
 	\{

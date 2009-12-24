@@ -10,12 +10,12 @@ static int stringInList(const char * a, char ** list, int len) // a == b
 	int i=0,j=0,k=0;
 	char * b;
 	if (!a || !list || len < 1) return 0;
-	
+
 	for (j=0; j < len; ++j)
 	{
 		b = list[j];
 		i = 0;
-		while (a[i] && b[i] && a[i]==b[i]) ++i;		
+		while (a[i] && b[i] && a[i]==b[i]) ++i;
 		if (!a[i] && !b[i] && i > 0) return 1;
 	}
 	return 0;
@@ -38,16 +38,16 @@ void convertToBlock(const char * antimonyFile, const char * file1, const char * 
 
 	fp1 = fopen(file1,"w");
 	fp2 = fopen(file2,"w");
-	
+
 	fprintf(fp2,"#ifndef GA_BLOCKS_TABLE_H\n#define GA_BLOCKS_TABLE_H\n#include \"blockFunctions.h\"\n\nBlockType BlockTypesTable[] = \n{\n");
-	
+
 	numModules = getNumModules();
-	
+
 	for (l=0; l < numModules; ++l)
 	{
 		module = getNthModuleName(l);
 		name = module;
-		
+
 		numInterfaces = getNumSymbolsInInterfaceOf(module);
 		interfaceNames = getSymbolNamesInInterfaceOf(module);
 
@@ -63,9 +63,9 @@ void convertToBlock(const char * antimonyFile, const char * file1, const char * 
 		numParams = getNumSymbolsOfType (module, 16);
 		params = getSymbolNamesOfType (module, 16);
 		paramValues = getSymbolEquationsOfType (module, 16);
-		
+
 		if (numParams < 1 || m < 1 || n < 1 || numInterfaces < 1) continue;
-		
+
 		printf("module: %s\n",name);
 
 		fprintf(fp1,"void %s_init(Block * block) {\n",name);
@@ -123,7 +123,7 @@ void convertToBlock(const char * antimonyFile, const char * file1, const char * 
 						fprintf(fp1,"\tvalueAt(*m, block->internals[%i], i+%i) += %lf;\n",k,j,N[i][j]);
 				++k;
 			}
-		
+
 			if (i < (m-1))
 				fprintf(fp1,"\n");
 		}
@@ -144,9 +144,9 @@ void convertToBlock(const char * antimonyFile, const char * file1, const char * 
 			else
 				fprintf(fp1,"1.0E30};\n\n",name);
 
-		fprintf(fp2,"    {\"%s\",&%s_stoic,&%s_rates,&%s_init,%i,%i,%i,%i,1,%s_paramLowerBound,%s_paramUpperBound},\n",name,name,name,name,n,numSpecies-numInterfaces,numInterfaces,numParams,name,name);
+		fprintf(fp2,"    {\"%s\",&%s_stoic,&%s_rates,&%s_init,%i,%i,%i,%i,1,%s_paramLowerBound,%s_paramUpperBound},\n",name,name,name,name,n,numInterfaces,numSpecies-numInterfaces,numParams,name,name);
 	}
-	
+
 	fprintf(fp2,"\n    {0,0,0,0,0,0,0,0,0,0}\n};\n\n#endif\n");
 
 	fclose(fp1);
