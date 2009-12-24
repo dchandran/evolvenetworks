@@ -1,21 +1,21 @@
 /****************************************************
 	This file uses either one of the three network types
-	included in the network evolution library to 
+	included in the network evolution library to
 	evolve a network that minimizes the coefficient
 	of variation at steady state
 
 	If you already made the libode library using CMake, then use the following
 	command to compile this file:
-	
+
 	gcc -I../simulation -I../GA -L../lib ga_reduceNoise.c -o evolveNoiseDamper -lode
-	
+
 	If you do not wish to use CMake, then you need to make the cvode library by compiling
 	everything in the cvode_src directory and making the library using ar *.o -o libcvode.a
-	
+
 	After building cvode use the following to compile this file:
-	
+
 	gcc -I../simulation -I../GA mtrand.c ga.c cvodesim.c ssa.c reactionNetwork.c ga_reduceNoise.c -lm -lcvode
-	
+
 ****************************************************/
 
 #include "blocks.h"
@@ -34,12 +34,12 @@ int callback(int iter,int popSz, GApopulation pop, double * fitnessArray, int **
 
 /*Main*/
 int main()
-{	
+{
 	int n, sz;
 	double * y;
 	GApopulation pop;
 	System * best;
-	
+
 	setSizeRange(2,10);
 	setMutationRate(5);
 	GAsetCrossoverProb(0.5);
@@ -47,6 +47,8 @@ int main()
 	GAconfigureFinalLog(1,1,1,0,1,1,1);
 	GAlineageTrackingON();
 	GAenableLog(stdout);
+
+	printf ("Evolving Noise-Reducing Network\n\n");
 
 	pop = evolveNetworks(&fitness, INITIAL_POPULATION_SIZE, SUCCESSIVE_POPULATION_SIZE, NUM_GENERATIONS, &callback);
 
@@ -56,7 +58,7 @@ int main()
 
 	n = numSpeciesTotal(best);
 	y = simulateStochastic(best,500.0,&sz);  //stochastic simulation
-	
+
 	writeToFile("dat.txt",y,sz,n+1);  //write table to file
 
 	free(y);
@@ -113,7 +115,7 @@ int callback(int iter,int popSz, GApopulation pop, double * fitnessArray, int **
 {
 	int i,j;
 	double f = fitnessArray[0];
-	
+
 	if (iter > 50 && f < 0.5)
 	{
 		for (i=1; i < popSz; ++i)

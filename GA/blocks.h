@@ -136,10 +136,10 @@ System;
 */
 GApopulation evolveNetworks(GAFitnessFunc fitness, int initialPopulationSize, int finalPopulationSize, int maxiter, GACallbackFunc callback);
 
-/*! \brief generate a random system of blocks. 
+/*! \brief generate a random system of blocks.
 	This function is used inside evolveNetworks to generate the initial population.
 *	\param int number of blocks in the system
-*	\return System * 
+*	\return System *
 * \ingroup gablocks
 */
 System * randomSystem(int numBlocks);
@@ -248,10 +248,18 @@ int getBlockTypeIndex(const char* name);
 
 /*! \brief get the name of the block type with given index
 *	\param int index
-*	\return char* name
+*	\return const char* name
 * \ingroup gablocks
 */
 const  char* getBlockTypeName(int);
+
+/*! \brief get the name of the block type for a block.
+        same as getBlockTypeName( block->type )
+*	\param Block * block
+*	\return const char* name
+* \ingroup gablocks
+*/
+const char* getBlockLabel(Block *);
 
 /*! \brief get the number of reactions in the system
 *	\param System* system
@@ -491,8 +499,8 @@ double * getInitialValues(System*);
 */
 void setInitialValues(System * , double *);
 
-/*! \brief set fixed concentration values for molecules in the system. 
-		   use -1 for not fixed. 
+/*! \brief set fixed concentration values for molecules in the system.
+		   use -1 for not fixed.
 		   fixed species do not change during simulation.
 *   \param System* system to initialize
 *	\param double * initial values
@@ -520,20 +528,20 @@ void initializeSystem(System*);
   \{
 */
 
-/*! \brief compares the steady state values of the network to an input/output table provided. 
+/*! \brief compares the steady state values of the network to an input/output table provided.
            Sets the first n input species as fixed species, and compares the output
 		   again each of the other species.
 		   returns the fitness value 1/(1 + sum_of_square_differences), where
 		   sum_of_square_differences is the sum of square differences between the desired
 		   outputs and the best matching species in the network.
 	\param GAindividual must be a System*
-	\param double** input/output table. 
+	\param double** input/output table.
 			Number of inputs + number of outputs <= number of species in network.
 	\param int number of rows in the input table
 	\param int number of input columns (first set of columns)
 	\param int number of output columns (last set of columns)
 	\param int 1=use correlation, not absolute differences. 0 = use absolute differences.
-	\param double ** can be 0. if non-zero, this matrix MUST BE THE SAME SIZE as the input table. 
+	\param double ** can be 0. if non-zero, this matrix MUST BE THE SAME SIZE as the input table.
 			The output from the network will be placed in this table. This is for the purpose of
 			comparing the results against the original table.
 	\return double fitness score = 1/(1 + sum_of_square_differences)
@@ -543,7 +551,7 @@ double compareSteadyStates(GAindividual, double **, int , int, int, int, double 
 
 /*! \brief set parameters for networkSteadyState()
 	\param double the allowed error. When the sum of squares of all derivatives is
-			between two time points that is delta apart is within this error range, 
+			between two time points that is delta apart is within this error range,
 			then the system is considered to be at steady state.
 			default = 1.0E-3 (quite good for the default delta)
 	\param double the time separation for checking error tolerance.

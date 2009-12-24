@@ -174,6 +174,11 @@ const char* getBlockTypeName(int i)
 	return BlockTypesTable[i].name;
 }
 
+const char* getBlockLabel(Block * b)
+{
+    return getBlockTypeName(b->type);
+}
+
 /************************
 * set evolution settings
 *************************/
@@ -1053,7 +1058,7 @@ void printSystem(FILE * fp, GAindividual s)
 	fprintf(fp, "node [shape = doublecircle]; ");
 
 	for (i=0; i < S->numBlocks; ++i)
-		fprintf(fp,"M%i ",i);
+		fprintf(fp,"M%i [label = \"%s\"] ",i, getBlockLabel(S->blocks[i]));
 
 	fprintf(fp, ";\nnode [shape = diamond]; ");
 
