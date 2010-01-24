@@ -51,7 +51,7 @@ IF( APPLE AND BUILD_BUNDLE )
   
   TARGET_LINK_LIBRARIES( RunEvolution
 	${QT_LIBRARIES}
-	netga
+	ga
   )
   
   ADD_EXECUTABLE( ModularEvolution 
@@ -98,7 +98,7 @@ ELSE( APPLE AND BUILD_BUNDLE )
 	
 	TARGET_LINK_LIBRARIES( RunEvolution
 		${QT_LIBRARIES}
-		netga
+		ga
 	)
 	
 	ADD_EXECUTABLE( ModularEvolution 
@@ -148,7 +148,7 @@ ELSE( APPLE AND BUILD_BUNDLE )
     )
 	
 	TARGET_LINK_LIBRARIES( RunEvolution
-		netga
+		ga
 		${QT_LIBRARIES}
 	)
 	

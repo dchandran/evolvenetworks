@@ -2,7 +2,7 @@
 #include "RunEvolution.h"
 extern "C"
 {
-#include "reactionNetwork.h"
+#include "blocks.h"
 }
 
 using namespace std;
