@@ -134,12 +134,10 @@ int main()
 	double low[] = {0.01, 0.1, 0.1, 0.1, 0.1, 0.1, 1.0, 1.0};
 	double hi[] = {20.0, 20.0, 20.0, 100.0, 100.0, 100.0, 8.0, 8.0};
 	double * p;
+	int i,n;
+	FILE * file;
 	
 	initMTrand();
-
-	int i,n;
-	
-	FILE * file;
 	file = fopen("out2.txt","w");
 	
 	for (n=0; n < 5; ++n)
