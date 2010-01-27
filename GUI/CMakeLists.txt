@@ -2,17 +2,17 @@ if(COMMAND cmake_policy)
 cmake_policy(SET CMP0003 NEW) 
 endif(COMMAND cmake_policy) 
 
-FILE( GLOB INPUTS_HEADER_FILES GenerateGAInputs.h CodeEditor.h SyntaxHighlighter.h )
-FILE( GLOB INPUTS_SOURCE_FILES GenerateGAInputs.cpp CodeEditor.cpp SyntaxHighlighter.cpp )
+#FILE( GLOB INPUTS_HEADER_FILES GenerateGAInputs.h CodeEditor.h SyntaxHighlighter.h )
+#FILE( GLOB INPUTS_SOURCE_FILES GenerateGAInputs.cpp CodeEditor.cpp SyntaxHighlighter.cpp )
 
-FILE( GLOB RUN_HEADER_FILES RunEvolution.h CodeEditor.h SyntaxHighlighter.h )
-FILE( GLOB RUN_SOURCE_FILES RunEvolution.cpp CodeEditor.cpp SyntaxHighlighter.cpp )
+#FILE( GLOB RUN_HEADER_FILES RunEvolution.h CodeEditor.h SyntaxHighlighter.h )
+#FILE( GLOB RUN_SOURCE_FILES RunEvolution.cpp CodeEditor.cpp SyntaxHighlighter.cpp )
 
 FILE( GLOB MODULES_HEADER_FILES ModuleSelector.H )
 FILE( GLOB MODULES_SOURCE_FILES ModuleSelector.cpp )
 
-QT4_WRAP_CPP( INPUTS_HEADER_MOC ${INPUTS_HEADER_FILES} )
-QT4_WRAP_CPP( RUN_HEADER_MOC ${RUN_HEADER_FILES} )
+#QT4_WRAP_CPP( INPUTS_HEADER_MOC ${INPUTS_HEADER_FILES} )
+#QT4_WRAP_CPP( RUN_HEADER_MOC ${RUN_HEADER_FILES} )
 QT4_WRAP_CPP( MODULES_HEADER_MOC ${MODULES_HEADER_FILES} )
 
 QT4_ADD_RESOURCES( NETWORK_EVOLVE_GUI_QRC networkevolve.qrc )
@@ -31,29 +31,6 @@ IF( APPLE AND BUILD_BUNDLE )
       Version ${NETWORKEVOLUTIONL_VERSION}
   )
 
-  ADD_EXECUTABLE( GenerateInputs 
-    MACOSX_BUNDLE
-    ${INPUTS_SOURCE_FILES}
-    ${INPUTS_HEADER_MOC}
-    ${NETWORK_EVOLVE_GUI_QRC}
-  )
-  
-  TARGET_LINK_LIBRARIES( GenerateInputs
-	${QT_LIBRARIES}
-  )
-  
-  ADD_EXECUTABLE( RunEvolution 
-    MACOSX_BUNDLE
-    ${RUN_SOURCE_FILES}
-    ${RUN_HEADER_MOC}
-    ${NETWORK_EVOLVE_GUI_QRC}
-  )
-  
-  TARGET_LINK_LIBRARIES( RunEvolution
-	${QT_LIBRARIES}
-	ga
-  )
-  
   ADD_EXECUTABLE( ModularEvolution 
     MACOSX_BUNDLE
     ${MODULES_SOURCE_FILES}
@@ -63,44 +40,27 @@ IF( APPLE AND BUILD_BUNDLE )
   
   TARGET_LINK_LIBRARIES( ModularEvolution
 	${QT_LIBRARIES}
+	ga
   )
-
 
   ADD_CUSTOM_COMMAND( TARGET GenerateInputs POST_BUILD
       COMMAND mkdir ARGS -p
-        ${EXECUTABLE_OUTPUT_PATH}/GenerateInputs.app/Contents/Resources
-        ${EXECUTABLE_OUTPUT_PATH}/GenerateInputs.app/Contents/Frameworks
-        ${EXECUTABLE_OUTPUT_PATH}/GenerateInputs.app/Contents/MacOS
-      COMMAND cp ARGS -rf ${QT_LIBRARY_DIR}/QtXml.framework
-        ${EXECUTABLE_OUTPUT_PATH}/GenerateInputs.app/Contents/Frameworks/
+        ${EXECUTABLE_OUTPUT_PATH}/ModularEvolution.app/Contents/Resources
+        ${EXECUTABLE_OUTPUT_PATH}/ModularEvolution.app/Contents/Frameworks
+        ${EXECUTABLE_OUTPUT_PATH}/ModularEvolution.app/Contents/MacOS
+      COMMAND cp ARGS -rf ${QT_LIBRARY_DIR}/QtCore.framework
+        ${EXECUTABLE_OUTPUT_PATH}/ModularEvolution.app/Contents/Frameworks/
+	  COMMAND cp ARGS -rf ${QT_LIBRARY_DIR}/QtGui.framework
+        ${EXECUTABLE_OUTPUT_PATH}/ModularEvolution.app/Contents/Frameworks/
+	  COMMAND cp ARGS -rf ${QT_LIBRARY_DIR}/QtXml.framework
+        ${EXECUTABLE_OUTPUT_PATH}/ModularEvolution.app/Contents/Frameworks/
       COMMAND cp ARGS ${MACOSX_NETWORKEVOLUTION_BUNDLE_ICON_FILE}
-        ${EXECUTABLE_OUTPUT_PATH}/GenerateInputs.app/Contents/Resources
+        ${EXECUTABLE_OUTPUT_PATH}/ModularEvolution.app/Contents/Resources
   )
 
 ELSE( APPLE AND BUILD_BUNDLE )
   IF( UNIX OR ( APPLE AND NOT BUILD_BUNDLE ) )
-  
-    ADD_EXECUTABLE( GenerateInputs 
-      ${INPUTS_SOURCE_FILES}
-      ${INPUTS_HEADER_MOC}
-      ${NETWORK_EVOLVE_GUI_QRC}
-    )
-	
-	TARGET_LINK_LIBRARIES( GenerateInputs
-		${QT_LIBRARIES}
-	)
-	
-    ADD_EXECUTABLE( RunEvolution 
-      ${RUN_SOURCE_FILES}
-      ${RUN_HEADER_MOC}
-      ${NETWORK_EVOLVE_GUI_QRC}
-    )
-	
-	TARGET_LINK_LIBRARIES( RunEvolution
-		${QT_LIBRARIES}
-		ga
-	)
-	
+  	
 	ADD_EXECUTABLE( ModularEvolution 
 	  ${MODULES_SOURCE_FILES}
       ${MODULES_HEADER_MOC}
@@ -109,6 +69,7 @@ ELSE( APPLE AND BUILD_BUNDLE )
   
 	TARGET_LINK_LIBRARIES( ModularEvolution
 	  ${QT_LIBRARIES}
+	  ga
 	)
 
   ELSE( UNIX OR ( APPLE AND NOT BUILD_BUNDLE ) )
@@ -129,29 +90,6 @@ ELSE( APPLE AND BUILD_BUNDLE )
 
 		ENDIF( MINGW )
 	
-    ADD_EXECUTABLE( GenerateInputs WIN32
-      ${INPUTS_SOURCE_FILES}
-      ${INPUTS_HEADER_MOC}
-      ${NETWORK_EVOLVE_GUI_QRC}
-      ${NETWORKEVOLVE_RC}
-    )
-	
-	TARGET_LINK_LIBRARIES( GenerateInputs
-		${QT_LIBRARIES}
-	)
-	
-	ADD_EXECUTABLE( RunEvolution
-      ${RUN_SOURCE_FILES}
-      ${RUN_HEADER_MOC}
-      ${NETWORK_EVOLVE_GUI_QRC}
-      ${NETWORKEVOLVE_RC}
-    )
-	
-	TARGET_LINK_LIBRARIES( RunEvolution
-		ga
-		${QT_LIBRARIES}
-	)
-	
 	ADD_EXECUTABLE( ModularEvolution WIN32
 	  ${MODULES_SOURCE_FILES}
       ${MODULES_HEADER_MOC}
@@ -160,6 +98,7 @@ ELSE( APPLE AND BUILD_BUNDLE )
   
 	TARGET_LINK_LIBRARIES( ModularEvolution
 	  ${QT_LIBRARIES}
+	  ga
 	)
 
     ENDIF( WIN32 )
@@ -168,13 +107,9 @@ ELSE( APPLE AND BUILD_BUNDLE )
 ENDIF( APPLE AND BUILD_BUNDLE )
 
 #---------------------------------------------------------------------
-#  INSTALL GenerateInputs executable and required files and folders
+#  INSTALL executable and required files and folders
 #---------------------------------------------------------------------
-
-INSTALL(TARGETS GenerateInputs 
-   RUNTIME DESTINATION bin/../)
    
-INSTALL(TARGETS RunEvolution 
-   RUNTIME DESTINATION bin/../)
+INSTALL(TARGETS ModularEvolution RUNTIME DESTINATION bin/../)
    
 INSTALL(FILES networkevolve.qss DESTINATION bin/../)
