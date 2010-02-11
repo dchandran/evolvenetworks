@@ -6,14 +6,16 @@
 
 extern "C"
 {
-#include "mtrand.h"
+	#include "mtrand.h"
+	#include "cvodesim.h"
+	#include "ssa.h"
+	#include "testing.h"
 }
 
 #include "ParameterMC.h"
 
-static int NUM_THREADS = 8;
+static int NUM_THREADS = 4;
 static boost::mutex mutex;
-std::ofstream fout;
 
 static double ** SUM_XiXj = 0;
 static double * SUM_Xi = 0;
@@ -45,12 +47,12 @@ static void sampleParameterSpaceSingleRun(int numSamples, int numParameters, Ran
 			++(*count);
 			for (i=0; i < numParameters; ++i)
 			{
-				std::cout << params[i] << "\t";
+				//std::cout << params[i] << "\t";
 				SUM_Xi[i] += params[i];
 				for (j=i; j < numParameters; ++j)
 					SUM_XiXj[i][j] += params[i] * params[j];
 			}
-			std::cout << std::endl;
+			//std::cout << std::endl;
 			mutex.unlock();
 		}
 	}
@@ -141,50 +143,84 @@ void sampleParameterSpace(int numSamples, int numParameters, RandomParameterFunc
 
 int isgood(double * p)
 {
-	return (int)( ((p[0] - p[1]) > 1.0) || ((p[2] - p[3]) > 1.0) );
+	int numPeaks = 0;
+	int i,k,sz;
+	double dt,dx,mu;
+	double * y = 0;
+
+	assignParameters(p);
+	TCinitialize();
+	
+	//y = ODEsim2(TCvars, TCreactions, TCstoic, &TCpropensity, TCinit, 0, 100, 0.1, 0);
+	//sz = 1000;
+	y = SSA(TCvars, TCreactions, TCstoic, &TCpropensity, TCinit, 0, 100, 100000, &sz, 0) ;
+	if (y)
+	{
+		mu = 0.0;
+		for (i = sz/2; i < sz; ++i)		
+			mu += getValue(y,TCvars+1,i,8);
+		
+		mu = 2.0*mu/sz;
+		dt = sz/100;
+
+		for (i=1,k=0; i < sz; ++i)
+		{
+			dx = mu - getValue(y,TCvars+1,i,8);
+			if ((dx*dx) < 1)
+			{
+				if (k==0 || (i > k+dt))
+					++numPeaks;
+				k = i;
+			}
+		}
+		free(y);
+	}
+
+	return (int)( sz > 100 && numPeaks > 10 );
 }
 
 void randomParams(double * p)
 {
-	p[0] = 2.0*mtrand();
-	p[1] = 2.0*mtrand();
-	p[2] = 2.0*mtrand();
-	p[3] = 2.0*mtrand();
+	int i;
+	for (i=0; i < TCparams; ++i)
+		p[i] = mtrand() * pow(2.0,5 * mtrand());
+	p[6] = 4.0*mtrand();
+	p[8] = 4.0*mtrand();
+	p[16] = 4.0*mtrand();
+	p[18] = 4.0*mtrand();
 }
 
 int main(int argc, char* argv[])
 {
-	double * Mu = new double[4];
-	double ** Sigma = new double*[4];
+	double * Mu = new double[TCparams];
+	double ** Sigma = new double*[TCparams];
 
-	for (int i=0; i < 4; ++i)
-		Sigma[i] = new double[4];
+	for (int i=0; i < TCparams; ++i)
+		Sigma[i] = new double[TCparams];
 
-	std::ofstream fout;
+	FILE * fout = fopen( "params.tab", "w" );
 
-	fout.open("params.tab");	
+	sampleParameterSpace(1000000, TCparams ,&randomParams, &isgood, Mu, Sigma);
 
-	sampleParameterSpace(1000,4,&randomParams,&isgood,Mu,Sigma);
+	fprintf(fout, "\n\nMu\n\n");
 
-	printf("\n\nMu\n\n");
-
-	for (int i=0; i < 4; ++i)
+	for (int i=0; i < TCparams; ++i)
 	{
-		printf("%lf\t",Mu[i]);
+		fprintf(fout, "%lf\t",Mu[i]);
 	}
 
-	printf("\n\nSigma\n\n");
+	fprintf(fout, "\n\nSigma\n\n");
 
-	for (int i=0; i < 4; ++i)
+	for (int i=0; i < TCparams; ++i)
 	{
-		for (int j=0; j < 4; ++j)
-			printf("%lf\t",Sigma[i][j]);
-		printf("\n");
+		for (int j=0; j < TCparams; ++j)
+			fprintf(fout, "%lf\t",Sigma[i][j]);
+		fprintf(fout, "\n");
 	}
 
-	fout.close();
+	fclose(fout);
 
-	for (int i=0; i < 4; ++i)
+	for (int i=0; i < TCparams; ++i)
 		delete Sigma[i];
 
 	delete Sigma;
