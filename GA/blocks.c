@@ -1189,7 +1189,7 @@ double * simulateODE(System * S, double time, double dt)
 
 	y = ODEsim2(N.rows, N.cols, N.values , &getRates, y0, 0.0, time, dt, S);
 
-    free(y0);
+	free(y0);
 	free(N.values);
 
 	return y;
@@ -1218,10 +1218,10 @@ System * randomSystem(int numBlocks)
 	{
 		S->blocks[i] = randomBlock();
 		numSpecies += numExternals(S->blocks[i]);
-    }
+	}
 
-    numSpecies -= (int)(numSpecies * PERCENT_OVERLAP);
-    S->numSpecies = numSpecies;
+	numSpecies -= (int)(numSpecies * PERCENT_OVERLAP);
+	S->numSpecies = numSpecies;
 
 	S->fixedSpecies = (double*)malloc(S->numSpecies * sizeof(double));
 
