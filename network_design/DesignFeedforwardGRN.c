@@ -41,22 +41,18 @@ void setGridSizes(int * grid_sz)
 * \param FILE* file for graphviz output
 * \param FILE* file for list of parameter values
 */
-void generateGraphFile(FILE * graphFile)
+void generateGraphFile(FILE * graphFile, FILE * paramsFile)
 {
-	int i,j,k,n,neg;
-	double * input;
+	int i,j,k,n;
 	
 	if (!TARGET_FUNC || !GRID_SIZE) return;
 	
 	fprintf(graphFile, "digraph G {\n");
 	
-	//make the initial set of modules (input 1)
+	//make the initial set of modules (input 1) -- hardest part
 	
 	n = GRID_SIZE[0]; //num dividers in input 1
 	
-	input = (double*)malloc(NUM_INPUTS * sizeof (double));
-	
-	neg = TARGET_FUNC(
 	
 	//done with input 1. generating the rest is a systematic approach
 	for (i=0; i < NUM_INPUTS; ++i)
