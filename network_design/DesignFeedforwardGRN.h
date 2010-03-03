@@ -12,6 +12,13 @@
 void setNumInputs(int);
 
 /*! 
+* \brief set the number of margins in each input, i.e. number of times the output value changes
+* \param int * number of margins for each input
+* \ingroup ffndesign
+*/
+void setGridSizes(int *);
+
+/*! 
 * \brief the input->output mapping function
 * \param double * array of inputs
 * \param int output = 1 or 0 (high or low)
