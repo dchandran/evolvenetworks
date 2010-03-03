@@ -36,9 +36,8 @@ void setTargetFunction(FFN_IO_FUNC);
 /*! 
 * \brief generates the graphviz + parameters output file
 * \param FILE* file for graphviz output
-* \param FILE* file for list of parameter values
 * \ingroup ffndesign
 */
-void generateGraphFile(FILE*, FILE*);
+void generateGraphFile(FILE*);
 
 #endif DESIGNFEEFFORWARDGRN_H
