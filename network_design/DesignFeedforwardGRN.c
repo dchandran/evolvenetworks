@@ -43,24 +43,45 @@ void setGridSizes(int * grid_sz)
 */
 void generateGraphFile(FILE * graphFile, FILE * paramsFile)
 {
-	int i,j,k,n;
+	int i,j,k,n,a,deft,on;
+	double * x;
+	char * green = "
 	
 	if (!TARGET_FUNC || !GRID_SIZE) return;
+	x = (double*)malloc(NUM_INPUTS * sizeof(double)); //inputs
 	
 	fprintf(graphFile, "digraph G {\n");
 	
-	//make the initial set of modules (input 1) -- hardest part
+	//input 0
+	n = GRID_SIZE[0]; //num dividers in input 1	
+	for (i=0; i < NUM_INPUTS; ++i)	x[i] = 0.0;  //initialize
+	deft = TARGET_FUNC(x);  //gene is on by default?
 	
-	n = GRID_SIZE[0]; //num dividers in input 1
-	
+	for (i=1; i < n; ++i)
+	{
+		x[0] = i;
+		k = TARGET_FUNC(x);
+		if (k != on)
+		{
+			fprintf(graphFile, "   x0 -> g$i; [ arrowhead=\"dot\" ]", ++a);
+			if (k > 0)
+				fprintf(graphFile, "   g$i -> y; [ arrowhead=\"dot\" color=\"forestgreen\"]", a);
+			
+			else			
+				fprintf(graphFile, "   g$i -> y; [ arrowhead=\"tee\" color=\"firebrick1\"]", a);
+		}
+		on = k;
+	}
+	//end input 0
 	
 	//done with input 1. generating the rest is a systematic approach
-	for (i=0; i < NUM_INPUTS; ++i)
+	for (i=1; i < NUM_INPUTS; ++i)
 	{
 		
 	}
 	
 	fprintf("}\n");
+	free(x);
 }
 
 
