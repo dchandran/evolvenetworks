@@ -40,4 +40,5 @@ void setTargetFunction(FFN_IO_FUNC);
 */
 void generateGraphFile(FILE*);
 
-#endif DESIGNFEEFFORWARDGRN_H
+#endif
+
