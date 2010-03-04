@@ -8,7 +8,7 @@
  and loads a list of default plugins.
 
 ****************************************************************************/
-
+#include <QApplication>
 #include "DesignFFNWidget.h"
 
 int main(int argc, char *argv[])
