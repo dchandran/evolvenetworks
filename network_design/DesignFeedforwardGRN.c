@@ -42,7 +42,7 @@ void setGridSizes(int * grid_sz)
 */
 void generateGraphFile(FILE * graphFile)
 {
-	int i, i0,i1,i2,i3,j,k,n0,n1,n2,a,b,c,on;
+	int i, i0,i1,i2,i3,j,k,n0,n1,n2,a,b,c0,c1,on;
 	double * x;
 	
 	if (!TARGET_FUNC || !GRID_SIZE) return;
@@ -71,9 +71,13 @@ void generateGraphFile(FILE * graphFile)
 			x[0] = 0;
 			on = TARGET_FUNC(x);  //is the output on when input 0 == 0?
 			fprintf(graphFile, "   g%i -> Y [ arrowhead=\"dot\" , color=\"forestgreen\" ]\n", ++a); //the "on button" for this module
-			c = a; //save on button
+			c1 = 0;
+			c0 = a; //save on button
 			if (!on)
+			{
 				fprintf(graphFile, "   g%i -> Y [ arrowhead=\"tee\" , color=\"firebrick1\" ]\n", ++a); //repressor
+				c1 = a;
+			}
 	
 			for (i0=1; i0 < n0; ++i0)
 			{
@@ -92,7 +96,8 @@ void generateGraphFile(FILE * graphFile)
 			{
 				fprintf(graphFile, "   x1 -> h%i [ arrowhead=\"dot\" , color=\"forestgreen\" ]\n", ++b);
 				fprintf(graphFile, "   h%i -> g%i [ arrowhead=\"tee\" , color=\"firebrick1\" ]\n", b, ++a); //lift the repressor
-				fprintf(graphFile, "   g%i -> g%i [ arrowhead=\"tee\" , color=\"firebrick1\" ]\n", a, c); //repress "on button"
+				fprintf(graphFile, "   g%i -> g%i [ arrowhead=\"tee\" , color=\"firebrick1\" ]\n", a, c0); //repress "on button"
+				fprintf(graphFile, "   g%i -> g%i [ arrowhead=\"tee\" , color=\"firebrick1\" ]\n", a, c0); //repress "on button"
 			}
 		}
 	}
