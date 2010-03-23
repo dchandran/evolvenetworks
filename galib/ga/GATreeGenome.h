@@ -68,7 +68,7 @@ public:
 };
 
 #ifdef GALIB_USE_BORLAND_INST
-#include <ga/GATreeGenome.C>
+#include <ga/GATreeGenome.cpp>
 #endif
 
 #endif
