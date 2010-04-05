@@ -1,0 +1,148 @@
+if(COMMAND cmake_policy)
+  cmake_policy(SET CMP0005 NEW)
+endif(COMMAND cmake_policy)
+
+IF (WIN32)
+
+	IF (MINGW)
+		SET (LIBXML2_LIBRARIES ${JSIMSBWOPTIM_SOURCE_DIR}/sbml/win32/libxml2/lib/libxml2.dll.a)
+	ELSE(MINGW)
+		SET (LIBXML2_LIBRARIES ${JSIMSBWOPTIM_SOURCE_DIR}/sbml/win32/libxml2/lib/libxml2.lib)
+	ENDIF(MINGW)
+	SET (LIBXML2_INCLUDE_DIR ${JSIMSBWOPTIM_SOURCE_DIR}/sbml/win32/libxml2/include)
+	
+ELSE(WIN32)	
+
+	FIND_PACKAGE(LIBXML2)
+	
+ENDIF(WIN32)
+
+INCLUDE_DIRECTORIES( 
+	BEFORE
+	${LIBXML2_INCLUDE_DIR}
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/xml 
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/util 
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/validator 
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/validator/constraints/
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/units 
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/sbml
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/sbml/layout 
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/math 
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/common 
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/compress 
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/annotation
+)
+
+#ADD_DEFINITIONS(-DLIBSBML_STATIC)
+#ADD_DEFINITIONS(-D__cplusplus)
+ADD_DEFINITIONS(-DLIBSBML_EXPORTS)
+ADD_DEFINITIONS(-DLIBLAX_EXPORTS)
+
+ADD_DEFINITIONS(-DPACKAGE_NAME=\"libSBML\")
+ADD_DEFINITIONS(-DNDEBUG)
+ADD_DEFINITIONS(-DUSE_LIBXML)
+ADD_DEFINITIONS(-DUSE_LAYOUT)
+
+IF (WIN32)
+	ADD_DEFINITIONS(-DWIN32)
+	ADD_DEFINITIONS(-D_WIN32)
+	ADD_DEFINITIONS(-D_WINDOWS)
+	ADD_DEFINITIONS(-D_USRDLL)
+	ADD_DEFINITIONS(-D_EXPORTS)
+	ADD_DEFINITIONS(-DIN_LIBXML)
+	IF (MINGW)
+		ADD_DEFINITIONS(-DCYGWIN)
+	ENDIF(MINGW)
+ENDIF (WIN32)
+
+FILE( GLOB SBML_SRC_FILES
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/xml/XML*.cpp 
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/xml/XML*.c
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/xml/LibXML*.cpp 
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/xml/LibXML*.c
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/util/*.cpp 
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/util/*.c
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/validator/*.cpp 
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/validator/*.c
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/validator/constraints/*.cpp
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/validator/constraints/*.c
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/units/*.cpp 
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/units/*.c
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/math/*.cpp
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/math/*.c
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/annotation/*.cpp 
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/annotation/*.c
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/sbml/*.cpp
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/sbml/*.c
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/sbml/layout/*.cpp
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/sbml/layout/*.c
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/common/*.cpp
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/common/*.c
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/compress/CompressCommon.cpp
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/compress/InputDecompressor.cpp
+	${JSIMSBWOPTIM_SOURCE_DIR}/sbml/compress/OutputCompressor.cpp
+)
+
+ADD_LIBRARY( sbml
+  #SHARED
+  STATIC
+  ${SBML_SRC_FILES}
+)
+
+TARGET_LINK_LIBRARIES( sbml
+  sbml
+  ${LIBXML2_LIBRARIES}
+)
+
+
+IF ( WIN32 )
+   FILE( GLOB ${JSIMSBWOPTIM_SOURCE_DIR}/sbml/win32/libxml2/lib/*.dll DESTINATION bin/../ )
+   INSTALL(TARGETS DESTINATION bin/../)
+#  INSTALL(TARGETS sbml DESTINATION bin/../)
+#ELSE ( WIN32 )
+  #INSTALL(TARGETS sbml LIBRARY DESTINATION bin/../)
+ENDIF( WIN32 )
+
+
+INCLUDE_DIRECTORIES(
+	${JSIMSBWOPTIM_SOURCE_DIR}/ExternalCode/Antimony/src
+)
+
+SET( ANTIMONY_SRC
+	src/Antimony.cpp
+	src/antimony_api.cpp
+	src/antimony.tab.cpp
+	src/dnastrand.cpp
+	src/event.cpp
+	src/formula.cpp
+	src/module.cpp
+	src/reactantlist.cpp
+	src/reaction.cpp
+	src/registry.cpp
+	src/sbmlx.cpp
+	src/stringx.cpp
+	src/typex.cpp
+	src/userfunction.cpp
+	src/variable.cpp
+)
+   
+#ADD_DEFINITIONS(-DNSBML)
+ADD_DEFINITIONS(-DNCELLML)
+ADD_DEFINITIONS(-DLIB_EXPORTS)
+
+ADD_LIBRARY ( antimony
+  SHARED
+  ${ANTIMONY_SRC}
+)
+
+
+TARGET_LINK_LIBRARIES( antimony
+  antimony
+  sbml
+)
+
+IF ( WIN32 )
+  INSTALL(TARGETS antimony DESTINATION bin/../)
+ELSE ( WIN32 )
+  INSTALL(TARGETS antimony LIBRARY DESTINATION bin/../)
+ENDIF( WIN32 )
