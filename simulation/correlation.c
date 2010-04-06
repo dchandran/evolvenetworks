@@ -93,6 +93,23 @@ double colCorrelation(double * M1, double * M2, int colsM1, int colsM2, int iM1,
    return ((mXY - mX*mY)/d);
 }
 
+double * autoCorrelation(double * x, int size)
+{
+	int i,j;
+	double sum;
+	double * R = (double*)malloc(size * sizeof(double));
+	for (i=0; i < size; ++i) 
+	{
+		sum=0;
+		for (int j=0; j < (size-i); ++j) 
+		{
+			sum += x[j]*x[j+i];
+		}
+		R[i] = sum;
+	}
+	return R;
+}
+
 /*
 int main()
 {

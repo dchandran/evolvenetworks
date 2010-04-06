@@ -26,6 +26,12 @@
  * \return double correlation
 */
 double correlation(double *, double *, int sz);
+/* calculates auto-correlation for a vector
+ * \param double* vector of doubles
+ * \param int the size of vector
+ * \return double* correlation values (same size as input vector)
+*/
+ double * autoCorrelation(double * x, int size)
 /* calculates maximum correlation between two vectors by adjusting the starting points
  * \param double* first vector of doubles
  * \param double* second vector of doubles
