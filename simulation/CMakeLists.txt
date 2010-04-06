@@ -33,3 +33,14 @@ ADD_LIBRARY( ssa
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/langevin.c
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/mtrand.c
 )
+
+SET_TARGET_PROPERTIES(ssa PROPERTIES LINKER_LANGUAGE C)
+
+ADD_EXECUTABLE( sbml_sim
+  ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/sbml_sim.cpp
+)
+
+TARGET_LINK_LIBRARIES( sbml_sim sbml ode ssa)
+
+
+

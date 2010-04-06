@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 2.0)
 
 PROJECT( NETWORKEVOLUTION )
+IF( COMMAND CMAKE_POLICY )
+  CMAKE_POLICY( VERSION 2.4 )
+  CMAKE_POLICY( SET CMP0005 NEW )
+  CMAKE_POLICY( SET CMP0003 NEW )
+  CMAKE_POLICY( SET CMP0002 OLD )
+ENDIF(COMMAND CMAKE_POLICY)
+
 
 #---------------------------------------------------------------------------
 # Python
@@ -42,6 +49,8 @@ INCLUDE_DIRECTORIES( BEFORE
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/nvec_ser
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/sundials
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/antimony/src
+	${NETWORKEVOLUTION_SOURCE_DIR}/external/sbml
+	${NETWORKEVOLUTION_SOURCE_DIR}/external/muparser
 	${NETWORKEVOLUTION_SOURCE_DIR}/simulation
 	
 	${NETWORKEVOLUTION_SOURCE_DIR}/GA

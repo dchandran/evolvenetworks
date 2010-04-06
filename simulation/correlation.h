@@ -5,8 +5,8 @@
  **
  ****************************************************************************/
 
-#ifndef DEEPAK_CORRELATION_AND_STUFF
-#define DEEPAK_CORRELATION_AND_STUFF
+#ifndef EVOLVENETWORK_CORRELATION_AND_STUFF
+#define EVOLVENETWORK_CORRELATION_AND_STUFF
 
 #include <math.h>
 #include <stdlib.h>

@@ -1,3 +1,6 @@
+#ifndef EVOLVENETWORK_EIGENVALUE_FUNCTION_H
+#define EVOLVENETWORK_EIGENVALUE_FUNCTION_H
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -13,4 +16,6 @@
  * \return: 0 = failure 1 = success
 */
 int eigenvalues(double * A, int n, double * reals, double * im);
+
+#endif
 
