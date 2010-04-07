@@ -1,4 +1,5 @@
 #ADD_SUBDIRECTORY( cvode_src )
+ADD_SUBDIRECTORY( muparser )
 ADD_SUBDIRECTORY( optim )
 ADD_SUBDIRECTORY( lapack )
 ADD_SUBDIRECTORY( Antimony )

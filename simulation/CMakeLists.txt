@@ -40,7 +40,7 @@ ADD_EXECUTABLE( sbml_sim
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/sbml_sim.cpp
 )
 
-TARGET_LINK_LIBRARIES( sbml_sim sbml ode ssa)
+TARGET_LINK_LIBRARIES( sbml_sim sbml ode ssa antimony muparser)
 
 
 
