@@ -36,11 +36,17 @@ ADD_LIBRARY( ssa
 
 SET_TARGET_PROPERTIES(ssa PROPERTIES LINKER_LANGUAGE C)
 
-ADD_EXECUTABLE( sbml_sim
+ADD_LIBRARY( sbml_sim
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/sbml_sim.cpp
 )
 
-TARGET_LINK_LIBRARIES( sbml_sim sbml ode ssa antimony muparser)
+TARGET_LINK_LIBRARIES( sbml_sim 
+   sbml_sim 
+   sbml 
+   ode 
+   ssa 
+   muparser
+)
 
 
 
