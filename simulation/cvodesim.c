@@ -1,15 +1,6 @@
 #include "cvodesim.h"
 
 /*
- * The differential equations function
- * @param: time
- * @param: current values of the variables
- * @param: derviatives array used as the return array
- * @param: any other data pointer that is needed for the simulation
-*/
-static void (*ODEfunc)(double, double*, double*, void*) = NULL;
-
-/*
  * relative error tolerance
  * absolute error tolerance
 */
@@ -21,7 +12,7 @@ int ODE_POSITIVE_VALUES_ONLY = 0;
  * set the flags
  * @param: only positive values
 */
-void ODEflags(int i)
+void ODEonlyPositiveValuesAllowed(int i)
 {
    ODE_POSITIVE_VALUES_ONLY = i;
 }
@@ -40,9 +31,10 @@ void ODEtolerance(double relerr,double abserr)
 typedef struct
 {
   void (*ODEfunc)(double, double*, double*, void*);
-  void *userData;
-  EventFunction * eventFunctions;
+  void * userData;
   int numEvents;
+  EventFunction * eventFunctions;
+  ResponseFunction * responseFunctions;
 } UserFunction;
 
 
@@ -103,14 +95,12 @@ static int check_flag(void *flagvalue, char *funcname, int opt)
   return(0);
 }
 
-/*temporaily saves pointers to event functions*/
-static EventFunction * EventFunctionPointers = 0;
-static int NumEventFunctions = 0;
-
+/*event functions*/
 static int _EventFunction(realtype t,N_Vector y, realtype *gout, void * g_data)
 {
 	int i;
 	EventFunction event;
+	ResponseFunctionPointers response;
 	realtype *u;
 	UserFunction * info;
 
@@ -118,17 +108,34 @@ static int _EventFunction(realtype t,N_Vector y, realtype *gout, void * g_data)
 
 	info = (UserFunction*) g_data;
 
-	for (i=0; i < (*info).numEvents; ++i)
+	for (i=0; i < info->numEvents; ++i)
 	{
-		event = (*info).eventFunctions[i];
-		if (event != NULL) 
-		{
-			gout[i] = event(t,u,(*info).userData);
-			printf("test event %lf\n",gout[i]);
-		}
+		event = info->eventFunctions[i];
+		gout[i] = (int)(event(t,u,info->userData) == 0);
 	}
 
 	return (0);
+}
+
+static void _ProcessEvent(realtype t,N_Vector y, void * g_data)
+{
+	int i, ret=0;
+	EventFunction event;
+	ResponseFunctionPointers response;
+	realtype *u;
+	UserFunction * info;
+
+	u = NV_DATA_S(y);
+
+	info = (UserFunction*) g_data;
+
+	for (i=0; i < NumEventFunctions; ++i)
+	{
+		event = info->eventFunctions[i];
+		response = info->responseFunctions[i];
+		if (event(t,u,(*info).userData) > 0)
+			response(u,(*info).userData);
+	}
 }
 
 /* The following is to convert a propensity function and stoichiometry to an ode function*/
@@ -184,7 +191,7 @@ static void odeFunc( double time, double * u, double * du, void * udata )
 * /return  one dimentional array -- { row1, row2...}, where each row contains {time1,x1,x2,....}
 */
 
-double * ODEsim2(int m, int n, double * N, void (*f)(double, double*,double*,void*), double *x0, double startTime, double endTime, double dt, void * dataptr)
+double * ODEsim2(int m, int n, double * N, void (*f)(double, double*,double*,void*), double *x0, double startTime, double endTime, double dt, void * dataptr, int numEvents, EventFunction * eventFunctions, ResponseFunction * responseFunctions)
 {
 	double * y;
 	ODEsim2Struct * s = (ODEsim2Struct*)malloc(sizeof(ODEsim2Struct));
@@ -195,7 +202,7 @@ double * ODEsim2(int m, int n, double * N, void (*f)(double, double*,double*,voi
 	s->rates = (double*) malloc(n * sizeof(double));
 	s->data = dataptr;
 	
-	y = ODEsim(m,x0,&odeFunc,startTime,endTime,dt,s);
+	y = ODEsim(m,x0,&odeFunc,startTime,endTime,dt,s,numEvents, eventFunctions, responseFunctions);
 	
 	free(s->rates);
 	free(s);
@@ -296,14 +303,15 @@ double* getDerivatives2(int m, int n, double * N, void (*f)(double,double*,doubl
  * @param: user data type for storing other information
  * @ret: 2D array with time in the first column and values in the rest 
  */
-double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,double*,void*), double startTime, double endTime, double stepSize, void * params)
+double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,double*,void*), double startTime, double endTime, double stepSize, void * params, int numEvents, EventFunction * eventFunctions, ResponseFunction * responseFunctions)
 {
-	double reltol, abstol, t, tout, * data;
+	double reltol, abstol, t, tout, * data, * y;
 	void * cvode_mem = 0;
 	N_Vector u;
 	int flag, i, j, M;
 	UserFunction * funcData;
 	realtype * udata;
+	int * gi = 0;
 	
 	t = 0.0;
 	tout = 0.0;
@@ -317,10 +325,6 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 
 	reltol = RelTol; 
 	abstol = AbsTol;
-
-	/*setup ode func*/
-
-	ODEfunc = odefnc; 
 
 	if (N < 1) { return (0); }  /*no variables in the system*/
 
@@ -353,10 +357,15 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 		if (data) free(data);
 		return(0);
 	}
+	
+	CVodeSStolerances(cvode_mem, reltol, abstol);
 
 	funcData = (UserFunction*) malloc( sizeof(UserFunction) );
 	(*funcData).ODEfunc = odefnc;
 	(*funcData).userData = params;
+	(*funcData).numEvents = numEvents;
+	(*funcData).eventFunctions = eventFunctions;
+	(*funcData).responseFunctions = responseFunctions;
 
 	flag = CVodeSetFdata(cvode_mem, funcData);
 	if(check_flag(&flag, "CVodeSetFdata", 1))
@@ -380,11 +389,16 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
   
 	if (NumEventFunctions > 0)
 	{
-		(*funcData).eventFunctions = EventFunctionPointers;
-		(*funcData).numEvents = NumEventFunctions;
-		flag = CVodeRootInit(cvode_mem, NumEventFunctions, _EventFunction, funcData); //setup event functions
-		EventFunctionPointers = 0;
-		NumEventFunctions = 0;
+		flag = CVodeRootInit(cvode_mem, numEvents, _EventFunction, funcData); //setup event functions
+
+		if (flag != CV_SUCCESS)
+		{
+			CVodeFree(&cvode_mem);
+			N_VDestroy_Serial(u);
+			free(funcData);
+			if (data) free(data);
+			return(0);
+		}
 	}
 
 	/* setup for simulation */
@@ -392,18 +406,23 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 	t = startTime;
 	tout = startTime;
 	i = 0;
+	if (numEvents > 0)
+		gi = (int*)malloc(numEvents * sizeof(int));
 
 	/*main simulation loop*/
 
 	while (i <= M)
 	{
 		/*store data*/
+		
+		y = NV_DATA_S(u);
+		
 		if (data)
 		{
 		   data[ (N+1)*i ] = t;
 		   for (j=0; j < N; ++j)
 		   {
-			   if (ODE_POSITIVE_VALUES_ONLY && (NV_DATA_S(u))[j] < 0) //special for bio networks
+			   if (ODE_POSITIVE_VALUES_ONLY && y[j] < 0) //special for bio networks
 			   {
 				  CVodeFree(&cvode_mem);
 				  N_VDestroy_Serial(u);
@@ -413,13 +432,25 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 				  return 0;
 			   }
 			   else
-				 data[ i*(N+1) + j+1 ] = (NV_DATA_S(u))[j]; //normal case
+				 data[ i*(N+1) + j+1 ] = y[j]; //normal case
 		   }
 		}
 		++i;
 
 		tout = t + stepSize;
 		flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
+		
+		if (flag == CV_ROOT_RETURN)
+		{
+			CVodeGetRootInfo(cvode_mem, gi);
+			for (j=0; j < numEvents; ++j)
+				if (gi[j])
+				{
+					(responseFunctions[j])(
+				}
+					
+		}
+		
 		if (check_flag(&flag, "CVode", 1))
 		{
 		   CVodeFree(&cvode_mem);
@@ -518,7 +549,6 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 	abstol = AbsTol;
 
 	/*setup ode func*/
-	ODEfunc = odefnc;
 	if (N < 1) return (0);  /*no variables in the system*/
 
 	u = N_VNew_Serial(N);  /* Allocate u vector */
@@ -554,8 +584,12 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 	funcData = malloc( sizeof(UserFunction) );
 	(*funcData).ODEfunc = odefnc;
 	(*funcData).userData = params;
+	(*funcData).numEvents = 0;
+	(*funcData).eventFunctions = 0;
+	(*funcData).responseFunctions = 0;
 
 	flag = CVodeSetFdata(cvode_mem, funcData);
+	
 	if(check_flag(&flag, "CVodeSetFdata", 1))
 	{
 		CVodeFree(&cvode_mem);
@@ -565,6 +599,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 		if (u0) free(u0);
 		return(0);
 	}
+	
 	flag = CVBand(cvode_mem, N, 0, N-1);
 	if (check_flag(&flag, "CVBand", 1))
 	{
@@ -574,15 +609,6 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 		if (ss) free(ss);
 		if (u0) free(u0);
 		return(0);
-	}
-  
-	if (NumEventFunctions > 0)
-	{
-		(*funcData).eventFunctions = EventFunctionPointers;
-		(*funcData).numEvents = NumEventFunctions;
-		flag = CVodeRootInit(cvode_mem, NumEventFunctions, _EventFunction, funcData); //setup event functions
-		EventFunctionPointers = 0;
-		NumEventFunctions = 0;
 	}
   
 	/* setup for simulation */
@@ -617,7 +643,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 			for (j=0; j < N; ++j)
 			{
 				temp = ( (NV_DATA_S(u))[j] - u0[j] )*( (NV_DATA_S(u))[j] - u0[j] );
-				if (temp > err) err = temp;               //max value from all dx/dt
+				if (temp > err) err = temp;         //max value from all dx/dt
 				ss[j] = u0[j] = (NV_DATA_S(u))[j];  //next y points
 				if (ODE_POSITIVE_VALUES_ONLY && (NV_DATA_S(u))[j] < 0)
 				{
@@ -685,8 +711,9 @@ double* getDerivatives(int N, double * initialValues, void (*odefnc)(double,doub
  * \param number of events
  * \param array with pointers to event functions
 */
-void ODEevents(int numEvents, EventFunction * events)
+void ODEaddEvent(int eventType, EventFunction * eventFunction, ResponseFunction * responseFunction);
 {
+	
 	EventFunctionPointers = events;
 	NumEventFunctions = numEvents;	
 }

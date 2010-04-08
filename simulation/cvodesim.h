@@ -45,23 +45,24 @@ typedef void (*PropensityFunction)(double time,double* y,double* rates,void* par
 
 /*!
  * \brief The type for the user defined event function
- */
-typedef double (*EventFunction)(double time,double* y,void* params);
-
-/*!
- * \brief set events for the system
- * \param number of events
- * \param array with pointers to event functions
+ * \return int 0 for no event, 1 for trigger
  * \ingroup cvodewrapper
-*/
-void ODEevents(int numEvents, EventFunction * eventFunctions);
+ */
+typedef int (*EventFunction)(double time, double* y, void* params);
 
 /*!
- * \brief set the flags
+ * \brief This function is triggered when an event occurs
+ * \return void
+ * \ingroup cvodewrapper
+ */
+typedef void (*ResponseFunction)(double* y, void* params);
+
+/*!
+ * \brief setting this flag will restrict the values to >= 0
  * \param only positive values
  * \ingroup cvodewrapper
 */
-void ODEflags(int);
+void ODEonlyPositiveValuesAllowed(int);
 
 /*!
  * \brief specify number of variables in the ODE system
@@ -80,10 +81,14 @@ void ODEtolerance(double,double);
  * \param ending time for the simulation
  * \param time increments for the simulation
  * \param user data type for storing other information
+ * \param int number of events (use 0 for none)
+ * \param EventFunction* array of event functions (use 0 for none)
+ * \param ResponseFunction* array of response functions for each event (use 0 for none)
  * \return one dimentional array -- { row1, row2...}, where each row contains {time1,x1,x2,....}
+           use y[ i*(n+1) + j ] to access i,j-th element, where y contains time as the first column and n variable columns
  * \ingroup cvodewrapper
  */
-double* ODEsim(int N, double * initValues, ODEFunction function, double startTime, double endTime, double stepSize, void * params);
+double* ODEsim(int N, double * initValues, ODEFunction function, double startTime, double endTime, double stepSize, void * data, int numEvents, EventFunction * eventFunctions, ResponseFunction * responseFunctions);
 
 
 /*!
@@ -97,10 +102,13 @@ double* ODEsim(int N, double * initValues, ODEFunction function, double startTim
 * \param  end time 
 * \param  time increments for the simulation
 * \param  user data type for storing other information
-* \return  one dimentional array -- { row1, row2...}, where each row contains {time1,x1,x2,....}
+ * \param EventFunction* array of event functions (use 0 for none)
+ * \param ResponseFunction* array of response functions for each event (use 0 for none)
+* \return  one dimentional array -- { row1, row2...}, where each row contains {time1,x1,x2,....}. 
+           use y[ i*(n+1) + j ] to access i,j-th element, where y contains time as the first column and n variable columns
 * \ingroup cvodewrapper
 */
-double * ODEsim2(int, int, double *, PropensityFunction f, double*, double, double, double,void*);
+double * ODEsim2(int variables, int reactions, double *, PropensityFunction f, double* initialValue, double startTime, double endTime, double stepSize, void * data, int numEvents, EventFunction * eventFunctions, ResponseFunction * responseFunctions););
 
 
 /*!
