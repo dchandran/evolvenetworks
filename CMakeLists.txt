@@ -158,6 +158,11 @@ ENDIF(SWIG_BINDINGS)
 #---------------------------------------------------------------------------
 #---------------------------------------------------------------------------
 
+#testing
+
+ADD_EXECUTABLE( test_ode ${NETWORKEVOLUTION_SOURCE_DIR}/examples/test_cvode.c )
+TARGET_LINK_LIBRARIES( test_ode ode )
+
 # Use GA library
 
 #ADD_EXECUTABLE( evolveChemotaxis ${NETWORKEVOLUTION_SOURCE_DIR}/chemotaxis/evolve_chemotaxis.c )

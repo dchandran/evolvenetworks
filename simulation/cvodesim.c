@@ -67,7 +67,7 @@ static int f(realtype t, N_Vector u, N_Vector udot, void * userFunc)
 
 static int check_flag(void *flagvalue, char *funcname, int opt)
 {
-  int *errflag;
+  int *errflag = (int*)flagvalue;
 
   /* Check if SUNDIALS function returned NULL pointer - no memory allocated */
 
@@ -100,7 +100,7 @@ static int _EventFunction(realtype t,N_Vector y, realtype *gout, void * g_data)
 {
 	int i;
 	EventFunction event;
-	ResponseFunctionPointers response;
+	ResponseFunction response;
 	realtype *u;
 	UserFunction * info;
 
@@ -121,7 +121,7 @@ static void _ProcessEvent(realtype t,N_Vector y, void * g_data)
 {
 	int i, ret=0;
 	EventFunction event;
-	ResponseFunctionPointers response;
+	ResponseFunction response;
 	realtype *u;
 	UserFunction * info;
 
@@ -129,7 +129,7 @@ static void _ProcessEvent(realtype t,N_Vector y, void * g_data)
 
 	info = (UserFunction*) g_data;
 
-	for (i=0; i < NumEventFunctions; ++i)
+	for (i=0; i < info->numEvents; ++i)
 	{
 		event = info->eventFunctions[i];
 		response = info->responseFunctions[i];
@@ -292,17 +292,6 @@ double* getDerivatives2(int m, int n, double * N, void (*f)(double,double*,doubl
 	return(y);
 }
 
-/*
- * The Simulate function using Cvode (double precision)
- * @param: number of variables
- * @param: array of initial values
- * @param: ode function pointer
- * @param: start time for the simulation
- * @param: ending time for the simulation
- * @param: time increments for the simulation
- * @param: user data type for storing other information
- * @ret: 2D array with time in the first column and values in the rest 
- */
 double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,double*,void*), double startTime, double endTime, double stepSize, void * params, int numEvents, EventFunction * eventFunctions, ResponseFunction * responseFunctions)
 {
 	double reltol, abstol, t, tout, * data, * y;
@@ -357,8 +346,6 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 		if (data) free(data);
 		return(0);
 	}
-	
-	CVodeSStolerances(cvode_mem, reltol, abstol);
 
 	funcData = (UserFunction*) malloc( sizeof(UserFunction) );
 	(*funcData).ODEfunc = odefnc;
@@ -387,7 +374,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 		return(0);
 	}
   
-	if (NumEventFunctions > 0)
+	if (numEvents > 0)
 	{
 		flag = CVodeRootInit(cvode_mem, numEvents, _EventFunction, funcData); //setup event functions
 
@@ -411,11 +398,11 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 
 	/*main simulation loop*/
 
+	y = NV_DATA_S(u);
+	
 	while (i <= M)
 	{
 		/*store data*/
-		
-		y = NV_DATA_S(u);
 		
 		if (data)
 		{
@@ -439,16 +426,15 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 
 		tout = t + stepSize;
 		flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
+		y = NV_DATA_S(u);
 		
 		if (flag == CV_ROOT_RETURN)
 		{
 			CVodeGetRootInfo(cvode_mem, gi);
 			for (j=0; j < numEvents; ++j)
 				if (gi[j])
-				{
-					(responseFunctions[j])(
-				}
-					
+					(responseFunctions[j])(y,params); //event triggered response
+			flag = CV_SUCCESS;
 		}
 		
 		if (check_flag(&flag, "CVode", 1))
@@ -692,7 +678,7 @@ double* getDerivatives(int N, double * initialValues, void (*odefnc)(double,doub
 	double * y, * dy;
 	int i, sz;
 	
-	y = ODEsim(N,initialValues,odefnc,startTime,endTime,stepSize,params);
+	y = ODEsim(N,initialValues,odefnc,startTime,endTime,stepSize,params,0,0,0);
 	if (y == 0) return 0;
 	sz = (int)((endTime-startTime)/stepSize);
 	dy = (double*) malloc(N * sizeof(double));
@@ -704,18 +690,6 @@ double* getDerivatives(int N, double * initialValues, void (*odefnc)(double,doub
 	
 	free(y);
 	return(dy);   /*return outptus*/
-}
-
-/*!
- * \brief set events for the system
- * \param number of events
- * \param array with pointers to event functions
-*/
-void ODEaddEvent(int eventType, EventFunction * eventFunction, ResponseFunction * responseFunction);
-{
-	
-	EventFunctionPointers = events;
-	NumEventFunctions = numEvents;	
 }
 
 /*

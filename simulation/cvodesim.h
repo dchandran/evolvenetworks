@@ -90,7 +90,6 @@ void ODEtolerance(double,double);
  */
 double* ODEsim(int N, double * initValues, ODEFunction function, double startTime, double endTime, double stepSize, void * data, int numEvents, EventFunction * eventFunctions, ResponseFunction * responseFunctions);
 
-
 /*!
 * \brief The simulate function that accepts a stoichiometry matrix and propensity function. Uses CVODE integrator
 * \param  number of species (rows of stoichiometry matrix)
@@ -108,7 +107,7 @@ double* ODEsim(int N, double * initValues, ODEFunction function, double startTim
            use y[ i*(n+1) + j ] to access i,j-th element, where y contains time as the first column and n variable columns
 * \ingroup cvodewrapper
 */
-double * ODEsim2(int variables, int reactions, double *, PropensityFunction f, double* initialValue, double startTime, double endTime, double stepSize, void * data, int numEvents, EventFunction * eventFunctions, ResponseFunction * responseFunctions););
+double * ODEsim2(int variables, int reactions, double *, PropensityFunction f, double* initialValue, double startTime, double endTime, double stepSize, void * data, int numEvents, EventFunction * eventFunctions, ResponseFunction * responseFunctions);
 
 
 /*!
