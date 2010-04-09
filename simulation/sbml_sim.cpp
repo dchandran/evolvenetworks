@@ -178,7 +178,7 @@ vector< vector<double> > SBML_sim::simulate(double time, double stepSize) const
 	for (int i=0; i < variableValues.size(); ++i)
 		y0[i] = variableValues[i];
 	
-	double * y = ODEsim2(n, reactionNames.size(), stoichiometryMatrix , &sbml_rates_function, y0, 0.0, time, stepSize, (void*)this);
+	double * y = ODEsim2(n, reactionNames.size(), stoichiometryMatrix , &sbml_rates_function, y0, 0.0, time, stepSize, (void*)this, 0, 0, 0);
 	
 	vector< vector<double> > res;
 	int sz = (int)(time/stepSize);

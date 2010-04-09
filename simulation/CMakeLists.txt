@@ -14,6 +14,8 @@ ADD_LIBRARY( ode
   ${NVECSER_SRC}
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/eigen.c
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/cvodesim.c
+  ${NETWORKEVOLUTION_SOURCE_DIR}/external/optim/mat.c
+  ${NETWORKEVOLUTION_SOURCE_DIR}/external/optim/neldermead.c
 )
 
 TARGET_LINK_LIBRARIES( ode ode lapack )
