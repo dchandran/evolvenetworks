@@ -163,8 +163,8 @@ ENDIF(SWIG_BINDINGS)
 ADD_EXECUTABLE( test_ode ${NETWORKEVOLUTION_SOURCE_DIR}/examples/test_cvode.c )
 TARGET_LINK_LIBRARIES( test_ode ode )
 
-ADD_EXECUTABLE( test_sbml_sim ${NETWORKEVOLUTION_SOURCE_DIR}/examples/optim_sbml.cpp )
-TARGET_LINK_LIBRARIES( test_sbml_sim sbml_sim )
+ADD_EXECUTABLE( test_sbml_sim ${NETWORKEVOLUTION_SOURCE_DIR}/examples/optim_sbml.cpp ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/mtrand.c)
+TARGET_LINK_LIBRARIES( test_sbml_sim sbml_sim galib)
 
 # Use GA library
 
