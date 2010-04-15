@@ -151,7 +151,8 @@ int main()
 	
 //	NelderMeadSimplexMethod(sim.getVariableNames().size(), diff , x0 , 10 , &fopt, 10000, 1E-3);
 	
-	GARealAlleleSet allele1(0,1);
+	float a[] = {1.0};
+	GARealAlleleSet allele1(1,a);
 	GARealGenome genome( numParams, allele1, &Objective1);
 	genome.initializer(&initializeGenome);
 	GASteadyStateGA ga(genome);

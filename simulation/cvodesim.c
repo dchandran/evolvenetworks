@@ -251,7 +251,7 @@ double* jacobian2(int m, int n, double * N, void (*f)(double,double*,double*,voi
  * /param: the difference in time to use for estimating steady state
  * /ret: array of values
  */
-double* steadyState2(int m, int n, double * N, void (*f)(double,double*,double*,void*), double * initialValues, void * dataptr, double minerr, double maxtime, double delta)
+double* steadyState2(int m, int n, double * N, void (*f)(double,double*,double*,void*), double * initialValues, void * dataptr, double minerr, double maxtime, double delta, int numEvents, EventFunction * eventFunctions, ResponseFunction * responseFunctions)
 {
 	double * y;
 	ODEsim2Struct * s = (ODEsim2Struct*)malloc(sizeof(ODEsim2Struct));
@@ -261,7 +261,7 @@ double* steadyState2(int m, int n, double * N, void (*f)(double,double*,double*,
 	s->numVars = m;
 	s->rates = (double*) malloc(n * sizeof(double));
 	s->data = dataptr;
-	y = steadyState(m, initialValues, &odeFunc, s, minerr, maxtime, delta);
+	y = steadyState(m, initialValues, &odeFunc, s, minerr, maxtime, delta, numEvents, eventFunctions, responseFunctions);
 	free(s->rates);
 	free(s);
 	return(y);
@@ -338,7 +338,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 	cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
 	if (check_flag((void *)cvode_mem, "CVodeCreate", 0)) return(0);
 
-	flag = CVodeMalloc(cvode_mem, f, startTime, u, CV_SS, reltol, &abstol);
+	flag = CVodeInit(cvode_mem, f, startTime, u);
 	if (check_flag(&flag, "CVodeMalloc", 1))
 	{
 		CVodeFree(&cvode_mem);
@@ -346,6 +346,8 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 		if (data) free(data);
 		return(0);
 	}
+	
+	CVodeSStolerances(cvode_mem, reltol, abstol);
 
 	funcData = (UserFunction*) malloc( sizeof(UserFunction) );
 	(*funcData).ODEfunc = odefnc;
@@ -373,10 +375,12 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 		if (data) free(data);
 		return(0);
 	}
-  
+    
+    /* setup events */
+
 	if (numEvents > 0)
 	{
-		flag = CVodeRootInit(cvode_mem, numEvents, _EventFunction, funcData); //setup event functions
+		flag = CVodeRootInit(cvode_mem, numEvents, _EventFunction);
 
 		if (flag != CV_SUCCESS)
 		{
@@ -409,7 +413,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 		   data[ (N+1)*i ] = t;
 		   for (j=0; j < N; ++j)
 		   {
-			   if (ODE_POSITIVE_VALUES_ONLY && y[j] < 0) //special for bio networks
+			   if (ODE_POSITIVE_VALUES_ONLY && y[j] < 0) //specially for non-negative (biological) systems
 			   {
 				  CVodeFree(&cvode_mem);
 				  N_VDestroy_Serial(u);
@@ -419,7 +423,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 				  return 0;
 			   }
 			   else
-				 data[ i*(N+1) + j+1 ] = y[j]; //normal case
+				 data[ i*(N+1) + j+1 ] = y[j]; //normal case (negative and positive values allowed)
 		   }
 		}
 		++i;
@@ -428,7 +432,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 		flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
 		y = NV_DATA_S(u);
 		
-		if (flag == CV_ROOT_RETURN)
+		if (flag == CV_ROOT_RETURN) //check for events
 		{
 			CVodeGetRootInfo(cvode_mem, gi);
 			for (j=0; j < numEvents; ++j)
@@ -442,6 +446,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 		   CVodeFree(&cvode_mem);
 		   N_VDestroy_Serial(u);
 		   free(funcData);
+		   free(gi);
 		   if (data) free(data);
 		   data = 0;	 
 		   return 0;
@@ -453,6 +458,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 	N_VDestroy_Serial(u);
   
 	free(funcData);
+	free(gi);
   
 	return(data);   /*return outptus*/
 }
@@ -509,39 +515,43 @@ double* jacobian(int N, double * point,  void (*odefnc)(double,double*,double*,v
  * @param: maximum allowed value
  * @ret: array of values
  */
-double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*,double*,void*), void * params, double maxerr, double maxtime, double delta)
+double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*,double*,void*), void * params, double maxerr, double maxtime, double delta, int numEvents, EventFunction * eventFunctions, ResponseFunction * responseFunctions)
 {
 	double t0, t, tout, startTime, endTime, stepSize, reltol, abstol, err, temp, * ss;
-	void * cvode_mem;
+	void * cvode_mem = 0;
 	N_Vector u;
 	int flag, i, j;
-	realtype * udata, * u0;
 	UserFunction * funcData;
-	
-	startTime = 0;
-	endTime = maxtime;
-	stepSize = 0.1;
-
-	reltol = 0.0;
-	abstol = 1.0e-5;
+	realtype * udata, * u0;
+	int * gi = 0;
 	
 	t = 0.0;
 	tout = 0.0;
-	cvode_mem = 0;
 	
+	if (startTime < 0) startTime = 0;
+	if (endTime < startTime) { return 0; }
+
+	if ( (2*stepSize) > (endTime-startTime) ) stepSize = (endTime - startTime)/2.0;
+
 	/*setup tolerance*/
 
-	reltol = RelTol;
+	reltol = RelTol; 
 	abstol = AbsTol;
 
-	/*setup ode func*/
-	if (N < 1) return (0);  /*no variables in the system*/
+	if (N < 1) { return (0); }  /*no variables in the system*/
 
 	u = N_VNew_Serial(N);  /* Allocate u vector */
-	if(check_flag((void*)u, "N_VNew_Serial", 0)) return(0);
+	if(check_flag((void*)u, "N_VNew_Serial", 0)) { return(0); }
 
-	/* allocate output matrix */
+	/* Initialize u vector */
 
+	udata = NV_DATA_S(u);
+
+	if (initialValues != NULL)
+		for (i=0; i < N; ++i)
+			udata[i] = initialValues[i];
+
+	/* allocate output vector */
 	ss = (double*) malloc (N * sizeof(double) );
 
 	/* Initialize u vector */
@@ -557,35 +567,34 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 	cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
 	if (check_flag((void *)cvode_mem, "CVodeCreate", 0)) return(0);
 
-	flag = CVodeMalloc(cvode_mem, f, 0, u, CV_SS, reltol, &abstol);
+	flag = CVodeInit(cvode_mem, f, startTime, u);
 	if (check_flag(&flag, "CVodeMalloc", 1))
 	{
 		CVodeFree(&cvode_mem);
 		N_VDestroy_Serial(u);
 		if (ss) free(ss);
-		if (u0) free(u0);
 		return(0);
 	}
+	
+	CVodeSStolerances(cvode_mem, reltol, abstol);
 
-	funcData = malloc( sizeof(UserFunction) );
+	funcData = (UserFunction*) malloc( sizeof(UserFunction) );
 	(*funcData).ODEfunc = odefnc;
 	(*funcData).userData = params;
-	(*funcData).numEvents = 0;
-	(*funcData).eventFunctions = 0;
-	(*funcData).responseFunctions = 0;
+	(*funcData).numEvents = numEvents;
+	(*funcData).eventFunctions = eventFunctions;
+	(*funcData).responseFunctions = responseFunctions;
 
 	flag = CVodeSetFdata(cvode_mem, funcData);
-	
 	if(check_flag(&flag, "CVodeSetFdata", 1))
 	{
 		CVodeFree(&cvode_mem);
 		N_VDestroy_Serial(u);
 		free(funcData);
 		if (ss) free(ss);
-		if (u0) free(u0);
 		return(0);
 	}
-	
+
 	flag = CVBand(cvode_mem, N, 0, N-1);
 	if (check_flag(&flag, "CVBand", 1))
 	{
@@ -593,24 +602,49 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 		N_VDestroy_Serial(u);
 		free(funcData);
 		if (ss) free(ss);
-		if (u0) free(u0);
 		return(0);
 	}
-  
+    
+    /* setup events */
+
+	if (numEvents > 0)
+	{
+		flag = CVodeRootInit(cvode_mem, numEvents, _EventFunction);
+
+		if (flag != CV_SUCCESS)
+		{
+			CVodeFree(&cvode_mem);
+			N_VDestroy_Serial(u);
+			free(funcData);
+			if (ss) free(ss);
+			return(0);
+		}
+	}
+
 	/* setup for simulation */
 
-	t0 = 0.0;
-	startTime = 0.0;
 	t = startTime;
 	tout = startTime;
 	i = 0;
-	err = maxerr + 1;
+	if (numEvents > 0)
+		gi = (int*)malloc(numEvents * sizeof(int));
 
 	/*main simulation loop*/
+	
 	while (tout <= endTime)
 	{
 		tout = t + stepSize;
 		flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
+		
+		if (flag == CV_ROOT_RETURN) //check for events
+		{
+			CVodeGetRootInfo(cvode_mem, gi);
+			for (j=0; j < numEvents; ++j)
+				if (gi[j])
+					(responseFunctions[j])(u0,params); //event triggered response
+			flag = CV_SUCCESS;
+		}
+		
 		if (check_flag(&flag, "CVode", 1))
 		{
 			CVodeFree(&cvode_mem);
@@ -618,6 +652,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 			free(funcData);
 			if (ss) free(ss);
 			if (u0) free(u0);
+			free(gi);
 			ss = 0;
 			u0 = 0;
 			return 0;
@@ -638,6 +673,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 					free(funcData);
 					if (ss) free(ss);
 					if (u0) free(u0);
+					free(gi);
 					ss = 0; 
 					u0 = 0;
 					return 0;
@@ -659,6 +695,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 	}
   
 	if (u0) free(u0);
+	free(gi);
 	CVodeFree(&cvode_mem);  /* Free the integrator memory */
 	N_VDestroy_Serial(u);
 	free(funcData);

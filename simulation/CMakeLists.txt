@@ -2,23 +2,16 @@
 # Wrapper functions for Sundials CVODE
 #---------------------------------------------------------------------------
 
-FILE( GLOB CVODE_SRC ${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/cvode/*.c )
-FILE( GLOB NVECSER_SRC ${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/nvec_ser/*.c )
-FILE( GLOB SUNDIALS_SRC ${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/sundials/*.c )
-
 ADD_DEFINITIONS(-DNO_FPRINTF_OUTPUT)
 ADD_LIBRARY( ode
   STATIC
-  ${CVODE_SRC}
-  ${SUNDIALS_SRC}
-  ${NVECSER_SRC}
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/eigen.c
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/cvodesim.c
   ${NETWORKEVOLUTION_SOURCE_DIR}/external/optim/mat.c
   ${NETWORKEVOLUTION_SOURCE_DIR}/external/optim/neldermead.c
 )
 
-TARGET_LINK_LIBRARIES( ode ode lapack )
+TARGET_LINK_LIBRARIES( ode ode lapack sundials_cvode )
 
 SET_TARGET_PROPERTIES(ode PROPERTIES LINKER_LANGUAGE C)
 

@@ -21,14 +21,6 @@ IF (UNIX AND NOT APPLE)
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 ENDIF(UNIX AND NOT APPLE)
 
-#---------------------------------------------------------------------------
-# Python
-#---------------------------------------------------------------------------
-FIND_PACKAGE( PythonLibs )
-
-IF( NOT PYTHONLIBS_FOUND )
-  MESSAGE( SEND_ERROR "TinkerCell requires python to be installed" )
-ENDIF( NOT PYTHONLIBS_FOUND )
 
 #---------------------------------------------------------------------------
 # Doxygen documentation
@@ -51,20 +43,16 @@ ENDIF( DOXYGENDOC )
 #---------------------------------------------------------------------------
 
 INCLUDE_DIRECTORIES( BEFORE
-	${PYTHON_INCLUDE_PATH}
-    ${NETWORKEVOLUTION_SOURCE_DIR}/external/
-	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode
-	${NETWORKEVOLUTION_SOURCE_DIR}/external/optim/
+    ${NETWORKEVOLUTION_SOURCE_DIR}/external
+	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode260
+	${NETWORKEVOLUTION_SOURCE_DIR}/external/optim
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/lapack/INCLUDE
-	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/
-	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/cvode
-	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/nvec_ser
-	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode_src/sundials
+	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode260/include
+	${NETWORKEVOLUTION_BINARY_DIR}/external/cvode260/include
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/antimony/src
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/sbml
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/muparser
-	${NETWORKEVOLUTION_SOURCE_DIR}/simulation
-	
+	${NETWORKEVOLUTION_SOURCE_DIR}/simulation	
 	${NETWORKEVOLUTION_SOURCE_DIR}/GA
 	${NETWORKEVOLUTION_SOURCE_DIR}/galib
 	${NETWORKEVOLUTION_SOURCE_DIR}/galib/ga
@@ -76,11 +64,11 @@ INCLUDE_DIRECTORIES( BEFORE
 	${NETWORKEVOLUTION_SOURCE_DIR}/bin
 	${NETWORKEVOLUTION_SOURCE_DIR}/GUI
 )
-LINK_DIRECTORIES(
-	${NETWORKEVOLUTION_SOURCE_DIR}/lib
-	${NETWORKEVOLUTION_SOURCE_DIR}/bin
-	${NETWORKEVOLUTION_SOURCE_DIR}/GUI
-	${NETWORKEVOLUTION_SOURCE_DIR}
+LINK_DIRECTORIES( BEFORE
+	${NETWORKEVOLUTION_BINARY_DIR}/lib
+	${NETWORKEVOLUTION_BINARY_DIR}/bin
+	${NETWORKEVOLUTION_BINARY_DIR}/GUI
+	${NETWORKEVOLUTION_BINARY_DIR}
 )
 
 #---------------------------------------------------------------------------
@@ -121,6 +109,12 @@ SET(LIBRARY_OUTPUT_PATH
 OPTION( SWIG_BINDINGS "make SWIG bindings" OFF )
 
 IF (SWIG_BINDINGS)
+
+    #---------------------------------------------------------------------------
+    # Python
+    #---------------------------------------------------------------------------
+    FIND_PACKAGE( PythonLibs )
+    
     FIND_PACKAGE(SWIG)
     INCLUDE(${SWIG_USE_FILE})
 

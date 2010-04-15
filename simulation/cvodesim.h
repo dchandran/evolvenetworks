@@ -149,7 +149,7 @@ double* jacobian2(int m, int n, double * N, PropensityFunction f, double * point
  * \return array of values
  * \ingroup cvodewrapper
  */
-double* steadyState(int N, double * initialValues, ODEFunction function, void * params, double minerr, double maxtime, double delta);
+double* steadyState(int N, double * initialValues, ODEFunction function, void * params, double minerr, double maxtime, double delta, int numEvents, EventFunction * eventFunctions, ResponseFunction * responseFunctions);
 
 /*!
  * \brief Bring a system to steady state
@@ -164,7 +164,7 @@ double* steadyState(int N, double * initialValues, ODEFunction function, void * 
  * \return array of values
  * \ingroup cvodewrapper
  */
-double* steadyState2(int m, int n, double * N, PropensityFunction f, double * initialValues, void * params, double minerr, double maxtime, double delta);
+double* steadyState2(int m, int n, double * N, PropensityFunction f, double * initialValues, void * params, double minerr, double maxtime, double delta, int numEvents, EventFunction * eventFunctions, ResponseFunction * responseFunctions);
 
 /*!
  * \brief Find the rates of change after simulating for the given amount of time
