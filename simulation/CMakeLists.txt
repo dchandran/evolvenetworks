@@ -38,7 +38,9 @@ ADD_LIBRARY( sbml_sim
 TARGET_LINK_LIBRARIES( sbml_sim 
    sbml_sim 
    sbml 
-   ode 
+   ode
+   lapack
+   sundials_cvode
    ssa 
    muparser
 )

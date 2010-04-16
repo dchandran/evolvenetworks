@@ -206,7 +206,7 @@ vector<double> SBML_sim::steadyState() const
 	for (int i=0; i < variableValues.size(); ++i)
 		y0[i] = variableValues[i];
 	
-	double * y = steadyState2(n, reactionNames.size(), stoichiometryMatrix , &sbml_rates_function, y0, (void*)this, 1.0E-5, 10000.0, 1.0);
+	double * y = steadyState2(n, reactionNames.size(), stoichiometryMatrix , &sbml_rates_function, y0, (void*)this, 1.0E-5, 10000.0, 1.0, 0, 0, 0);
 	vector< double > res(n,0.0);
 	
 	if (y)
