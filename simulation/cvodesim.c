@@ -65,15 +65,13 @@ static int f(realtype t, N_Vector u, N_Vector udot, void * userFunc)
      opt == 2 means function allocates memory so check if returned
               NULL pointer */
 
-static int check_flag(void *flagvalue, char *funcname, int opt)
+static int check_flag(void *flagvalue, int opt)
 {
   int *errflag = (int*)flagvalue;
 
   /* Check if SUNDIALS function returned NULL pointer - no memory allocated */
 
   if (opt == 0 && flagvalue == NULL) {
-    //fprintf(stderr, "\nSUNDIALS_ERROR: %s() failed - returned NULL pointer\n\n",
-    //        funcname);
     return(1); }
 
   /* Check if flag < 0 */
@@ -81,15 +79,11 @@ static int check_flag(void *flagvalue, char *funcname, int opt)
   else if (opt == 1) {
     errflag = (int *) flagvalue;
     if (*errflag < 0) {
-       //fprintf(stderr, "\nSUNDIALS_ERROR: %s() failed with flag = %d\n\n",
-       //      funcname, *errflag);
       return(1); }}
 
   /* Check if function returned NULL pointer - no memory allocated */
 
   else if (opt == 2 && flagvalue == NULL) {
-      //fprintf(stderr, "\nMEMORY_ERROR: %s() failed - returned NULL pointer\n\n",
-      //        funcname);
     return(1); }
 
   return(0);
@@ -318,7 +312,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 	if (N < 1) { return (0); }  /*no variables in the system*/
 
 	u = N_VNew_Serial(N);  /* Allocate u vector */
-	if(check_flag((void*)u, "N_VNew_Serial", 0)) { return(0); }
+	if(check_flag((void*)u, 0)) { return(0); }
 
 	/* Initialize u vector */
 
@@ -336,10 +330,10 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 	/* setup CVODE */
 
 	cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
-	if (check_flag((void *)cvode_mem, "CVodeCreate", 0)) return(0);
+	if (check_flag((void *)cvode_mem, 0)) return(0);
 
 	flag = CVodeInit(cvode_mem, f, startTime, u);
-	if (check_flag(&flag, "CVodeMalloc", 1))
+	if (check_flag(&flag, 1))
 	{
 		CVodeFree(&cvode_mem);
 		N_VDestroy_Serial(u);
@@ -356,8 +350,8 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 	(*funcData).eventFunctions = eventFunctions;
 	(*funcData).responseFunctions = responseFunctions;
 
-	flag = CVodeSetFdata(cvode_mem, funcData);
-	if(check_flag(&flag, "CVodeSetFdata", 1))
+	flag = CVodeSetUserData(cvode_mem, funcData);
+	if(check_flag(&flag, 1))
 	{
 		CVodeFree(&cvode_mem);
 		N_VDestroy_Serial(u);
@@ -367,7 +361,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 	}
 
 	flag = CVBand(cvode_mem, N, 0, N-1);
-	if (check_flag(&flag, "CVBand", 1))
+	if (check_flag(&flag, 1))
 	{
 		CVodeFree(&cvode_mem);
 		N_VDestroy_Serial(u);
@@ -441,7 +435,7 @@ double* ODEsim(int N, double* initialValues, void (*odefnc)(double,double*,doubl
 			flag = CV_SUCCESS;
 		}
 		
-		if (check_flag(&flag, "CVode", 1))
+		if (check_flag(&flag,  1))
 		{
 		   CVodeFree(&cvode_mem);
 		   N_VDestroy_Serial(u);
@@ -541,7 +535,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 	if (N < 1) { return (0); }  /*no variables in the system*/
 
 	u = N_VNew_Serial(N);  /* Allocate u vector */
-	if(check_flag((void*)u, "N_VNew_Serial", 0)) { return(0); }
+	if(check_flag((void*)u, 0)) { return(0); }
 
 	/* Initialize u vector */
 
@@ -565,10 +559,10 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 	/* setup CVODE */
 
 	cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
-	if (check_flag((void *)cvode_mem, "CVodeCreate", 0)) return(0);
+	if (check_flag((void *)cvode_mem, 0)) return(0);
 
 	flag = CVodeInit(cvode_mem, f, startTime, u);
-	if (check_flag(&flag, "CVodeMalloc", 1))
+	if (check_flag(&flag, 1))
 	{
 		CVodeFree(&cvode_mem);
 		N_VDestroy_Serial(u);
@@ -585,8 +579,8 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 	(*funcData).eventFunctions = eventFunctions;
 	(*funcData).responseFunctions = responseFunctions;
 
-	flag = CVodeSetFdata(cvode_mem, funcData);
-	if(check_flag(&flag, "CVodeSetFdata", 1))
+	flag = CVodeSetUserData(cvode_mem, funcData);
+	if(check_flag(&flag, 1))
 	{
 		CVodeFree(&cvode_mem);
 		N_VDestroy_Serial(u);
@@ -596,7 +590,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 	}
 
 	flag = CVBand(cvode_mem, N, 0, N-1);
-	if (check_flag(&flag, "CVBand", 1))
+	if (check_flag(&flag, 1))
 	{
 		CVodeFree(&cvode_mem);
 		N_VDestroy_Serial(u);
@@ -645,7 +639,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 			flag = CV_SUCCESS;
 		}
 		
-		if (check_flag(&flag, "CVode", 1))
+		if (check_flag(&flag, 1))
 		{
 			CVodeFree(&cvode_mem);
 			N_VDestroy_Serial(u);

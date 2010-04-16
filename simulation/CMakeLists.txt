@@ -11,7 +11,7 @@ ADD_LIBRARY( ode
   ${NETWORKEVOLUTION_SOURCE_DIR}/external/optim/neldermead.c
 )
 
-TARGET_LINK_LIBRARIES( ode ode lapack sundials_cvode )
+TARGET_LINK_LIBRARIES( ode ode lapack sundials_cvode_static sundials_nvecserial_static)
 
 SET_TARGET_PROPERTIES(ode PROPERTIES LINKER_LANGUAGE C)
 
@@ -39,8 +39,6 @@ TARGET_LINK_LIBRARIES( sbml_sim
    sbml_sim 
    sbml 
    ode
-   lapack
-   sundials_cvode
    ssa 
    muparser
 )
