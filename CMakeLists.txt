@@ -21,7 +21,6 @@ IF (UNIX AND NOT APPLE)
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
 ENDIF(UNIX AND NOT APPLE)
 
-
 #---------------------------------------------------------------------------
 # Doxygen documentation
 #---------------------------------------------------------------------------
@@ -70,6 +69,15 @@ LINK_DIRECTORIES( BEFORE
 	${NETWORKEVOLUTION_BINARY_DIR}/GUI
 	${NETWORKEVOLUTION_BINARY_DIR}
 )
+
+#----------------
+# BOOST library
+#----------------
+
+FIND_PACKAGE( Boost 1.41 COMPONENTS threads regex)
+SET(Boost_USE_STATIC_LIBS   ON)
+SET(Boost_USE_MULTITHREADED ON)
+INCLUDE_DIRECTORIES ( ${Boost_INCLUDE_DIRS} )
 
 #---------------------------------------------------------------------------
 #---------------------------------------------------------------------------
