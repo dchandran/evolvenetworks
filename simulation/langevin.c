@@ -5,7 +5,7 @@ double rnorm()
 	return (sqrt(-2.0*log( mtrand() )) *cos (2.0*3.14159* mtrand() ));
 }
 
-double * Langevin(int n, int m, double * N, PropensityFunction propensity, double * inits, double endTime, double dt, void * params)
+double * Langevin(int n, int m, double * N, PropensityFunction propensity, double * inits, double endTime, double dt, void * params, int numEvents, EventFunction eventFunction, ResponseFunction responseFunction)
 {
 	double t = 0;	
 	double * array = malloc( (1 + endTime/dt) * (1+n) * sizeof(double) );
@@ -20,6 +20,10 @@ double * Langevin(int n, int m, double * N, PropensityFunction propensity, doubl
 	
 	while (t < endTime)
 	{
+		for (i=0; i < numEvents; ++i)               //events
+			if (eventFunction(i,t,y,params) != 0)
+				responseFunction(i,y,params);
+
 		//store into output matrix
 		getValue(array,1+n, k, 0) = t;
 		for (i=0; i < n; ++i)

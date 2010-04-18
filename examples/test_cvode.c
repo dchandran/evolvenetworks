@@ -14,32 +14,32 @@ void myODE(double time, double * y, double * dydt, void * myData)
 	dydt[1] =  p->b * y[0];
 }
 
-int event1(double time, double * y, void * myData)
+int events(int i, double time, double * y, void * myData)
 {
 	MyStruct * p = (MyStruct*)myData;
-	return (time >= 10.0 && time < 50.0 && p->a < 1.0);
+
+	if (i == 0)
+		return (time >= 10.0 && time < 50.0 && p->a < 1.0);
+	
+	if (i == 1)
+		return (time > 80.0 && p->a > 0.0);
 }
 
-int event2(double time, double * y, void * myData)
-{
-	MyStruct * p = (MyStruct*)myData;
-	return (time > 80.0 && p->a > 0.0);
-}
-
-void response1(double * y, void * myData)
+void responses(int i, double * y, void * myData)
 {
 	MyStruct * p = (MyStruct*)myData;
 	
-	p->a = 1.0;
-	p->b = 1.0;		
-}
+	if (i==0)
+	{
+		p->a = 1.0;
+		p->b = 1.0;		
+	}
 
-void response2(double * y, void * myData)
-{
-	MyStruct * p = (MyStruct*)myData;
-
-	p->a = 0.0;
-	p->b = 0.0;
+	if (i==1)
+	{
+		p->a = 0.0;
+		p->b = 0.0;
+	}
 }
 
 int main()
@@ -54,9 +54,6 @@ int main()
 	double startTime = 0.0, endTime = 100.0, stepSize = 0.1;
 	
 	MyStruct p = { 0.0, 0.0 };
-	
-	EventFunction events[] = { &event1, &event2 };
-	ResponseFunction responses[] = { &response1, &response2 };
 	
 	double * y = ODEsim( numVars,  initialValue, myODE, startTime, endTime, stepSize, (void*)(&p), numEvents, events, responses); 
 

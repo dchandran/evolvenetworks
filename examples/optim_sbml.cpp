@@ -3,7 +3,6 @@
 #include <time.h>
 #include "GASimpleGA.h"
 #include "GASStateGA.h"
-#include "GARealGenome.h"
 #include "GA1DArrayGenome.h"
 #include "sbml_sim.h"
 extern "C"
@@ -13,6 +12,7 @@ extern "C"
 }
 
 using namespace std;
+typedef GA1DArrayGenome<float> RealGenome;
 
 vector< vector<double> > actual;
 SBML_sim * model;
@@ -21,16 +21,16 @@ double dt = 0.1;
 
 void initializeGenome(GAGenome & x)
 {
-	GARealGenome & g = (GARealGenome &)x;
+	RealGenome & g = (RealGenome &)x;
 	for (int i=0; i < g.size(); ++i)
-		g.gene(i,0) = 1.0;//mtrand() * pow(10.0, 5.0*mtrand());
+		g.gene(i,0) = mtrand() * pow(10.0, 2.0*mtrand());
 }
 
 
 float EuclideanDistance(const GAGenome & c1, const GAGenome & c2)
 {
-  const GARealGenome & a = (GARealGenome &)c1;
-  const GARealGenome & b = (GARealGenome &)c2;
+  const RealGenome & a = (RealGenome &)c1;
+  const RealGenome & b = (RealGenome &)c2;
 
   float x=0.0;
   for(int i=0; i < b.length() && i < a.length(); ++i)
@@ -67,19 +67,7 @@ double diff(int n, double * p)
 
 float Objective1(GAGenome & x)
 {
-	GARealGenome & g = (GARealGenome &)x;
-/*
-	
-	double * p = new double[g.size()];
-	for (int i=0; i < g.size(); ++i) p[i] = g.gene(i);
-	
-	double fopt;
-	
-	NelderMeadSimplexMethod(g.size(), diff , p , 10.0Z , &fopt, 1000, 1E-2);
-
-	delete p;	
-	return (float)fopt;
-*/
+	RealGenome & g = (RealGenome &)x;
 	
 	vector<double> params(g.size(),0);
 	for (int i=0; i < g.size(); ++i) params[i] = g.gene(i);
@@ -151,9 +139,7 @@ int main()
 	
 //	NelderMeadSimplexMethod(sim.getVariableNames().size(), diff , x0 , 10 , &fopt, 10000, 1E-3);
 	
-	float a[] = {1.0};
-	GARealAlleleSet allele1(1,a);
-	GARealGenome genome( numParams, allele1, &Objective1);
+	RealGenome genome( numParams, &Objective1);
 	genome.initializer(&initializeGenome);
 	GASteadyStateGA ga(genome);
 
@@ -180,7 +166,7 @@ int main()
 	for (int i=0; i < 1000; ++i)
 	{
 		pop = ga.population();
-		GARealGenome & g = (GARealGenome &)(pop.best());
+		RealGenome & g = (RealGenome &)(pop.best());
 		cout << g.score() << endl;
 		ga.step();
 	}
@@ -192,13 +178,13 @@ int main()
 	
 	for (int i=0; i < pop.size(); ++i)
 	{
-		GARealGenome & g = (GARealGenome &)(pop.individual(i));
+		RealGenome & g = (RealGenome &)(pop.individual(i));
 		for (int j=0; j < g.size(); ++j)
 			fprintf(file4, "%lf\t", g.gene(j));
 		fprintf(file4,"%lf\n", g.score());
 	}
 	
-	GARealGenome & g = (GARealGenome &)(pop.best());
+	RealGenome & g = (RealGenome &)(pop.best());
 	cout << g.score() << endl;
 		
 	sim.setParameters(params);	
@@ -216,7 +202,7 @@ int main()
 		}
 	}
 	
-	g = (GARealGenome &)(pop.worst());
+	g = (RealGenome &)(pop.worst());
 	cout << g.score() << endl;
 		
 	sim.setParameters(params);	
