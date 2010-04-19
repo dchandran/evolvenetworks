@@ -41,6 +41,7 @@ TARGET_LINK_LIBRARIES( sbml_sim
    ode
    ssa 
    muparser
+   ${Boost_REGEX_LIBRARY}
 )
 
 

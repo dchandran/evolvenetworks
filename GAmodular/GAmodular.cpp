@@ -1,175 +1,428 @@
-#include <iostream>
-#include <vector>
-#include <math>
-#include "sbml_sim.h"
-extern "C"
-{
-	#include "mtrand.h"
-	#include "opt.h"
-}
+#include "GAmodular.h"
 
 using namespace std;
 
-class ModularGA
+/*******************
+  Helper functions
+********************/
+int partitionLT(vector<Genome*>& list, int left,int right,int pivotIndex)
 {
-private:
-
-	struct Genome
+	Genome * pivotValue = list[pivotIndex];
+	Genome * temp = list[pivotIndex];
+	list[pivotIndex] = list[right];
+	list[right] = temp;
+	int storeIndex = left;
+	
+	for (int i=left; i < right; ++i)
 	{
-		Genome * parent1;
-		Genome * parent2;
-
-		SBML_sim * model;
-		vector<double> params;
-		double fitness;
-		double score;
-
-		Genome(): 
-			model(0), 
-			parent1(0), 
-			parent2(0) 
-		{}
-
-		Genome(SBML_sim * m): 
-			model(*m), 
-			parent1(0), 
-			parent2(0) 
+		if (list[i]->fitness < pivotValue->fitness)
 		{
-			params.resize(model->getParameterValues().size());
-			for (int i=0; i < params.size(); ++i)
-				params[i] = mtrand() * pow(10, mtrand() * 5);
-		}
-
-		Genome(const Genome & g) : 
-			model(new SBML_sim(*g.model)), 
-			params(g.params), 
-			parent1(0), 
-			parent2(0) 	
-			{}
-
-		~Genome()
-		{
-			delete model;
-		}
-	};
-
-	Genome * crossover(Genome * parent1, Genome * parent2)
-	{
-		Genome * child = new Genome(*parent1);
-		child->parent1 = parent1;
-		child->parent2 = parent2;
-
-		int n = parent1->params.size();
-		int i = (int)(mtrand() * n);
-
-		for (; i < n; ++i)
-			child->params[i] = parent2->params[i];
-
-		return child;
-	}
-
-	Genome * mutate(Genome * original, double pMut)
-	{
-		Genome duplicate = new Genome(*original);
-
-		int n = original->params.size();
-		int k = (int)(pMut * n);
-
-		for (int i=0; i < k; ++i)
-			duplicate->params[ (int)(mtrand() * n) ] *= (mtrand() * 2.0);
-
-		return duplicate;
-	}
-
-	double distance(Genome * g1, Genome * g2)
-	{
-		double d = 0.0, sum = 0.0;
-		for (int i=0; i < g1->params.size(); ++i)
-		{
-			d = (g1->params[i] - g2->params[i]);
-			sum += d*d;
-		}
-		return sqrt(sum);
-	}
-
-	vector<Genome*> population;
-
-	vector< vector<double> > dists;
-
-	double (*calcScore)(SBML_sim*);
-
-public:
-
-	void objective( double (*f)(SBML_sim*) )
-	{
-		calcScore = f;
-	}
-
-	void run(SBML_sim * model, int populationSz, int generations = 100)
-	{
-		dists.resize(populationSz);
-		for (int i=0; i < populationSz; ++i)
-		{
-			Genome * g = new Genome(model);
-			dists[i].resize(populationSz);
+			temp = list[storeIndex];
+			list[storeIndex] = list[i];
+			list[i] = temp;
+			storeIndex = storeIndex + 1;
 		}
 	}
+	
+	temp = list[right];
+	list[right] = list[storeIndex];  // Move pivot to its final place
+	list[storeIndex] = temp;
+	return storeIndex;
+}
 
-	void oneStep()
+int partitionGT(vector<Genome*>& list, int left,int right,int pivotIndex)
+{
+	Genome * pivotValue = list[pivotIndex];
+	Genome * temp = list[pivotIndex];
+	list[pivotIndex] = list[right];
+	list[right] = temp;
+	int storeIndex = left;
+	
+	for (int i=left; i < right; ++i)
 	{
-		//score
-
-		double max_score, min_score, score;
-		int i;
-
-		for (i=0; i < population.size(); ++i)
+		if (list[i]->fitness < pivotValue->fitness)
 		{
-			population[i]->model->setParameters( population[i]->params );
-			population[i]->score = score = calcScore(population[i]->model);
+			temp = list[storeIndex];
+			list[storeIndex] = list[i];
+			list[i] = temp;
+			storeIndex = storeIndex + 1;
+		}
+	}
+	
+	temp = list[right];
+	list[right] = list[storeIndex];  // Move pivot to its final place
+	list[storeIndex] = temp;
+	return storeIndex;
+}
 
-			if (i==0)
+void findSmallestK(vector<Genome*>& list, int left,int right,int k)
+{
+	while (right > left)
+	{
+		int pivotIndex = (int)((right + left)/2);
+		int pivotNewIndex = partitionLT(list, left, right, pivotIndex);
+		if (pivotNewIndex > k)
+			right = pivotNewIndex-1;
+		else
+		if (pivotNewIndex < k)
+		{
+			left = pivotNewIndex+1; 
+			k = k-pivotNewIndex;
+		}
+	}
+}
+
+void findLargestK(vector<Genome*>& list, int left,int right,int k)
+{
+	while (right > left)
+	{
+		int pivotIndex = (int)((right + left)/2);
+		int pivotNewIndex = partitionGT(list, left, right, pivotIndex);
+		if (pivotNewIndex > k)
+			right = pivotNewIndex-1;
+		else
+		if (pivotNewIndex < k)
+		{
+			left = pivotNewIndex+1; 
+			k = k-pivotNewIndex;
+		}
+	}
+}
+
+/********************
+    class Genome
+*********************/
+
+Genome::Genome(): 
+	model(0), 
+	parent1(0), 
+	parent2(0),
+	fitness(0),
+	score(0)
+{}
+
+Genome::Genome(const Genome & g) : 
+	model(0), 
+	params(g.params), 
+	parent1(g.parent1),
+	parent2(g.parent2),
+	fitness(g.fitness),
+	score(g.score)
+{
+	if (g.model)
+		model = new SBML_sim(*g.model);
+}
+
+Genome::~Genome()
+{
+	delete model;
+}
+
+Genome * Genome::clone() const
+{
+	return new Genome(*this);
+}
+
+Genome * Genome::crossover(Genome * parent2, double pCross) const
+{
+	Genome * child = parent1->clone();
+	child->parent1 = this;
+	child->parent2 = parent2;
+
+	int n = params.size();
+	int i = n - (int)(pCross * mtrand() * n);
+
+	for (; i < n; ++i)
+		child->params[i] = parent2->params[i];
+
+	return child;
+}
+
+void Genome::mutate(double pMut)
+{
+	int n = params.size();
+	int k = (int)(pMut * n);
+
+	for (int i=0; i < k; ++i)
+		params[ (int)(mtrand() * n) ] *= (mtrand() * 2.0);
+}
+
+double Genome::distance(Genome * g) const
+{
+	double d = 0.0, sum = 0.0;
+	for (int i=0; i < params.size(); ++i)
+	{
+		d = (params[i] - g->params[i]);
+		sum += d*d;
+	}
+	return sqrt(sum);
+}
+
+/********************
+   class ModularGA
+*********************/
+
+ModularGA::ModularGA(): 
+	_calcScore(0), 
+	_callback(0), 
+	_selectionMethod(RouletteWheel), 
+	_popSz(1000), 
+	_numGen(100), 
+	_neighborhood(0.25), 
+	_objectiveType(Maximize),
+	_selectionRate(0.5),
+	_pMut(0.2),
+	_pCross(0.5)
+{}
+
+void ModularGA::setPopulationSize(int sz)
+{
+	if (sz < 1) 
+		_popSz = 1;
+	else
+		_popSz = sz;
+
+	_distMatrix.resize(_popSz);
+	for (int i=0; i < _popSz; ++i)
+		_distMatrix[i].resize(_popSz);
+	
+	_population.resize(_popSz);
+}
+
+void ModularGA::setGenerations(int n)
+{
+	if (n > 0)
+		_numGen = n;
+}
+
+void ModularGA::setSelectionRate(double p)
+{
+	if (p < 1.0 && p > 0.0)
+		_selectionRate = p;
+}
+
+void ModularGA::setMutationRate(double p)
+{
+	if (p < 1.0 && p > 0.0)
+		_pMut = p;
+}
+
+void ModularGA::setCrossoverRate(double p)
+{
+	if (p < 1.0 && p > 0.0)
+		_pCross = p;
+}
+
+
+void ModularGA::setObjective( double (*f)(Genome*) , ObjectiveType type )
+{
+	_objectiveType = type;
+	_calcScore = f;
+}
+
+void ModularGA::setCallback( bool (*f)() )
+{
+	_callback = f;
+}
+
+vector<Genome*> ModularGA::population() const
+{
+	return _population;
+}
+
+double ModularGA::evolve()
+{
+	for (int i=0; i < _numGen; ++i)
+	{
+		oneStep();
+		if (_callback && !_callback())
+			break;
+	}
+	
+	double bestScore = 0.0;
+	for (int i=0; i < _popSz; ++i)
+	{
+		if (i==0)
+			bestScore = _population[i]->score;
+		else
+		{
+			if ((_objectiveType == Minimize && bestScore > _population[i]->score) ||
+				(_objectiveType == Maximize && bestScore < _population[i]->score))
+				
+				bestScore = _population[i]->score;
+		}		
+	}
+	return bestScore;
+}
+
+void ModularGA::oneStep()
+{
+	//score
+
+	double max_score, min_score, score, max_dist, min_dist, dist, range_score, range_dist;
+	int i,j,k,n;
+
+	for (i=0; i < _population.size(); ++i)
+	{
+		_population[i]->model->setParameters( _population[i]->params );
+		_population[i]->score = score = _calcScore( _population[i]);
+
+		if (i==0)
+		{
+			max_score = min_score = score;
+		}
+		else
+		{
+			if (score > max_score)
+				max_score = score;
+				
+			if (score < min_score)
+				min_score = score;
+		}
+	}
+	
+	range_score = max_score - min_score;
+	if (range_score <= 0) range_score = 1.0;
+
+	//distances
+	
+	for (i=0; i < (_popSz-1); ++i)
+	{
+		for (j=(i+1); j < _popSz; ++j)
+		{
+			dist = _distMatrix[j][i] = _distMatrix[i][j] = _population[i]->distance(_population[j]);
+
+			if (i==0 && j == 0)
 			{
-				max_score = min_score = score;
+				max_dist = min_dist = dist;
 			}
 			else
 			{
-				if (score > max_score)
-					max_score = score;
-				if (score < min_score)
-					min_score = score;
+				if (dist > max_dist)
+					max_dist = dist;
+				if (dist < min_dist)
+					min_dist = dist;
 			}
 		}
+		_distMatrix[i][i] = 0.0;
+	}
+	_distMatrix[i][i] = 0.0;
+	
+	range_dist = max_dist - min_dist;
+	if (range_dist <= 0) range_dist = 1.0;
+
+	//compute fitness
+	
+	double sum_dist = 0.0, 
+		   sum_score = 0.0;
+	
+	for (i=0; i < _popSz; ++i)
+	{
+		sum_dist = 1.0;
 		
-		double range = max_score - min_score;
-		if (range <= 0) range = 1.0;
-
-		//fitness (crowding)
-		double max_dist, min_dist, dist;
-		for (i=0; i < (population.size()-1); ++i)
+		for (j=0; j < _popSz; ++j)
 		{
-			for (int j=(i+1); j < population.size(); ++j)
+			dist = (_distMatrix[i][j] - min_dist)/range_dist;
+			if (dist < _neighborhood)
 			{
-				dist = dists[j][i] = dists[i][j] = distance(population[i],population[j]);
-				if (i==0 && j == 0)
-				{
-					max_dist = min_dist = dist;
-				}
-				else
-				{
-					if (dist > max_dist)
-						max_dist = dist;
-					if (dist < min_dist)
-						min_dist = dist;
-				}
+				sum_dist += 1.0 - dist/_neighborhood;
 			}
-			dists[i][i] = 0.0;
 		}
-		dists[i][i] = 0.0;
-
-		for (i=0; i < population.size(); ++i)
+	
+		_population[i]->score =  ((_population[i]->score - min_score)/range_score)/(sum_dist);
+		sum_score += _population[i]->score;
+	}
+	
+	//select parents
+	
+	vector<Genome*> newPopulation;
+	vector<bool> isSelected;
+	
+	newPopulation.resize(_popSz);
+	isSelected.resize(_popSz);
+	
+	for (i=0; i < _popSz; ++i)
+		isSelected[i] = false;
+	
+	n = (int)(_selectionRate * _popSz);
+	
+	if (_selectionMethod == RouletteWheel)
+	{
+		double r, sum;
+		
+		for (i=0; i < n; ++i)
 		{
-
+			r = mtrand();
+			sum = 0.0;
+			
+			for (j=0; j < _popSz; ++j)
+			{
+				if (_objectiveType == Minimize)
+					sum += (1.0 - _population[j]->score/sum_score);
+				else
+					sum += _population[j]->score/sum_score;
+				if (r < sum)
+					break;
+			}
+			
+			newPopulation[i] = _population[j];
+			isSelected[j] = true;
 		}
 	}
-};
+	else
+	if (_selectionMethod == Tournament)
+	{
+		double r1, r2;
+		
+		for (i=0; i < n; ++i)
+		{
+			r1 = (int)(mtrand() * _popSz);
+			r2 = (int)(mtrand() * _popSz);
+			
+			if (_objectiveType == Minimize && _population[r1]->score < _population[r2]->score)
+			{
+				newPopulation[i] = _population[r1];
+				isSelected[r1] = true;
+			}
+			else
+			{
+				newPopulation[i] = _population[r2];
+				isSelected[r2] = true;
+			}
+		}
+	}
+	else
+	if (_selectionMethod == Elitism)
+	{
+		if (_objectiveType == Minimize)
+			findSmallestK(_population, 0, _popSz, n);
+		else
+			findLargestK(_population, 0, _popSz, n);
+		for (i=0; i < n; ++i)
+		{
+			newPopulation[i] = _population[i];
+			isSelected[i] = true;
+		}
+	}
+	
+	//generate children
+	for (i=n; i < _popSz; ++i)
+	{
+		j = (int)(mtrand() * n);
+		k = (int)(mtrand() * n);
+		newPopulation[i] = newPopulation[j]->crossover(newPopulation[k]);
+	}
+	
+	//mutate population
+	for (i=0; i < n; ++i)
+		newPopulation[i]->mutate(_pMut);
+	
+	//remove old population
+	for (i=0; i < _popSz; ++i)
+		if (!isSelected[i])
+			delete _population[i];
+
+	//update
+	_population = newPopulation;	
+}
 

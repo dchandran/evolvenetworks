@@ -92,7 +92,7 @@ endif(COMMAND cmake_policy)
 
 ADD_SUBDIRECTORY( external )
 ADD_SUBDIRECTORY( simulation )
-ADD_SUBDIRECTORY( GA )
+ADD_SUBDIRECTORY( GAmodular )
 ADD_SUBDIRECTORY( galib )
 ADD_SUBDIRECTORY( parameters )
 ADD_SUBDIRECTORY( loops )

@@ -8,3 +8,10 @@ ADD_LIBRARY( GAmodular
   STATIC
   ${GAMODULAR_FILES}
 )
+
+TARGET_LINK_LIBRARIES( GAmodular
+   GAmodular
+   sbml_sim
+   ${Boost_REGEX_LIBRARY}
+#   ${Boost_THREADS_LIBRARY}
+)
