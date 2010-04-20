@@ -12,6 +12,5 @@ ADD_LIBRARY( GAmodular
 TARGET_LINK_LIBRARIES( GAmodular
    GAmodular
    sbml_sim
-   ${Boost_REGEX_LIBRARY}
-#   ${Boost_THREADS_LIBRARY}
+   boost_thread-mt-static
 )

@@ -151,9 +151,9 @@ int isgood(double * p)
 	assignParameters(p);
 	TCinitialize();
 	
-	//y = ODEsim2(TCvars, TCreactions, TCstoic, &TCpropensity, TCinit, 0, 100, 0.1, 0);
+	//y = ODEsim2(TCvars, TCreactions, TCstoic, &TCpropensity, TCinit, 0, 100, 0.1, 0,0,0,0);
 	//sz = 1000;
-	y = SSA(TCvars, TCreactions, TCstoic, &TCpropensity, TCinit, 0, 100, 100000, &sz, 0) ;
+	y = SSA(TCvars, TCreactions, TCstoic, &TCpropensity, TCinit, 0, 100, 100000, &sz, 0,0,0,0) ;
 	if (y)
 	{
 		mu = 0.0;

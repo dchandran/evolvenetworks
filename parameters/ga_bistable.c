@@ -175,7 +175,7 @@ static double * regularSteadyState(Parameters * p, double * iv)
        p->alphas[i] = 1.0;
    }
 
-   ss = steadyState(N,iv,ODE_FNC,(void*)p,SS_MIN_ERROR,SS_MAX_TIME,SS_MIN_DT);
+   ss = steadyState(N,iv,ODE_FNC,(void*)p,SS_MIN_ERROR,SS_MAX_TIME,SS_MIN_DT,0,0,0);
    
    for (i=0; i < N; ++i)
        p->alphas[i] = alphas[i];
@@ -186,7 +186,7 @@ static double * regularSteadyState(Parameters * p, double * iv)
 
 static double * unstableSteadyState(Parameters * p, double * iv)
 {
-   double * ss = steadyState(p->numVars,iv,ODE_FNC,(void*)p,SS_MIN_ERROR,SS_MAX_TIME,SS_MIN_DT);
+   double * ss = steadyState(p->numVars,iv,ODE_FNC,(void*)p,SS_MIN_ERROR,SS_MAX_TIME,SS_MIN_DT,0,0,0);
    return ss;
 }
 

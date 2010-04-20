@@ -71,14 +71,6 @@ LINK_DIRECTORIES( BEFORE
 	${NETWORKEVOLUTION_BINARY_DIR}
 )
 
-#----------------
-# BOOST library
-#----------------
-
-FIND_PACKAGE( Boost 1.41 COMPONENTS threads regex)
-SET(Boost_USE_STATIC_LIBS   ON)
-SET(Boost_USE_MULTITHREADED ON)
-INCLUDE_DIRECTORIES ( ${Boost_INCLUDE_DIRS} )
 
 #---------------------------------------------------------------------------
 #---------------------------------------------------------------------------
