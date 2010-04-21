@@ -511,7 +511,7 @@ double* jacobian(int N, double * point,  void (*odefnc)(double,double*,double*,v
  */
 double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*,double*,void*), void * params, double maxerr, double maxtime, double delta, int numEvents, EventFunction eventFunctions, ResponseFunction responseFunctions)
 {
-	double t0, t, tout, startTime, endTime, stepSize, reltol, abstol, err, temp, * ss;
+	double t0, t, tout, stepSize, reltol, abstol, err, temp, * ss;
 	void * cvode_mem = 0;
 	N_Vector u;
 	int flag, i, j;
@@ -521,11 +521,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 	
 	t = 0.0;
 	tout = 0.0;
-	
-	if (startTime < 0) startTime = 0;
-	if (endTime < startTime) { return 0; }
-
-	if ( (2*stepSize) > (endTime-startTime) ) stepSize = (endTime - startTime)/2.0;
+	stepSize = delta/10.0;
 
 	/*setup tolerance*/
 
@@ -561,12 +557,13 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 	cvode_mem = CVodeCreate(CV_BDF, CV_NEWTON);
 	if (check_flag((void *)cvode_mem, 0)) return(0);
 
-	flag = CVodeInit(cvode_mem, f, startTime, u);
+	flag = CVodeInit(cvode_mem, f, t, u);
 	if (check_flag(&flag, 1))
 	{
 		CVodeFree(&cvode_mem);
 		N_VDestroy_Serial(u);
 		if (ss) free(ss);
+		if (u0) free(u0);
 		return(0);
 	}
 	
@@ -586,6 +583,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 		N_VDestroy_Serial(u);
 		free(funcData);
 		if (ss) free(ss);
+		if (u0) free(u0);
 		return(0);
 	}
 
@@ -596,6 +594,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 		N_VDestroy_Serial(u);
 		free(funcData);
 		if (ss) free(ss);
+		if (u0) free(u0);
 		return(0);
 	}
     
@@ -611,21 +610,22 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 			N_VDestroy_Serial(u);
 			free(funcData);
 			if (ss) free(ss);
+			if (u0) free(u0);
 			return(0);
 		}
 	}
 
 	/* setup for simulation */
 
-	t = startTime;
-	tout = startTime;
+	t = 0.0;
+	tout = t;
 	i = 0;
 	if (numEvents > 0)
 		gi = (int*)malloc(numEvents * sizeof(int));
 
 	/*main simulation loop*/
 	
-	while (tout <= endTime)
+	while (tout <= maxtime)
 	{
 		tout = t + stepSize;
 		flag = CVode(cvode_mem, tout, u, &t, CV_NORMAL);
@@ -635,7 +635,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 			CVodeGetRootInfo(cvode_mem, gi);
 			for (j=0; j < numEvents; ++j)
 				if (gi[j])
-					responseFunctions(j, u0,params); //event triggered response
+					responseFunctions(j, NV_DATA_S(u), params); //event triggered response
 			flag = CV_SUCCESS;
 		}
 		
@@ -680,7 +680,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 		   break;
 		}
 	}
-	if (tout >= endTime) //steady state not reached in the given amount of time
+	if (tout >= maxtime) //steady state not reached in the given amount of time
 	{
 		if (ss) free(ss);
 		if (u0) free(u0);
