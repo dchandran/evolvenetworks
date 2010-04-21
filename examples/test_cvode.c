@@ -74,6 +74,7 @@ int main()
 				printf("%lf\t",  y [ i*(numVars+1) + j ]);  //get i,j-th value
 			printf("\n");
 		}
+		free(y);
 	}
 	else
 	{
