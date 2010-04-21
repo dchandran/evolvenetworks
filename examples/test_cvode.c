@@ -14,6 +14,14 @@ void myODE(double time, double * y, double * dydt, void * myData)
 	dydt[1] =  p->b * y[0];
 }
 
+void myODE2(double time, double * y, double * dydt, void * myData)
+{
+	MyStruct * p = (MyStruct*)myData;
+	
+	dydt[0] = p->a * y[1] - p->b * y[0];
+	dydt[1] = p->b * y[0] - p->a * y[1];
+}
+
 int events(int i, double time, double * y, void * myData)
 {
 	MyStruct * p = (MyStruct*)myData;
@@ -49,13 +57,14 @@ int main()
 	int numVars = 2, 
 		numEvents = 2;
 
-	double initialValue[] = { 1.0, 0.5 };
+	double initialValue[] = { 100.0, 0.0 };
 
 	double startTime = 0.0, endTime = 100.0, stepSize = 0.1;
 	
-	MyStruct p = { 0.0, 0.0 };
+	MyStruct p = { 1.0, 1.0 };
 	
-	double * y = ODEsim( numVars,  initialValue, myODE, startTime, endTime, stepSize, (void*)(&p), numEvents, events, responses); 
+	/*
+	double * y = ODEsim( numVars,  initialValue, myODE, startTime, endTime, stepSize, (void*)(&p), numEvents, events, responses);
 
 	if (y)
 	{
@@ -70,7 +79,25 @@ int main()
 	else
 	{
 		printf("integration error\n");
-	}	
+	}*/
+	
+	double * ss;
+	
+	for (i=0; i < 10; ++i)
+	{
+		p.a = i;
+
+		ss = steadyState( numVars,  initialValue,  myODE2, (void*)(&p), 1.0E-4, 1000, 1 , 0 , 0, 0);
+		
+		if (ss)
+		{
+			for (j=0; j < numVars; ++j)
+				printf("%lf\t",  ss [j]);
+			printf("\n");
+			free(ss);
+		}
+	}
+	
 	return 0;
 }
 

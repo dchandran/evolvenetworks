@@ -533,13 +533,6 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 	u = N_VNew_Serial(N);  /* Allocate u vector */
 	if(check_flag((void*)u, 0)) { return(0); }
 
-	/* Initialize u vector */
-
-	udata = NV_DATA_S(u);
-
-	if (initialValues != NULL)
-		for (i=0; i < N; ++i)
-			udata[i] = initialValues[i];
 
 	/* allocate output vector */
 	ss = (double*) malloc (N * sizeof(double) );
@@ -550,7 +543,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 	u0 = (realtype*) malloc(N*sizeof(realtype));
 	if (initialValues != NULL)
 		for (i=0; i < N; ++i)
-			udata[i] = u0[i] = initialValues[i];
+			ss[i] = udata[i] = u0[i] = initialValues[i];
 
 	/* setup CVODE */
 
@@ -617,7 +610,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 
 	/* setup for simulation */
 
-	t = 0.0;
+	t = t0 = 0.0;
 	tout = t;
 	i = 0;
 	if (numEvents > 0)
@@ -635,7 +628,7 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 			CVodeGetRootInfo(cvode_mem, gi);
 			for (j=0; j < numEvents; ++j)
 				if (gi[j])
-					responseFunctions(j, NV_DATA_S(u), params); //event triggered response
+					responseFunctions(j, udata, params); //event triggered response
 			flag = CV_SUCCESS;
 		}
 		
@@ -651,16 +644,19 @@ double* steadyState(int N, double * initialValues, void (*odefnc)(double,double*
 			u0 = 0;
 			return 0;
 		}
+		
+		err = maxerr + 1.0;
+
 		if (ss && (tout - t0) >= delta)  //measure difference between y[t] - y[t-delta]
 		{
 			t0 = tout;
-			err = ( (NV_DATA_S(u))[0] - u0[0] )*( (NV_DATA_S(u))[0] - u0[0] );
+			err = 0.0;
 			for (j=0; j < N; ++j)
 			{
-				temp = ( (NV_DATA_S(u))[j] - u0[j] )*( (NV_DATA_S(u))[j] - u0[j] );
+				temp = ( udata[j] - u0[j] )*( udata[j] - u0[j] );
 				if (temp > err) err = temp;         //max value from all dx/dt
-				ss[j] = u0[j] = (NV_DATA_S(u))[j];  //next y points
-				if (ODE_POSITIVE_VALUES_ONLY && (NV_DATA_S(u))[j] < 0)
+				ss[j] = u0[j] = udata[j];  //next y points
+				if (ODE_POSITIVE_VALUES_ONLY && udata[j] < 0)
 				{
 					CVodeFree(&cvode_mem);
 					N_VDestroy_Serial(u);
