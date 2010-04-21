@@ -62,8 +62,7 @@ int main()
 	double startTime = 0.0, endTime = 100.0, stepSize = 0.1;
 	
 	MyStruct p = { 1.0, 1.0 };
-	
-	/*
+		
 	double * y = ODEsim( numVars,  initialValue, myODE, startTime, endTime, stepSize, (void*)(&p), numEvents, events, responses);
 
 	if (y)
@@ -79,13 +78,13 @@ int main()
 	else
 	{
 		printf("integration error\n");
-	}*/
-	
+	}
+	/*
 	double * ss;
 	
-	for (i=0; i < 10; ++i)
+	for (i=0; i < 100; ++i)
 	{
-		p.a = i;
+		p.a = i/10.0;
 
 		ss = steadyState( numVars,  initialValue,  myODE2, (void*)(&p), 1.0E-4, 1000, 1 , 0 , 0, 0);
 		
@@ -96,7 +95,7 @@ int main()
 			printf("\n");
 			free(ss);
 		}
-	}
+	}*/
 	
 	return 0;
 }
