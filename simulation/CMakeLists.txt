@@ -41,7 +41,9 @@ TARGET_LINK_LIBRARIES( sbml_sim
    ode
    ssa 
    muparser
+   galib
    boost_regex-mt-static
+   boost_thread-mt-static
 )
 
 

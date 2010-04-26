@@ -96,6 +96,13 @@ public:
 	*/
 	std::vector< double > getParameterValues() const;
 	
+	/*! \brief optimize the parameters to fit the given simulation data (uses genetic algorithm)
+	 * \param vector< vector<double> > the data, where data[0] is the vector of time
+	 * \param int max iterations
+	 * \return vector< vector<double> > a set of solutions
+	*/	
+	std::vector< std::vector< double> > optimize(const std::vector< std::vector<double> >& data , int iter=100);
+	
 private:
 
 	std::vector<std::string> reactionNames;

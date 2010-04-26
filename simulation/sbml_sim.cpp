@@ -1,5 +1,8 @@
-#include "sbml_sim.h"
 #include <iostream>
+#include <vector>
+#include "GASStateGA.h"
+#include "GA1DArrayGenome.h"
+#include "sbml_sim.h"
 
 using namespace std;
 
@@ -378,5 +381,114 @@ vector< double > SBML_sim::getRateValues() const
 vector< double > SBML_sim::getParameterValues() const
 {
 	return parameterValues;
+}
+
+/*****************************************************************
+      GENETIC ALGORITHM BASED OPTIMIZATION -- HELPER FUNCTIONS
+******************************************************************/
+
+typedef GA1DArrayGenome<float> RealGenome;
+
+void initializeGenome(GAGenome & x)
+{
+	RealGenome & g = (RealGenome &)x;
+	for (int i=0; i < g.size(); ++i)
+		g.gene(i,0) = mtrand() * pow(10.0, 3.0*mtrand());
+}
+
+float EuclideanDistance(const GAGenome & c1, const GAGenome & c2)
+{
+  const RealGenome & a = (RealGenome &)c1;
+  const RealGenome & b = (RealGenome &)c2;
+
+  float x=0.0;
+  for(int i=0; i < b.length() && i < a.length(); ++i)
+	  x += (a.gene(i) - b.gene(i))*(a.gene(i) - b.gene(i));
+
+  return (float)sqrt(x);
+}
+
+vector< vector<double> > actual;
+double end_time = 20.0;
+double dt = 0.1;
+
+float Objective(GAGenome & x)
+{
+	RealGenome & g = (RealGenome &)x;
+	
+	SBML_sim * model = (SBML_sim*)(g.geneticAlgorithm()->userData());
+	
+	vector<double> params(g.size(),0);
+	for (int i=0; i < g.size(); ++i) params[i] = g.gene(i);
+
+	model->setParameters(params);
+
+	vector< vector<double> > res = model->simulate(end_time, dt);
+	
+	if (res.size() < 1)
+		return 100.0;
+
+	double sumsq = 0.0, d = 0.0;
+	
+	for (int i=1; i < res.size(); ++i)
+	{
+		for (int j=0; j < res[i].size(); ++j)
+		{
+			d = res[i][j] - actual[i][j];
+			sumsq += d*d;
+		}
+	}
+
+	return (float)(sumsq/ (res[0].size()));
+}
+
+/********************************************
+      GENETIC ALGORITHM BASED OPTIMIZATION
+*********************************************/
+
+vector< vector< double> > SBML_sim::optimize(const vector< vector<double> >& data, int iter)
+{
+	actual = data;
+	vector< vector< double> > genes;
+
+	if (actual.size() < 2 || actual[0].size() < 2) return genes;
+	
+	end_time = actual[0][ actual[0].size()-1 ];
+	dt = actual[0][1] - actual[0][0];
+	
+	RealGenome genome( parameterValues.size() , &Objective);
+	genome.initializer(&initializeGenome);
+	GASteadyStateGA ga(genome);
+	ga.userData(this);
+	
+	GASharing dist(EuclideanDistance);
+	ga.scaling(dist);
+	ga.pReplacement(1.0);
+	ga.minimize();
+	ga.populationSize(1000);
+	ga.nGenerations(iter);
+	ga.pMutation(0.2);
+	ga.pCrossover(0.9);
+	GAPopulation pop;
+	ga.evolve();
+	
+	pop = ga.population();
+	pop.order(GAPopulation::LOW_IS_BEST);
+	pop.sort(gaTrue);
+	
+	genes.resize(pop.size());
+	
+	for (int i=0; i < pop.size(); ++i)
+	{
+		RealGenome & g = (RealGenome &)(pop.individual(i));
+		genes[i].resize(g.size());
+
+		for (int j=0; j < g.size(); ++j)
+			genes[i][j] = g.gene(j);
+	}
+	
+	parameterValues = genes[0];
+
+	return genes;
 }
 

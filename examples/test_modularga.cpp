@@ -6,11 +6,16 @@
 
 using namespace std;
 
+ModularGA * mga = 0;
 vector< vector<double> > actual;
 SBML_sim * model;
 double end_time = 20;
 double dt = 0.1;
 
+void callback()
+{
+
+}
 
 double objective(Genome * x)
 {	

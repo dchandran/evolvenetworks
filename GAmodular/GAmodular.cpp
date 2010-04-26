@@ -171,7 +171,7 @@ ModularGA::ModularGA():
 	_numGen(100), 
 	_neighborhood(0.25), 
 	_objectiveType(Maximize),
-	_selectionRate(0.5),
+	_selectionRate(0.9),
 	_pMut(0.2),
 	_pCross(0.5)
 {}
@@ -374,7 +374,7 @@ void ModularGA::oneStep()
 			}
 		}
 	
-		_population[i]->fitness =  ((_population[i]->score - min_score)/range_score)/(sum_dist);
+		_population[i]->fitness =  ((_population[i]->score - min_score)/range_score);///(sum_dist);
 		sum_fitness += _population[i]->fitness;
 	}
 	
