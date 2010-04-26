@@ -26,7 +26,6 @@ void initializeGenome(GAGenome & x)
 		g.gene(i,0) = mtrand() * pow(10.0, 2.0*mtrand());
 }
 
-
 float EuclideanDistance(const GAGenome & c1, const GAGenome & c2)
 {
   const RealGenome & a = (RealGenome &)c1;
@@ -155,22 +154,10 @@ int main()
 	ga.pReplacement(1.0);
 	ga.minimize();
 	ga.populationSize(1000);
-	ga.nGenerations(500);
+	ga.nGenerations(100);
 	ga.pMutation(0.2);
 	ga.pCrossover(0.9);
 	GAPopulation pop;
-/*	
-	ga.initialize();
-	pop = ga.population();
-
-	for (int i=0; i < 1000; ++i)
-	{
-		pop = ga.population();
-		RealGenome & g = (RealGenome &)(pop.best());
-		cout << g.score() << endl;
-		ga.step();
-	}
-*/
 	ga.evolve();
 	
 	GAStatistics stats = ga.statistics();

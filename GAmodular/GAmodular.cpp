@@ -23,7 +23,7 @@ int partitionLT(vector<Genome*>& list, int left,int right,int pivotIndex)
 			storeIndex = storeIndex + 1;
 		}
 	}
-	
+
 	temp = list[right];
 	list[right] = list[storeIndex];  // Move pivot to its final place
 	list[storeIndex] = temp;
@@ -115,7 +115,8 @@ Genome::Genome(const Genome & g) :
 
 Genome::~Genome()
 {
-	delete model;
+	if (model)
+		delete model;
 }
 
 Genome * Genome::clone() const
@@ -125,7 +126,7 @@ Genome * Genome::clone() const
 
 Genome * Genome::crossover(Genome * parent2, double pCross) const
 {
-	Genome * child = parent1->clone();
+	Genome * child = this->clone();
 	child->parent1 = this;
 	child->parent2 = parent2;
 
@@ -183,10 +184,27 @@ void ModularGA::setPopulationSize(int sz)
 		_popSz = sz;
 
 	_distMatrix.resize(_popSz);
-	for (int i=0; i < _popSz; ++i)
-		_distMatrix[i].resize(_popSz);
-	
 	_population.resize(_popSz);
+
+	for (int i=0; i < _popSz; ++i)
+	{
+		_distMatrix[i].resize(_popSz);
+		_population[i] = 0;
+	}
+}
+
+
+void ModularGA::setParameterSize(int sz, double low, double high)
+{
+	_population.resize(_popSz);
+
+	for (int i=0; i < _popSz; ++i)
+	{
+		_population[i] = new Genome;
+		_population[i]->params.resize(sz);
+		for (int j=0; j < sz; ++j)
+			_population[i]->params[j] = low + mtrand() * pow(10.0, high*mtrand());
+	}
 }
 
 void ModularGA::setGenerations(int n)
@@ -230,6 +248,34 @@ vector<Genome*> ModularGA::population() const
 	return _population;
 }
 
+Genome* ModularGA::best() const
+{
+	Genome * g = 0;
+	
+	for (int i=0; i < _population.size(); ++i)
+		if (!g || 
+			(_objectiveType == Minimize && _population[i]->score < g->score) ||
+			(_objectiveType == Maximize && _population[i]->score > g->score))
+			
+			g = _population[i];
+	
+	return g;
+}
+
+Genome* ModularGA::worst() const
+{
+	Genome * g = 0;
+	
+	for (int i=0; i < _population.size(); ++i)
+		if (!g || 
+			(_objectiveType == Minimize && _population[i]->score > g->score) ||
+			(_objectiveType == Maximize && _population[i]->score < g->score))
+			
+			g = _population[i];
+	
+	return g;
+}
+
 double ModularGA::evolve()
 {
 	for (int i=0; i < _numGen; ++i)
@@ -264,8 +310,7 @@ void ModularGA::oneStep()
 
 	for (i=0; i < _population.size(); ++i)
 	{
-		_population[i]->model->setParameters( _population[i]->params );
-		_population[i]->score = score = _calcScore( _population[i]);
+		_population[i]->score = score = _calcScore( _population[i] );
 
 		if (i==0)
 		{
@@ -314,7 +359,7 @@ void ModularGA::oneStep()
 	//compute fitness
 	
 	double sum_dist = 0.0, 
-		   sum_score = 0.0;
+		   sum_fitness = 0.0;
 	
 	for (i=0; i < _popSz; ++i)
 	{
@@ -329,8 +374,8 @@ void ModularGA::oneStep()
 			}
 		}
 	
-		_population[i]->score =  ((_population[i]->score - min_score)/range_score)/(sum_dist);
-		sum_score += _population[i]->score;
+		_population[i]->fitness =  ((_population[i]->score - min_score)/range_score)/(sum_dist);
+		sum_fitness += _population[i]->fitness;
 	}
 	
 	//select parents
@@ -358,15 +403,22 @@ void ModularGA::oneStep()
 			for (j=0; j < _popSz; ++j)
 			{
 				if (_objectiveType == Minimize)
-					sum += (1.0 - _population[j]->score/sum_score);
+					sum += (1.0 - _population[j]->fitness/sum_fitness);
 				else
-					sum += _population[j]->score/sum_score;
+					sum += _population[j]->fitness/sum_fitness;
 				if (r < sum)
 					break;
 			}
 			
-			newPopulation[i] = _population[j];
-			isSelected[j] = true;
+			if (isSelected[j])
+			{
+				newPopulation[i] = _population[j]->clone();
+			}	
+			else
+			{
+				newPopulation[i] = _population[j];
+				isSelected[j] = true;
+			}
 		}
 	}
 	else
@@ -379,15 +431,29 @@ void ModularGA::oneStep()
 			r1 = (int)(mtrand() * _popSz);
 			r2 = (int)(mtrand() * _popSz);
 			
-			if (_objectiveType == Minimize && _population[r1]->score < _population[r2]->score)
+			if (_objectiveType == Minimize && _population[r1]->fitness < _population[r2]->fitness)
 			{
-				newPopulation[i] = _population[r1];
-				isSelected[r1] = true;
+				if (isSelected[r1])
+				{
+					newPopulation[i] = _population[r1]->clone();
+				}
+				else
+				{
+					newPopulation[i] = _population[r1];
+					isSelected[r1] = true;
+				}
 			}
 			else
 			{
-				newPopulation[i] = _population[r2];
-				isSelected[r2] = true;
+				if (isSelected[r2])
+				{
+					newPopulation[i] = _population[r2]->clone();
+				}
+				else
+				{
+					newPopulation[i] = _population[r2];
+					isSelected[r2] = true;
+				}
 			}
 		}
 	}

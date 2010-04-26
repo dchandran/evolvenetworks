@@ -51,6 +51,9 @@ public:
 	/*! \brief set the population size*/
 	void setPopulationSize(int);
 
+	/*! \brief set the number of parameters*/
+	void setParameterSize(int, double lowerBoundLog=0.0, double upperBoundLog=3.0);
+
 	/*! \brief set the number of generations to run*/
 	void setGenerations(int);
 	
@@ -66,7 +69,7 @@ public:
 	/*! \brief how the parents in one generation are selected for producing offsprings for the next generation*/
 	void setSelectionMethod(SelectionMethod);
 	
-	/*! \brief how many individuals from one generations are preseved in the next*/
+	/*! \brief what fraction on the parent population are preseved in the next generation*/
 	void setSelectionRate(double);
 	
 	/*! \brief the fraction of a genome that gets mutated*/
@@ -79,8 +82,14 @@ public:
 	           The callback function can return false to stop the evolution*/
 	void setCallback( bool (*f)() );
 	
-	/*! \brief get all the genomes*/
+	/*! \brief get all the genomes (unsorted)*/
 	std::vector<Genome*> population() const;
+
+	/*! \brief get the best genome*/
+	Genome* best() const;
+	
+	/*! \brief get the worst genome*/
+	Genome* worst() const;
 	
 protected:
 
