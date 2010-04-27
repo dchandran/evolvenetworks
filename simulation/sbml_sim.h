@@ -81,10 +81,15 @@ public:
 	*/
 	std::vector< std::string > getParameterNames() const;	
 	
-	/*! \brief get variable values
+	/*! \brief get current variable values
 	 * \return vector<double> 
 	*/
 	std::vector< double > getVariableValues() const;
+	
+	/*! \brief revert to original parameter values and initial variable values
+	 * \return vector<double> 
+	*/
+	void reset();
 	
 	/*! \brief get rate values
 	 * \return vector<double> 
@@ -118,6 +123,9 @@ private:
 	
 	std::vector<std::string> variableNames;	
 	std::vector<double> variableValues;
+	
+	std::vector<double> initialValues;
+	std::vector<double> originalParameters;
 	
 	std::vector<std::string> parameterNames;
 	std::vector<double> parameterValues;

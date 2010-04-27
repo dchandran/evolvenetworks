@@ -124,6 +124,9 @@ SBML_sim::SBML_sim(string sbml_text, bool isFile)
 				parameterNames.push_back(species->get(i)->getId());
 				parameterValues.push_back(species->get(i)->getInitialConcentration());
 			}
+			
+		initialValues = variableValues;
+		originalParameters = parameterValues;
 
 		for (int i=0; i < params->size(); ++i)
 		{
@@ -373,6 +376,12 @@ vector< double > SBML_sim::getVariableValues() const
 	return variableValues;
 }
 
+void SBML_sim::reset()
+{
+	variableValues = initialValues;
+	parameterValues = originalParameters;
+}
+
 vector< double > SBML_sim::getRateValues() const
 {
 	return rateValues;
@@ -421,6 +430,7 @@ static float Objective(GAGenome & x)
 	vector<double> params(g.size(),0);
 	for (int i=0; i < g.size(); ++i) params[i] = g.gene(i);
 
+	model->reset();
 	model->setParameters(params);
 
 	vector< vector<double> > res = model->simulate(end_time, dt);
