@@ -22,13 +22,12 @@ int main()
 	FILE * file2 = fopen("out2.tab","w");  //best optimized output
 	FILE * file3 = fopen("out3.tab","w");  //worst optimized output
 	FILE * file4 = fopen("soln.tab","w");   //range of optimized values
-
 	
 	initMTrand(); //random number generator
 	
 /*********** GET ACTUAL OUTPUT OF THE ORIGINAL MODEL ************************/
 
-	double end_time = 20.0, dt = 1.0;
+	double end_time = 20.0, dt = 0.1;
 	
 	vector< vector<double> > actual = sim.simulate(end_time, dt);
 
@@ -49,7 +48,7 @@ int main()
 	time_t seconds;    //record time
 	seconds = time(NULL);	
 	
-	vector< vector<double> > soln = sim.optimize(actual,200);  //optimize for 100 iterations
+	vector< vector<double> > soln = sim.optimize(actual,100);  //optimize for 100 iterations
 	
 	printf("time = %i seconds\n", (int)(time(NULL)-seconds));  //print time
 	
