@@ -389,14 +389,14 @@ vector< double > SBML_sim::getParameterValues() const
 
 typedef GA1DArrayGenome<float> RealGenome;
 
-void initializeGenome(GAGenome & x)
+static void initializeGenome(GAGenome & x)
 {
 	RealGenome & g = (RealGenome &)x;
 	for (int i=0; i < g.size(); ++i)
 		g.gene(i,0) = mtrand() * pow(10.0, 3.0*mtrand());
 }
 
-float EuclideanDistance(const GAGenome & c1, const GAGenome & c2)
+static float EuclideanDistance(const GAGenome & c1, const GAGenome & c2)
 {
   const RealGenome & a = (RealGenome &)c1;
   const RealGenome & b = (RealGenome &)c2;
@@ -408,11 +408,11 @@ float EuclideanDistance(const GAGenome & c1, const GAGenome & c2)
   return (float)sqrt(x);
 }
 
-vector< vector<double> > actual;
-double end_time = 20.0;
-double dt = 0.1;
+static vector< vector<double> > actual;
+static double end_time = 20.0;
+static double dt = 0.1;
 
-float Objective(GAGenome & x)
+static float Objective(GAGenome & x)
 {
 	RealGenome & g = (RealGenome &)x;
 	
@@ -473,7 +473,7 @@ vector< vector< double> > SBML_sim::optimize(const vector< vector<double> >& dat
 	ga.evolve();
 	
 	pop = ga.population();
-	pop.order(GAPopulation::LOW_IS_BEST);
+	pop.order(GAPopulation::HIGH_IS_BEST);
 	pop.sort(gaTrue);
 	
 	genes.resize(pop.size());

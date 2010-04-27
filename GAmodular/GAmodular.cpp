@@ -171,7 +171,7 @@ ModularGA::ModularGA():
 	_numGen(100), 
 	_neighborhood(0.25), 
 	_objectiveType(Maximize),
-	_selectionRate(0.9),
+	_selectionRate(0.6),
 	_pMut(0.2),
 	_pCross(0.5)
 {}
@@ -374,9 +374,12 @@ void ModularGA::oneStep()
 			}
 		}
 	
-		_population[i]->fitness =  ((_population[i]->score - min_score)/range_score);///(sum_dist);
+		_population[i]->fitness =  ((_population[i]->score - min_score)/range_score)/(sum_dist);
+		cout << _population[i]->score << "     ";
 		sum_fitness += _population[i]->fitness;
 	}
+	
+	cout << "\n";
 	
 	//select parents
 	
@@ -389,7 +392,7 @@ void ModularGA::oneStep()
 	for (i=0; i < _popSz; ++i)
 		isSelected[i] = false;
 	
-	n = (int)(_selectionRate * _popSz);
+	n = (int)( (1.0 - _selectionRate) * _popSz);
 	
 	if (_selectionMethod == RouletteWheel)
 	{
