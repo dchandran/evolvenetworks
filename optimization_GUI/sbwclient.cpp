@@ -7,6 +7,7 @@
 #include "sbwclient.h"
 
 using namespace std;
+using namespace SystemsBiologyWorkbench;
 
 void JSimRun::run()
 {
@@ -151,7 +152,7 @@ DataTable<double> JSimOptimGUI::simulate()
 		getNames.call(emptyArgs) >> namesReader;
 		
 		i = 1;
-		while (namesReader.getNextType() != DataBlockType::TerminateType)
+		while (namesReader.getNextType() != SystemsBiologyWorkbench::TerminateType)
 		{
 		   string s;
 		   namesReader >> s; 
@@ -194,7 +195,7 @@ bool JSimOptimGUI::connectToRoadRunner()
 		DataBlockReader paramReader;
 		getParamNames.call(emptyArgs) >> paramReader;
 		
-		while (paramReader.getNextType() != DataBlockType::TerminateType)
+		while (paramReader.getNextType() != SystemsBiologyWorkbench::TerminateType)
 		{
 			string s;
 			paramReader >> s;

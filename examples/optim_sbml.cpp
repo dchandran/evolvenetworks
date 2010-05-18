@@ -92,7 +92,6 @@ float Objective1(GAGenome & x)
 	}
 
 	return (float)(sumsq/ (res[0].size()));// * (res.size()-1)));
-
 }
 
 int main()
@@ -106,6 +105,7 @@ int main()
 	
 	initMTrand();
 	
+	sim.reset();
 	actual = sim.simulate(end_time, dt);
 	int n = actual.size();
 	if (n > 0)
@@ -176,7 +176,8 @@ int main()
 	
 	RealGenome & g = (RealGenome &)(pop.individual(0));
 	cout << g.score() << endl;
-		
+	
+	sim.reset();	
 	sim.setParameters(params);	
 	actual = sim.simulate(end_time, dt);
 	n = actual.size();
@@ -194,7 +195,8 @@ int main()
 	
 	g = (RealGenome &)(pop.individual(pop.size()-1));
 	cout << g.score() << endl;
-		
+	
+	sim.reset();
 	sim.setParameters(params);
 	actual = sim.simulate(end_time, dt);
 	n = actual.size();

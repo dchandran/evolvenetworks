@@ -1,10 +1,18 @@
+IF (WIN32)
+  ADD_DEFINITIONS(-DWIN32)
+ELSE (WIN32)
+  ADD_DEFINITIONS(-DLINUX)
+  IF (APPLE)
+     ADD_DEFINITIONS(-DDARWIN)
+  ENDIF (APPLE)
+ENDIF (WIN32)
+
 ADD_EXECUTABLE(
   SBWGA 
   sbw_ga_optim.cpp
 )
 
 TARGET_LINK_LIBRARIES( SBWGA sbml_sim galib SBWCore)
-
 
 FIND_PACKAGE( Qt4 REQUIRED )
 IF( QT4_FOUND )
@@ -17,10 +25,8 @@ IF( QT4_FOUND )
 	  SET( QT_LIBRARIES ${QT_QT_LIBRARY} )
     ENDIF( QT_USE_FILE )
 	
-	QT4_WRAP_CPP( QWT_MOC ${QWT_HDRS} )
-
 	FILE( GLOB HEADERS plotWidget.h sbwclient.h randomize_widget.h )
-	FILE( GLOB SOURCES plotWidget.cpp sbwclient.cpp randomize_widget.cpp )	
+	FILE( GLOB SOURCES plotWidget.cpp sbwclient.cpp randomize_widget.cpp main.cpp )
     QT4_WRAP_CPP( HEADERS_MOC ${HEADERS} )
 
 	IF( APPLE AND BUILD_BUNDLE )
@@ -31,7 +37,7 @@ IF( QT4_FOUND )
 		${HEADERS_MOC}
 	  )
 		
-	  TARGET_LINK_LIBRARIES( JSimOptim  ${QT_LIBRARIES} ${SBWLIB} )
+	  TARGET_LINK_LIBRARIES( JSimOptim  SBWCore qwt ${QT_LIBRARIES})
 		
 	  ADD_CUSTOM_COMMAND( TARGET JSimOptim POST_BUILD
 		  COMMAND mkdir ARGS -p
@@ -57,15 +63,9 @@ IF( QT4_FOUND )
 		  JSimOptim
 		  ${SOURCES}
 		  ${HEADERS_MOC}
-		  ${QWT_SRC}
-	      ${QWT_MOC}
 		)
 		
-		TARGET_LINK_LIBRARIES(
-		  JSimOptim
-		  ${QT_LIBRARIES}
-		  ${SBWLIB}
-		)
+		TARGET_LINK_LIBRARIES( JSimOptim  SBWCore qwt ${QT_LIBRARIES})
 		
 	  ELSE( UNIX OR ( APPLE AND NOT BUILD_BUNDLE ) )
 		IF( WIN32 )
@@ -74,15 +74,9 @@ IF( QT4_FOUND )
 		  JSimOptim 
 		  ${SOURCES}
 		  ${HEADERS_MOC}
-		  ${QWT_SRC}
-		  ${QWT_MOC}
 		)
 		
-		TARGET_LINK_LIBRARIES( 
-		  JSimOptim
-		  ${QT_LIBRARIES}
-		  ${SBWLIB}
-		)
+		TARGET_LINK_LIBRARIES( JSimOptim  SBWCore qwt ${QT_LIBRARIES})
 		
 		ENDIF( WIN32 )
 	  ENDIF( UNIX OR ( APPLE AND NOT BUILD_BUNDLE ) )
@@ -90,3 +84,4 @@ IF( QT4_FOUND )
 	ENDIF( APPLE AND BUILD_BUNDLE )
 
 ENDIF( QT4_FOUND )
+

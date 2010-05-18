@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include "SBW/sbw.h"
 #include "sbwclient.h"
 
 using namespace std;

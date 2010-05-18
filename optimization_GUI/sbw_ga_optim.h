@@ -3,7 +3,10 @@
 
 #include <vector>
 #include <string>
-#include "SBW/sbw.h"
+#include "SBW/sbwenums.h"
+#include "SBW/SBWException.h"
+#include "SBW/DataBlockType.h"
+#include "SBW/SBW.h"
 #include "muParserDef.h"
 #include "muParser.h"
 #include "muParserInt.h"

@@ -125,9 +125,6 @@ SBML_sim::SBML_sim(string sbml_text, bool isFile)
 				parameterValues.push_back(species->get(i)->getInitialConcentration());
 			}
 			
-		initialValues = variableValues;
-		originalParameters = parameterValues;
-
 		for (int i=0; i < params->size(); ++i)
 		{
 			parameterNames.push_back(params->get(i)->getId());
@@ -264,6 +261,8 @@ SBML_sim::SBML_sim(string sbml_text, bool isFile)
 			}
 		}
 
+		initialValues = variableValues;
+		originalParameters = parameterValues;
 		//delete params;
 		//delete reacs;
 		delete doc;
@@ -453,7 +452,7 @@ static float Objective(GAGenome & x)
 }
 
 /********************************************
-      GENETIC ALGORITHM BASED OPTIMIZATION
+     GENETIC ALGORITHM BASED OPTIMIZATION
 *********************************************/
 
 vector< vector< double> > SBML_sim::optimize(const vector< vector<double> >& data, int iter)

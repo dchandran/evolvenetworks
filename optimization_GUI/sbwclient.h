@@ -27,7 +27,10 @@
 #include <QTextEdit>
 #include <vector>
 #include <iostream>
-#include "SBW/sbw.h"
+#include "SBW/sbwenums.h"
+#include "SBW/SBWException.h"
+#include "SBW/DataBlockType.h"
+#include "SBW/SBW.h"
 #include "plotWidget.h"
 #include "randomize_widget.h"
 
