@@ -397,7 +397,7 @@ vector< double > SBML_sim::getParameterValues() const
 
 typedef GA1DArrayGenome<float> RealGenome;
 
-static void initializeGenome(GAGenome & x)
+static void InitializeGenome(GAGenome & x)
 {
 	RealGenome & g = (RealGenome &)x;
 	for (int i=0; i < g.size(); ++i)
@@ -420,7 +420,7 @@ static vector< vector<double> > actual;
 static double end_time = 20.0;
 static double dt = 0.1;
 
-static float Objective(GAGenome & x)
+static float Objective1(GAGenome & x)
 {
 	RealGenome & g = (RealGenome &)x;
 	
@@ -451,6 +451,16 @@ static float Objective(GAGenome & x)
 	return (float)(sumsq/ (res[0].size()));
 }
 
+static float (*USER_FUNC)(vector<double>&);
+
+static float Objective2(GAGenome & x)
+{
+	RealGenome & g = (RealGenome &)x;
+	vector<double> params(g.size(),0);
+	for (int i=0; i < g.size(); ++i) params[i] = g.gene(i);
+	return USER_FUNC(params);
+}
+
 /********************************************
      GENETIC ALGORITHM BASED OPTIMIZATION
 *********************************************/
@@ -465,8 +475,52 @@ vector< vector< double> > SBML_sim::optimize(const vector< vector<double> >& dat
 	end_time = actual[0][ actual[0].size()-1 ];
 	dt = actual[0][1] - actual[0][0];
 	
-	RealGenome genome( parameterValues.size() , &Objective);
-	genome.initializer(&initializeGenome);
+	RealGenome genome( parameterValues.size() , &Objective1);
+	genome.initializer(&InitializeGenome);
+	GASteadyStateGA ga(genome);
+	ga.userData(this);
+	
+	GASharing dist(EuclideanDistance);
+	ga.scaling(dist);
+	ga.pReplacement(1.0);
+	ga.minimize();
+	ga.populationSize(1000);
+	ga.nGenerations(iter);
+	ga.pMutation(0.2);
+	ga.pCrossover(0.9);
+	GAPopulation pop;
+	ga.evolve();
+	
+	pop = ga.population();
+	pop.order(GAPopulation::HIGH_IS_BEST);
+	pop.sort(gaTrue);
+	
+	genes.resize(pop.size());
+	
+	for (int i=0; i < pop.size(); ++i)
+	{
+		RealGenome & g = (RealGenome &)(pop.individual(i));
+		genes[i].resize(g.size());
+
+		for (int j=0; j < g.size(); ++j)
+			genes[i][j] = g.gene(j);
+	}
+	
+	parameterValues = genes[0];
+
+	return genes;
+}
+
+
+vector< vector< double> > SBML_sim::optimize(float (*f)(std::vector<double>&), int iter)
+{
+	vector< vector< double> > genes;
+
+	if (!f) return genes;
+	
+	USER_FUNC = f;
+	RealGenome genome( parameterValues.size() , &Objective2);
+	genome.initializer(&InitializeGenome);
 	GASteadyStateGA ga(genome);
 	ga.userData(this);
 	

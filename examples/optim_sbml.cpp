@@ -138,7 +138,7 @@ int main()
 	cout << endl << endl;
 	
 //	NelderMeadSimplexMethod(sim.getVariableNames().size(), diff , x0 , 10 , &fopt, 10000, 1E-3);
-	
+/*	
 	RealGenome genome( numParams, &Objective1);
 	genome.initializer(&initializeGenome);
 	GASteadyStateGA ga(genome);
@@ -165,19 +165,31 @@ int main()
 	pop = ga.population();
 	pop.order(GAPopulation::HIGH_IS_BEST);
 	pop.sort(gaTrue);
-	
+
+	vector <vector<double> > results;
+
 	for (int i=0; i < pop.size(); ++i)
 	{
 		RealGenome & g = (RealGenome &)(pop.individual(i));
+		vector<double> v;
+		v.resize(g.size());
 		for (int j=0; j < g.size(); ++j)
-			fprintf(file4, "%lf\t", g.gene(j));
-		fprintf(file4,"%lf\n", g.score());
+			v[j] = g.gene(j);
+		results.push_back(v);
+	}
+*/	
+
+	vector <vector<double> > results = sim.optimize(actual,100);
+
+	for (int i=0; i < results.size(); ++i)
+	{
+		for (int j=0; j < results[i].size(); ++j)
+			fprintf(file4, "%lf\t", results[i][j]);
+		fprintf(file4,"\n");
 	}
 	
-	RealGenome & g = (RealGenome &)(pop.individual(0));
-	cout << g.score() << endl;
-	
 	sim.reset();	
+	params = results[ results.size() - 1];
 	sim.setParameters(params);	
 	actual = sim.simulate(end_time, dt);
 	n = actual.size();
@@ -193,10 +205,8 @@ int main()
 		}
 	}
 	
-	g = (RealGenome &)(pop.individual(pop.size()-1));
-	cout << g.score() << endl;
-	
 	sim.reset();
+	params = results[0];
 	sim.setParameters(params);
 	actual = sim.simulate(end_time, dt);
 	n = actual.size();

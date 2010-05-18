@@ -2,7 +2,6 @@
 # Wrapper functions for Sundials CVODE
 #---------------------------------------------------------------------------
 
-ADD_DEFINITIONS(-DNO_FPRINTF_OUTPUT)
 ADD_LIBRARY( ode
   STATIC
   ${NETWORKEVOLUTION_SOURCE_DIR}/simulation/eigen.c

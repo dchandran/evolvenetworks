@@ -18,6 +18,7 @@ The wrapper provides support for event functions and user defined structs as par
 
 #ifndef GA_CVODE_WRAPPER_FILE
 #define GA_CVODE_WRAPPER_FILE
+#define NO_FPRINTF_OUTPUT
 
 //#define SUNDIALS_DOUBLE_PRECISION
 //#define SUNDIALS_EXTENDED_PRECISION

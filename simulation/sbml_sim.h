@@ -107,6 +107,14 @@ public:
 	 * \return vector< vector<double> > a set of solutions
 	*/	
 	std::vector< std::vector< double> > optimize(const std::vector< std::vector<double> >& data , int iter=100);
+
+	/*! \brief optimize the parameters to minimize the given function (uses genetic algorithm)
+	 * \param vector< vector<double> > the data, where data[0] is the vector of time
+	 * \param int max iterations
+	 * \return vector< vector<double> > a set of solutions
+	*/	
+	std::vector< std::vector< double> > optimize(float (*f)(std::vector<double>&), int iter=100);
+
 	
 private:
 
