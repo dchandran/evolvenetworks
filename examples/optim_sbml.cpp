@@ -137,6 +137,9 @@ int main()
 
 	cout << endl << endl;
 	
+	time_t seconds;
+	seconds = time(NULL);
+	
 //	NelderMeadSimplexMethod(sim.getVariableNames().size(), diff , x0 , 10 , &fopt, 10000, 1E-3);
 /*	
 	RealGenome genome( numParams, &Objective1);
@@ -146,9 +149,6 @@ int main()
 
 	//model_data * u = (model_data*)makeModelData();
 	//ga.userData(u);
-	
-	time_t seconds;
-	seconds = time(NULL);
 
 
 	GASharing dist(EuclideanDistance);
