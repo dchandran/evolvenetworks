@@ -140,20 +140,20 @@ SBML_sim::SBML_sim(string sbml_text, bool isFile)
 			Reaction * r = reacs->get(i);
 			reactionNames.push_back(r->getId());
 			rateEquations.push_back(r->getKineticLaw()->getFormula());
-			ListOfSpeciesReferences * reactants = r->getListOfReactants(),
-									* products  = r->getListOfProducts();
+			int numReactants = r->getNumReactants(),
+				numProducts  = r->getNumProducts();
 
 			for (int j=0; j < variableNames.size(); ++j)
 			{
 				stoichiometryMatrix[ j*numReacs + i ] = 0.0;
 
-				for (int k=0; k < reactants->size(); ++k)
-					if (reactants->get(k)->getSpecies() == variableNames[j])
-						stoichiometryMatrix[ j*numReacs + i ] -= ((SpeciesReference*)(reactants->get(k)))->getStoichiometry();
+				for (int k=0; k < numReactants; ++k)
+					if (r->getReactant(k) && r->getReactant(k)->getId() == variableNames[j])
+						stoichiometryMatrix[ j*numReacs + i ] -= r->getReactant(k)->getStoichiometry();
 					
-				for (int k=0; k < products->size(); ++k)
-					if (products->get(k)->getSpecies() == variableNames[j])
-						stoichiometryMatrix[ j*numReacs + i ] += ((SpeciesReference*)(reactants->get(k)))->getStoichiometry();;
+				for (int k=0; k < numProducts; ++k)
+					if (r->getProduct(k) && r->getProduct(k)->getId() == variableNames[j])
+						stoichiometryMatrix[ j*numReacs + i ] += r->getProduct(k)->getStoichiometry();
 			}
 		}
 		
@@ -416,7 +416,7 @@ static float EuclideanDistance(const GAGenome & c1, const GAGenome & c2)
   return (float)(x);
 }
 
-static void (*CallBack)(int,const GAPopulation&) = 0;
+static int (*CallBack)(int,const GAPopulation&) = 0;
 static vector< vector<double> > actual;
 static double end_time = 20.0;
 static double dt = 0.1;
@@ -483,7 +483,6 @@ vector< vector< double> > SBML_sim::optimize(const vector< vector<double> >& dat
 	GAPopulation pop;
 	
 	pop = ga.population();
-	fclose(file);
 	
 	if (useCrowding)
 	{
@@ -501,11 +500,12 @@ vector< vector< double> > SBML_sim::optimize(const vector< vector<double> >& dat
 	ga.initialize();
 	
 	int k = 0;
-	while (ga.done() != gaTrue)
+	int done = 0;
+	while (ga.done() != gaTrue && done <= 0)
 	{
 		ga.step();
 		if (CallBack)
-			CallBack(k,ga.population());
+			done = CallBack(k,ga.population());
 		++k;
 	}
 	
@@ -559,11 +559,12 @@ vector< vector< double> > SBML_sim::optimize(float (*f)(std::vector<double>&), i
 	ga.initialize();
 	
 	int k = 0;
-	while (ga.done() != gaTrue)
+	int done = 0;
+	while (ga.done() != gaTrue && done <= 0)
 	{
 		ga.step();
 		if (CallBack)
-			CallBack(k,ga.population());
+			done = CallBack(k,ga.population());
 		++k;
 	}
 	
@@ -587,7 +588,7 @@ vector< vector< double> > SBML_sim::optimize(float (*f)(std::vector<double>&), i
 	return genes;
 }
 
-void SBML_sim::setCallback(float (*f)(int,const GAPopulation&))
+void SBML_sim::setCallback(int (*f)(int,const GAPopulation&))
 {
 	CallBack = f;
 }

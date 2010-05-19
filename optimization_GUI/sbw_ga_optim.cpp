@@ -1,12 +1,4 @@
 #include "sbw_ga_optim.h"
-#include "muParserDef.h"
-#include "muParser.h"
-#include "muParserInt.h"
-#include "sbml/SBMLReader.h"
-#include "sbml/SBMLDocument.h"
-#include "sbml/Model.h"
-#include "GASimpleGA.h"
-#include "GARealGenome.h"
 #include <iostream>
 #include <fstream>
 #include <boost/algorithm/string.hpp>
@@ -19,9 +11,8 @@ extern "C"
 using namespace std;
 using namespace SystemsBiologyWorkbench;
 
-SBW_GA_optimizer::SBW_GA_optimizer() : algorithmType(GA), objectiveFunction(TimeCourse), stoichiometryMatrix(0)
+SBW_GA_optimizer::SBW_GA_optimizer() : algorithmType(GA), objectiveFunction(TimeCourse), stoichiometryMatrix(0), simulator(0)
 {
-	
 }
 
 DataBlockWriter SBW_GA_optimizer::getTypesOfObjectiveFunctions( Module , DataBlockReader )
@@ -107,89 +98,9 @@ DataBlockWriter SBW_GA_optimizer::loadSBML( Module, DataBlockReader reader)
 {
 	string filename = "feedback.xml";
 	reader >> filename;
-
-	if (!doc || doc->getNumErrors() > 0)
-	{
-		printf("error reading SBML file\n");
-	}
-	else
-	{
-		Model * model = doc->getModel();
-		ListOfParameters * params = model->getListOfParameters();
-		ListOfReactions * reacs = model->getListOfReactions();
-		ListOfSpecies * species = model->getListOfSpecies();
-		ListOfSpeciesTypes * types = model->getListOfSpeciesTypes();
-		
-		
-
-		parameterNames.clear();
-		parameterValues.clear();
-		rateEqns.clear();
-		variableNames.clear();
-		reactionNames.clear();
-		if (stoichiometryMatrix)
-			delete stoichiometryMatrix;
-		
-		for (int i=0; i < species->size(); ++i)
-			if (!species->get(i)->getConstant() && !species->get(i)->getBoundaryCondition())
-			{
-				variableNames.push_back(species->get(i)->getId());
-			}
-
-		for (int i=0; i < variableNames.size(); ++i)
-			cout << "var: " << variableNames[i] << endl;
-
-		for (int i=0; i < params->size(); ++i)
-		{
-			parameterNames.push_back(params->get(i)->getId());
-			parameterValues.push_back(params->get(i)->getValue());
-		}
-
-		cout << endl;
-
-		for (int i=0; i < parameterNames.size(); ++i)
-			cout << "param: " << parameterNames[i] << " = " << parameterValues[i] << endl;
-
-		int numReacs = reacs->size();
-
-		stoichiometryMatrix = new double[ numReacs * variableNames.size() ];
-		
-		for (int i=0; i < numReacs; ++i)
-		{
-			Reaction * r = reacs->get(i);
-			reactionNames.push_back(r->getId());
-			rateEqns.push_back(r->getKineticLaw()->getFormula());
-			ListOfSpeciesReferences * reactants = r->getListOfReactants(),
-									* products  = r->getListOfProducts();
-
-			for (int j=0; j < variableNames.size(); ++j)
-			{
-				stoichiometryMatrix[ j*numReacs + i ] = 0.0;
-
-				for (int k=0; k < reactants->size(); ++k)
-					if (reactants->get(k)->getSpecies() == variableNames[j])
-						stoichiometryMatrix[ j*numReacs + i ] -= ((SpeciesReference*)(reactants->get(k)))->getStoichiometry();
-					
-				for (int k=0; k < products->size(); ++k)
-					if (products->get(k)->getSpecies() == variableNames[j])
-						stoichiometryMatrix[ j*numReacs + i ] += ((SpeciesReference*)(reactants->get(k)))->getStoichiometry();;
-			}
-		}
-
-		cout << endl;
-
-		for (int i=0; i < rateEqns.size(); ++i)
-		{
-			cout << "reac: ";
-			for (int j=0; j < variableNames.size(); ++j)
-				cout << stoichiometryMatrix[ j*numReacs + i ] << variableNames[j] << " ";
-			cout << ";" << rateEqns[i] << endl;
-		}
-		
-		//delete params;
-		//delete reacs;
-		delete doc;
-	}
+	
+	simulator = new SBML_sim(filename);
+	
 	return DataBlockWriter();
 }
 
@@ -295,8 +206,6 @@ DataBlockWriter SBW_GA_optimizer::setModelParameterValueByIndex( Module, DataBlo
 
 DataBlockWriter SBW_GA_optimizer::loadData( Module , DataBlockReader reader)
 {
-	//string filename;
-	//reader >> filename;
 	readTargetData("target.csv","\t");
 	return DataBlockWriter();
 }
@@ -310,23 +219,8 @@ DataBlockWriter SBW_GA_optimizer::setTargetFlux( Module , DataBlockReader reader
 
 DataBlockWriter SBW_GA_optimizer::optimize( Module , DataBlockReader )
 {
-	float a[] = {1};
-	GARealAlleleSet allele(1,a);
-	GARealGenome genome( parameterNames.size(), allele, &Objective1);
-	GASimpleGA ga(genome);
-
-	model_data * u = (model_data*)makeModelData();
-
-	ga.userData(u);
-
-	GASharing dist(EuclideanDistance);
-	ga.scaling(dist);
-	ga.minimize();
-	ga.populationSize(1000);
-	ga.nGenerations(100);
-	ga.pMutation(0.01);
-	ga.pCrossover(0.9);
-	ga.evolve();
+	if (simulator)
+		simulator->optimize(
 	return DataBlockWriter();
 }
 

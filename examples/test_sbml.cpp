@@ -7,7 +7,7 @@ using namespace std;
 
 int main()
 {
-	string sbml("ringOscillator.xml");
+	string sbml("cellcycle.xml");
 	SBML_sim sim(sbml);
 	sim.reset();
 	vector< vector<double> > output = sim.simulate(100.0, 0.1);

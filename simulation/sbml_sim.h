@@ -120,9 +120,9 @@ public:
 	std::vector< std::vector< double> > optimize(float (*f)(std::vector<double>&), int iter=100, bool useCrowding=true);
 
 	/*! \brief set a callback functions for the optimization methods
-	 * \param void (*f)(int,const GApopulation&) callback function
+	 * \param int (*f)(int,const GApopulation&) callback function. return 1 to stop.
 	*/	
-	void setCallback(float (*f)(int,const GAPopulation&));
+	void setCallback(int (*f)(int,const GAPopulation&));
 
 private:
 

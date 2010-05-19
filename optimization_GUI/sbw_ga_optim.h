@@ -7,9 +7,6 @@
 #include "SBW/SBWException.h"
 #include "SBW/DataBlockType.h"
 #include "SBW/SBW.h"
-#include "muParserDef.h"
-#include "muParser.h"
-#include "muParserInt.h"
 #include "sbml_sim.h"
 
 class SBW_GA_optimizer
