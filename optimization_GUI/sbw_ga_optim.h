@@ -10,6 +10,7 @@
 #include "muParserDef.h"
 #include "muParser.h"
 #include "muParserInt.h"
+#include "sbml_sim.h"
 
 class SBW_GA_optimizer
 {
@@ -67,15 +68,8 @@ public:
 
 private:
 	
-	//model
-	std::vector<std::string> rateEqns;
-	std::vector<std::string> variableNames;
-	std::vector<std::string> reactionNames;
-	std::vector<std::string> parameterNames;
-	std::vector<std::string> targetDataHeaders;
-	std::vector<double> parameterValues;
-	std::vector<double> initialValue;
-	double * stoichiometryMatrix;
+	//simulator and optimizer
+	SBML_sim * simulator;
 	
 	enum AlgorithmTypes { GA = 0, Crowding };
 	AlgorithmTypes algorithmType;
@@ -85,8 +79,6 @@ private:
 
 	void readTargetData(const std::string& filename, const std::string& delim=",");
 	std::vector< std::vector<double> > targetData;
-
-	void * makeModelData();
 };
 
 #endif

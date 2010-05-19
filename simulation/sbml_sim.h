@@ -16,6 +16,8 @@
 #include "sbml/Model.h"
 #include "sbml/Rule.h"
 #include <boost/algorithm/string.hpp>
+#include "GASStateGA.h"
+#include "GA1DArrayGenome.h"
 extern "C"
 {
 	#include "cvodesim.h"
@@ -104,18 +106,24 @@ public:
 	/*! \brief optimize the parameters to fit the given simulation data (uses genetic algorithm)
 	 * \param vector< vector<double> > the data, where data[0] is the vector of time
 	 * \param int max iterations
+	 * \param bool enable crowding (default=true)
 	 * \return vector< vector<double> > a set of solutions
 	*/	
-	std::vector< std::vector< double> > optimize(const std::vector< std::vector<double> >& data , int iter=100);
+	std::vector< std::vector< double> > optimize(const std::vector< std::vector<double> >& data , int iter=100, bool useCrowding=true);
 
 	/*! \brief optimize the parameters to minimize the given function (uses genetic algorithm)
-	 * \param vector< vector<double> > the data, where data[0] is the vector of time
+	 * \param float (*f)(params) objective function that returns a score for a given set of parameters
 	 * \param int max iterations
+	 * \param bool enable crowding (default=true)
 	 * \return vector< vector<double> > a set of solutions
 	*/	
-	std::vector< std::vector< double> > optimize(float (*f)(std::vector<double>&), int iter=100);
+	std::vector< std::vector< double> > optimize(float (*f)(std::vector<double>&), int iter=100, bool useCrowding=true);
 
-	
+	/*! \brief set a callback functions for the optimization methods
+	 * \param void (*f)(int,const GApopulation&) callback function
+	*/	
+	void setCallback(float (*f)(int,const GAPopulation&));
+
 private:
 
 	std::vector<std::string> reactionNames;

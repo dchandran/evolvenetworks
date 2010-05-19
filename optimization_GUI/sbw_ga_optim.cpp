@@ -105,11 +105,8 @@ DataBlockWriter SBW_GA_optimizer::setAlgorithmParameterByIndex( Module, DataBloc
 
 DataBlockWriter SBW_GA_optimizer::loadSBML( Module, DataBlockReader reader)
 {
-	string filename = "oscil.sbml";
-	//reader >> filename;
-	
-	SBMLReader * sbmlreader = new SBMLReader;
-	SBMLDocument * doc = sbmlreader->readSBML(filename);
+	string filename = "feedback.xml";
+	reader >> filename;
 
 	if (!doc || doc->getNumErrors() > 0)
 	{
@@ -309,40 +306,6 @@ DataBlockWriter SBW_GA_optimizer::setTargetFlux( Module , DataBlockReader reader
 	string s;
 	reader >> s;
 	return DataBlockWriter();
-}
-
-void * SBW_GA_optimizer::makeModelData()
-{
-	model_data * u = new model_data;
-
-	vector<double> col;
-	vector<vector<double> > targetData2 = targetData;
-	targetData.clear();
-
-	targetData.push_back(targetData2.at(0));
-	for (int i=0; i < parameterNames.size(); ++i)
-	{
-		col.clear();
-		for (int j=0; j < targetDataHeaders.size(); ++j)
-			if (parameterNames[i] == targetDataHeaders[j])
-			{
-				col = targetData2.at(j);
-				break;
-			}
-		targetData.push_back(col);
-	}
-
-	u->numParams = parameterNames.size();
-	u->numReactions = rateEqns.size();
-	u->numSpecies = variableNames.size();
-	u->startTime = targetData[0][0];
-	u->endTime = targetData[0][ targetData[0].size() - 1 ];
-	u->stepSize = targetData[0][1] - targetData[0][0];
-	u->targetData = &targetData;
-	u->N = stoichiometryMatrix;
-	vector<mu::Parser*> rateEqns;
-
-	return (void*)u;
 }
 
 DataBlockWriter SBW_GA_optimizer::optimize( Module , DataBlockReader )

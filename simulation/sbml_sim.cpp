@@ -1,7 +1,7 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <iostream>
 #include <vector>
-#include "GASStateGA.h"
-#include "GA1DArrayGenome.h"
 #include "sbml_sim.h"
 
 using namespace std;
@@ -413,9 +413,10 @@ static float EuclideanDistance(const GAGenome & c1, const GAGenome & c2)
   for(int i=0; i < b.length() && i < a.length(); ++i)
 	  x += (a.gene(i) - b.gene(i))*(a.gene(i) - b.gene(i));
 
-  return (float)sqrt(x);
+  return (float)(x);
 }
 
+static void (*CallBack)(int,const GAPopulation&) = 0;
 static vector< vector<double> > actual;
 static double end_time = 20.0;
 static double dt = 0.1;
@@ -465,7 +466,7 @@ static float Objective2(GAGenome & x)
      GENETIC ALGORITHM BASED OPTIMIZATION
 *********************************************/
 
-vector< vector< double> > SBML_sim::optimize(const vector< vector<double> >& data, int iter)
+vector< vector< double> > SBML_sim::optimize(const vector< vector<double> >& data, int iter, bool useCrowding)
 {
 	actual = data;
 	vector< vector< double> > genes;
@@ -479,17 +480,34 @@ vector< vector< double> > SBML_sim::optimize(const vector< vector<double> >& dat
 	genome.initializer(&InitializeGenome);
 	GASteadyStateGA ga(genome);
 	ga.userData(this);
+	GAPopulation pop;
 	
-	GASharing dist(EuclideanDistance);
-	ga.scaling(dist);
+	pop = ga.population();
+	fclose(file);
+	
+	if (useCrowding)
+	{
+		GASharing dist(EuclideanDistance);
+		ga.scaling(dist);
+	}
+
 	ga.pReplacement(1.0);
 	ga.minimize();
 	ga.populationSize(1000);
 	ga.nGenerations(iter);
 	ga.pMutation(0.2);
 	ga.pCrossover(0.9);
-	GAPopulation pop;
-	ga.evolve();
+
+	ga.initialize();
+	
+	int k = 0;
+	while (ga.done() != gaTrue)
+	{
+		ga.step();
+		if (CallBack)
+			CallBack(k,ga.population());
+		++k;
+	}
 	
 	pop = ga.population();
 	pop.order(GAPopulation::HIGH_IS_BEST);
@@ -505,14 +523,13 @@ vector< vector< double> > SBML_sim::optimize(const vector< vector<double> >& dat
 		for (int j=0; j < g.size(); ++j)
 			genes[i][j] = g.gene(j);
 	}
-	
+
 	parameterValues = genes[0];
 
 	return genes;
 }
 
-
-vector< vector< double> > SBML_sim::optimize(float (*f)(std::vector<double>&), int iter)
+vector< vector< double> > SBML_sim::optimize(float (*f)(std::vector<double>&), int iter, bool useCrowding)
 {
 	vector< vector< double> > genes;
 
@@ -524,16 +541,31 @@ vector< vector< double> > SBML_sim::optimize(float (*f)(std::vector<double>&), i
 	GASteadyStateGA ga(genome);
 	ga.userData(this);
 	
-	GASharing dist(EuclideanDistance);
-	ga.scaling(dist);
+	if (useCrowding)
+	{
+		GASharing dist(EuclideanDistance);
+		ga.scaling(dist);
+	}
+	
 	ga.pReplacement(1.0);
 	ga.minimize();
 	ga.populationSize(1000);
 	ga.nGenerations(iter);
 	ga.pMutation(0.2);
 	ga.pCrossover(0.9);
+	
 	GAPopulation pop;
-	ga.evolve();
+	
+	ga.initialize();
+	
+	int k = 0;
+	while (ga.done() != gaTrue)
+	{
+		ga.step();
+		if (CallBack)
+			CallBack(k,ga.population());
+		++k;
+	}
 	
 	pop = ga.population();
 	pop.order(GAPopulation::HIGH_IS_BEST);
@@ -554,4 +586,10 @@ vector< vector< double> > SBML_sim::optimize(float (*f)(std::vector<double>&), i
 
 	return genes;
 }
+
+void SBML_sim::setCallback(float (*f)(int,const GAPopulation&))
+{
+	CallBack = f;
+}
+
 
