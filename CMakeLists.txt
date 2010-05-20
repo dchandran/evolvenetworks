@@ -51,6 +51,7 @@ INCLUDE_DIRECTORIES( BEFORE
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/muparser
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/antimony/src
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/sbml
+	${NETWORKEVOLUTION_SOURCE_DIR}/external/sbml_odeSolver/src
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/sbw/include
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/sbw/include/SBW
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/sbw/include/libxml
