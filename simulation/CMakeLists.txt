@@ -35,9 +35,9 @@ ADD_LIBRARY( sbml_sim
 )
 
 TARGET_LINK_LIBRARIES( sbml_sim 
-   sbml_sim 
-   sbml 
-   sbml_solver
+   sbml_sim
+   ode
+   sbml
    ssa 
    muparser
    galib
