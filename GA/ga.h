@@ -99,7 +99,7 @@ typedef GAindividual (*GAMutateFunc)(GAindividual);
 */
 
 /*! \brief
- * Print basic summary of an individual (e.g., size)
+ * Print basic summary of an individual (to report progress)
  * \param GAindividual a single individual
  * \param FILE* file handle
  * \ingroup ga
@@ -107,7 +107,7 @@ typedef GAindividual (*GAMutateFunc)(GAindividual);
 typedef void (*GAPrintSummaryFunc)(FILE*,GAindividual);
 
 /*! \brief
- * Print an individual
+ * Print an individual in detail (to report the final result)
  * \param GAindividual a single individual
  * \param FILE* file handle
  * \ingroup ga

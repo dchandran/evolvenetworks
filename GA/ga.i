@@ -87,3 +87,4 @@ extern void configureFinalLog(int bestNetworkFitness,
 extern void configureSteadyStateFunction(double tolerance, 
 									double delta,
 									double maxTime);
+

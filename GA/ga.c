@@ -196,6 +196,7 @@ int GAhyperbolicSelection(GApopulation population, double * fitnessValues, doubl
 	a = (b+popSz)/popSz;
 	return (int)( b*u/(a-u) );
 }
+
 /*! \brief set steepness parameter for the hyperbolic CDF based selection function
  * \param double steepness of the hyperbola. must be [0,1] lower number = more steep
  * \ingroup ga

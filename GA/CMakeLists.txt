@@ -19,22 +19,3 @@ TARGET_LINK_LIBRARIES( ga ga ode ssa)
 ADD_EXECUTABLE( testblocks ${NETWORKEVOLUTION_SOURCE_DIR}/GA/testBlocks.c )
 TARGET_LINK_LIBRARIES( testblocks ga )
 
-#---------------------------------------------------------------------------
-# Evolve network library (using GA)
-#---------------------------------------------------------------------------
-
-#ADD_LIBRARY( netga
-#  SHARED
-#  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/massActionNetwork.c
-#  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/proteinInteractionNetwork.c
-#  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/enzymeNetwork.c
-#  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/geneRegulationNetwork.c
-#  ${NETWORKEVOLUTION_SOURCE_DIR}/GA/reactionNetwork.c
-#)
-
-#TARGET_LINK_LIBRARIES( netga
-#  netga
-#  ga
-#  ode
-#  ssa
-#)

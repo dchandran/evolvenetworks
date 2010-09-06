@@ -1,4 +1,4 @@
-module biuni(A,B,C)
+module biuni(Reactant1,Reactant2,C)
 	A + B -> C; k*A*B;
 	k = 1.0;
 	A = 5.0;
@@ -130,3 +130,4 @@ module degradation(A)
 	k = 1.0;
 	A = 10.0;
 end
+
