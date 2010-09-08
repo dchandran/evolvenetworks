@@ -49,7 +49,7 @@ INCLUDE_DIRECTORIES( BEFORE
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/cvode260/include
 	${NETWORKEVOLUTION_BINARY_DIR}/external/cvode260/include
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/muparser
-	${NETWORKEVOLUTION_SOURCE_DIR}/external/antimony/src
+	${NETWORKEVOLUTION_SOURCE_DIR}/external/Antimony/src
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/sbml
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/sbml_odeSolver/src
 	${NETWORKEVOLUTION_SOURCE_DIR}/external/sbw/include
@@ -92,6 +92,7 @@ ADD_SUBDIRECTORY( external )
 ADD_SUBDIRECTORY( simulation )
 ADD_SUBDIRECTORY( GAmodular )
 ADD_SUBDIRECTORY( galib )
+ADD_SUBDIRECTORY( GA )
 ADD_SUBDIRECTORY( parameters )
 ADD_SUBDIRECTORY( loops )
 
